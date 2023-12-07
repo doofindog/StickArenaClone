@@ -13,6 +13,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     private float _speed;
     private float _life;
     private NetworkVariable<ulong> _playerNetID = new NetworkVariable<ulong>();
+    private Animator _animator;
 
     public override void OnNetworkSpawn()
     {
@@ -30,6 +31,11 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     public void Initialise(ulong playerID)
     {
         _playerNetID.Value = playerID;
+    }
+
+    public void Start()
+    {
+        _animator = GetComponent<Animator>();
     }
 
     public void UpdateTick(int tick)
@@ -59,13 +65,13 @@ public class Bullet : NetworkBehaviour, ITickableEntity
                 }
             }
         }
-        
-        HandleImpact();
+     
+        _isEnabled = false;
+        _animator.Play("Impact");
     }
 
-    private void HandleImpact()
+    public void HandleImpact()
     {
-        _isEnabled = false;
         gameObject.SetActive(false);
         transform.position = new Vector3(-1000, -1000, -1000);
     }
