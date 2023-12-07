@@ -12,7 +12,7 @@ public class JogStateController : BaseStateController
 
     private const int BUFFER_SIZE = 1024;
     
-    public JogStateController(StickManController aircraft) : base(aircraft)
+    public JogStateController(PixelManController aircraft) : base(aircraft)
     {
         state = CharacterState.Jog;
         _controller = aircraft.GetComponent<CharacterController>();

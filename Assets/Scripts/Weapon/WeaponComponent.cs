@@ -2,14 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Animations;
 
 public class WeaponComponent : NetworkBehaviour
 {
     private const string WEAPON_TAG = "Weapon";
+
+    [SerializeField] private GameObject _handObj;
     
-    [SerializeField] private Weapon _equippedWeapon;
-    
-    private StickManController _controller;
+    private PixelManController _controller;
+    private Weapon _equippedWeapon;
     private Weapon _nearByWeapon;
 
     public void Init()
@@ -29,6 +31,15 @@ public class WeaponComponent : NetworkBehaviour
         {
             TriggerWeapon();
         }
+        else
+        {
+            ReleaseTrigger();
+        }
+
+        if (data.reloadPressed)
+        {
+            ReloadWeapon();
+        }
     }
     
     private void TryPickUpWeapon()
@@ -42,12 +53,24 @@ public class WeaponComponent : NetworkBehaviour
     private void EquipWeaponServerRpc(ServerRpcParams serverRpcParams = default)
     {
         if(_nearByWeapon == null) return;
-
-        NetworkObject playerNetObj = GetComponent<NetworkObject>();
-        ulong senderClientID = playerNetObj.OwnerClientId;
-        NetworkObject.ChangeOwnership(senderClientID);
+        
         _equippedWeapon = _nearByWeapon;
+        
+        ConstraintSource constrainSource = new ConstraintSource
+        {
+            sourceTransform = _handObj.transform,
+            weight = 1
+        };
+
+        ParentConstraint parentConstraint = _equippedWeapon.GetComponent<ParentConstraint>();
+        parentConstraint.AddSource(constrainSource);
+        parentConstraint.constraintActive = true;
+        
+        _equippedWeapon.GetComponent<BoxCollider2D>().enabled = false;
+        
+        NetworkObject playerNetObj = GetComponent<NetworkObject>();
         _equippedWeapon.HandleOnEquipped(playerNetObj);
+        
         _nearByWeapon = null;
         EquipWeaponClientRpc(_equippedWeapon.GetComponent<NetworkObject>());
     }
@@ -59,6 +82,17 @@ public class WeaponComponent : NetworkBehaviour
         {
             NetworkObject playerNetObj = GetComponent<NetworkObject>();
             _equippedWeapon = targetObject.GetComponent<Weapon>();
+            
+            ConstraintSource constrainSource = new ConstraintSource();
+            constrainSource.sourceTransform = _handObj.transform;
+            constrainSource.weight = 1;
+        
+            ParentConstraint parentConstraint = _equippedWeapon.GetComponent<ParentConstraint>();
+            parentConstraint.AddSource(constrainSource);
+            parentConstraint.constraintActive = true;
+        
+            _equippedWeapon.GetComponent<BoxCollider2D>().enabled = false;
+            
             _equippedWeapon.HandleOnEquipped(playerNetObj);
             _nearByWeapon = null;
         }
@@ -72,10 +106,47 @@ public class WeaponComponent : NetworkBehaviour
         }
     }
 
+    private void ReleaseTrigger()
+    {
+        if (IsClient && IsOwner)
+        {
+            ReleaseWeaponTriggerServerRpc();
+        }
+    }
+
+    private void ReloadWeapon()
+    {
+        if (IsClient && IsOwner)
+        {
+            ReloadPressedServerRpc();
+        }
+    }
+
     [ServerRpc]
     private void TriggerWeaponServerRpc()
     {
+        if(_equippedWeapon == null) return;
+        
         _equippedWeapon.Trigger();;
+    }
+
+    [ServerRpc]
+    private void ReleaseWeaponTriggerServerRpc()
+    {
+        if(_equippedWeapon == null) return;
+        
+        _equippedWeapon.ReleaseTrigger();
+    }
+
+    [ServerRpc]
+    private void ReloadPressedServerRpc()
+    {
+        if(_equippedWeapon == null) return;
+
+        if (_equippedWeapon is IReloadable reloadableWeapon)
+        {
+            reloadableWeapon.Reload();
+        }
     }
     
     public void OnTriggerEnter2D(Collider2D other)
@@ -86,6 +157,16 @@ public class WeaponComponent : NetworkBehaviour
             {
                 _nearByWeapon = weapon;
             }
+        }
+    }
+
+    public void FlipWeapon(bool isFlip)
+    {
+        if (_equippedWeapon == null) return;
+
+        if(_equippedWeapon._equipedWeaponObj.TryGetComponent(out SpriteRenderer weaponSprite))
+        {
+            weaponSprite.flipY = isFlip;
         }
     }
 }

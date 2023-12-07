@@ -6,12 +6,12 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 //Handles All the Data Being Passed through the Input Reader
-public class InputHandler : NetworkBehaviour
+public class PlayerInputHandler : NetworkBehaviour
 {
     private StickManData _data;
     [SerializeField] private InputReader _inputReader;
 
-    public void Init(StickManController player)
+    public void Init(PixelManController player)
     {
         _data = player.GetData();
         if (IsClient && IsOwner)
@@ -19,6 +19,7 @@ public class InputHandler : NetworkBehaviour
             _inputReader.MoveEvent += HandleMovePressed;
             _inputReader.AttackEvent += HandleAttackPressed;
             _inputReader.InteractEvent += HandleInteractPressed;
+            _inputReader.ReloadEvent += HandleReloadPressed;
         }
     }
 
@@ -37,19 +38,33 @@ public class InputHandler : NetworkBehaviour
         _data.interactPressed = pressed;
     }
 
+    private void HandleReloadPressed(bool pressed)
+    {
+        _data.reloadPressed = pressed;
+    }
+    
     public void Update()
     {
         if (IsClient && IsOwner)
         {
-            _data.aimAngle = UpdateAim() - _data.aimOffset;
+            float aimAngleTo360 = UpdateAim() < 0 ? 360 + UpdateAim() : UpdateAim();
+            _data.aimAngle = aimAngleTo360;
         }
     }
 
     private float UpdateAim()
     {
-        Vector3 playerToMouseDirection = Input.mousePosition - Camera.main.WorldToScreenPoint(transform.position);
-        float angle = Mathf.Atan2(playerToMouseDirection.y, playerToMouseDirection.x) * Mathf.Rad2Deg;
+        if (Camera.main != null)
+        {
+            Vector3 playerToMouseDirection = Input.mousePosition - Camera.main.WorldToScreenPoint(transform.position);
+            float angle = Mathf.Atan2(playerToMouseDirection.y, playerToMouseDirection.x) * Mathf.Rad2Deg;
 
-        return angle;
+            return angle;
+        }
+        else
+        {
+            Debug.Log("camera is null");
+            return 0.0f;
+        }
     }
 }

@@ -4,19 +4,21 @@ using UnityEngine;
 
 public class Bullet : NetworkBehaviour, ITickableEntity
 {
-    private const float BULLET_SPEED = 10.0f;
+    private const float BULLET_SPEED = 15.0f;
+    private const float BULLET_LIFE = 3.0f;
 
+    
+    private bool _isEnabled;
+    private bool _hasHitObstacle;
+    private float _speed;
+    private float _life;
     private NetworkVariable<ulong> _playerNetID = new NetworkVariable<ulong>();
-    private NetworkVariable<Vector3> netPosition = new NetworkVariable<Vector3>();
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
         TickManager.Instance.AddEntity(this);
-        if (IsServer)
-        {
-            netPosition.Value = transform.position;
-        }
+        _isEnabled = true;
     }
 
     public override void OnNetworkDespawn()
@@ -32,26 +34,14 @@ public class Bullet : NetworkBehaviour, ITickableEntity
 
     public void UpdateTick(int tick)
     {
-        if (IsServer)
+        if (!_isEnabled) return;
+        transform.position += transform.right * BULLET_SPEED * TickManager.Instance.GetMinTickTime();
+        
+        _life += TickManager.Instance.GetMinTickTime();
+        if (_life > BULLET_LIFE)
         {
-            ProcessMovementServer();
+            HandleImpact();
         }
-
-        if (IsClient)
-        {
-            ProcessMovementClient();
-        }
-    }
-
-    private void ProcessMovementServer()
-    {
-        transform.position += transform.up * BULLET_SPEED * TickManager.Instance.GetMinTickTime();
-        netPosition.Value = transform.position;
-    }
-
-    private void ProcessMovementClient()
-    {
-        transform.position = Vector2.Lerp(transform.position, netPosition.Value, 0.25f);
     }
 
     public void OnTriggerEnter2D(Collider2D other)
@@ -64,12 +54,19 @@ public class Bullet : NetworkBehaviour, ITickableEntity
                 bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value
                                      && other.gameObject.TryGetComponent(out damageableEntity);
                 if (canTakeDamage)
-                {
+                { 
                     damageableEntity.TakeDamage();
                 }
             }
-            
-            GetComponent<NetworkObject>().Despawn();
         }
+        
+        HandleImpact();
+    }
+
+    private void HandleImpact()
+    {
+        _isEnabled = false;
+        gameObject.SetActive(false);
+        transform.position = new Vector3(-1000, -1000, -1000);
     }
 }

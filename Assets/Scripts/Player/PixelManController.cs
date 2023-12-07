@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class StickManController : NetworkBehaviour, ITickableEntity, IDamageableEntity
+public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageableEntity
 {
-    [SerializeField] private StickManData _data;
-    [SerializeField] private InputHandler _inputHandler;
-    [SerializeField] private WeaponComponent _weaponComponent;
+    [SerializeField] private GameObject _playerSpriteObj;
+    [SerializeField] private GameObject _arm;
+    
+    private StickManData _data;
+    private PlayerInputHandler _playerInputHandler;
+    private WeaponComponent _weaponComponent;
     
     public override void OnNetworkSpawn()
     {
@@ -24,7 +27,7 @@ public class StickManController : NetworkBehaviour, ITickableEntity, IDamageable
     public void Awake()
     {
         _data = GetComponent<StickManData>();
-        _inputHandler = GetComponent<InputHandler>();
+        _playerInputHandler = GetComponent<PlayerInputHandler>();
         _weaponComponent = GetComponent<WeaponComponent>();
     }
 
@@ -34,7 +37,7 @@ public class StickManController : NetworkBehaviour, ITickableEntity, IDamageable
         _weaponComponent.Init();
         if (IsOwner)
         {
-            _inputHandler.Init(this);
+            _playerInputHandler.Init(this);
         }
     }
 
@@ -114,7 +117,14 @@ public class StickManController : NetworkBehaviour, ITickableEntity, IDamageable
         
         //NetInputPayLoad[] inputBuffer = _data.GetInputPayload();
         transform.position = latestServerState.position;
-        transform.rotation = Quaternion.Euler(0,0,latestServerState.aimAngle);
+        _arm.transform.rotation = Quaternion.Euler(0,0,latestServerState.aimAngle);
+        
+        SpriteRenderer playerSprite = _playerSpriteObj.GetComponent<SpriteRenderer>();
+        bool isFlip = latestServerState.aimAngle is > 90 and < 270;
+        
+        playerSprite.flipX = isFlip;
+        _weaponComponent.FlipWeapon(isFlip);
+        
         stateBuffer[serverStateBufferIndex] = latestServerState;
         
         //TODO : Server Reallocation
@@ -143,8 +153,13 @@ public class StickManController : NetworkBehaviour, ITickableEntity, IDamageable
     {
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
         transform.position += inputPayLoad.direction * tickManager.GetMinTickTime() * _data.speed;
-        transform.rotation = Quaternion.Euler(0,0,inputPayLoad.aimAngle);
-
+        _arm.transform.rotation = Quaternion.Euler(0,0,inputPayLoad.aimAngle);
+        
+        SpriteRenderer playerSprite = _playerSpriteObj.GetComponent<SpriteRenderer>();
+        bool isFlip = inputPayLoad.aimAngle is > 90 and < 270;
+        playerSprite.flipX = isFlip;
+        _weaponComponent.FlipWeapon(isFlip);
+        
         _weaponComponent.UpdateComponent();
     }
     

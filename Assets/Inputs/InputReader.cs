@@ -22,7 +22,8 @@ public class InputReader : ScriptableObject, CharacterInput.IGameplayActions
 
     public event Action<Vector2> MoveEvent;
     public event Action<bool> AttackEvent;
-    public event Action<bool> InteractEvent; 
+    public event Action<bool> InteractEvent;
+    public event Action<bool> ReloadEvent;
     
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -50,6 +51,18 @@ public class InputReader : ScriptableObject, CharacterInput.IGameplayActions
         else if(context.canceled)
         {
             InteractEvent?.Invoke(false);
+        }
+    }
+
+    public void OnReload(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            ReloadEvent?.Invoke(true);
+        }
+        else if(context.canceled)
+        {
+            ReloadEvent?.Invoke(false);
         }
     }
 }

@@ -5,7 +5,7 @@ public class IdleStateController : BaseStateController
 {
     private CharacterController _controller;
 
-    public IdleStateController(StickManController aircraft) : base(aircraft)
+    public IdleStateController(PixelManController aircraft) : base(aircraft)
     {
         state = CharacterState.Idle;
     }

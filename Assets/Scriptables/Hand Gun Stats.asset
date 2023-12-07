@@ -12,9 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98793a4d77e904e7d8e706e90a03b7cb, type: 3}
   m_Name: Hand Gun Stats
   m_EditorClassIdentifier: 
+  weaponName: Jokester Jet Pistol
+  weaponType: 3
   bulletPrefab: {fileID: 2126290572856526050, guid: 8c49a56233b4b459bb2e8c69f4f87711,
     type: 3}
   fireRate: 0.15
   ammoInClip: 10
   maxAmmo: 45
   reloadTime: 0.3
+  fireType: 0
+  burstBulletCount: 3
+  burstFireRate: 0.075

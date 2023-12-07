@@ -10,10 +10,10 @@ public class StickManData : NetworkBehaviour
     [SerializeField] private CharacterStatsScriptable _statsData;
     public float speed;
     public float aimAngle;
-    public float aimOffset;
     public bool interactPressed;
-    public Vector2 direction;
     public bool attackPressed;
+    public bool reloadPressed;
+    public Vector2 direction;
     
     public NetStatePayLoad lastProcessedStatePayLoad;
     public NetStatePayLoad latestServerStatePayLoad;
