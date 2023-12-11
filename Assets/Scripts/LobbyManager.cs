@@ -7,14 +7,16 @@ using Random = UnityEngine.Random;
 
 public class LobbyManager : Singleton<LobbyManager>
 {
-
+  
     [SerializeField] private GameObject testWeaponPrefab;
+    [SerializeField] private GameObject owningNetworkObj;
     [SerializeField] private List<NetworkObject> clientNetworkObjects = new List<NetworkObject>();
 
     public void Init()
     {
         NetworkManager networkManager = GameNetworkManager.Instance.GetNetworkManager();
         networkManager.OnClientConnectedCallback += OnPlayerConnected;
+        networkManager.OnClientStarted += HandleClientStarted;
     }
 
     private void OnGUI()
@@ -32,6 +34,11 @@ public class LobbyManager : Singleton<LobbyManager>
     {
         if (GUILayout.Button("Client")) NetworkManager.Singleton.StartClient();
         if (GUILayout.Button("Server")) NetworkManager.Singleton.StartServer();
+    }
+
+    private void HandleClientStarted()
+    {
+        NetworkManager networkManager = GameNetworkManager.Instance.GetNetworkManager();
     }
 
     private void OnPlayerConnected(ulong clientID)

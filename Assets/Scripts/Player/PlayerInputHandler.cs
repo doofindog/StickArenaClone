@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 //Handles All the Data Being Passed through the Input Reader
 public class PlayerInputHandler : NetworkBehaviour
 {
-    private StickManData _data;
+    private PixelManData _data;
     [SerializeField] private InputReader _inputReader;
 
     public void Init(PixelManController player)

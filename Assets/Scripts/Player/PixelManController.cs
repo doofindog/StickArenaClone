@@ -8,14 +8,20 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
     [SerializeField] private GameObject _playerSpriteObj;
     [SerializeField] private GameObject _arm;
     
-    private StickManData _data;
+    private PixelManData _data;
     private PlayerInputHandler _playerInputHandler;
     private WeaponComponent _weaponComponent;
+    private PixelManAnimator _animator;
     
     public override void OnNetworkSpawn()
     {
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
         tickManager.AddEntity(this);
+
+        if (IsClient && IsOwner)
+        {
+            GameEvents.SendPlayerConnected(this.gameObject);
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -26,9 +32,10 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
 
     public void Awake()
     {
-        _data = GetComponent<StickManData>();
+        _data = GetComponent<PixelManData>();
         _playerInputHandler = GetComponent<PlayerInputHandler>();
         _weaponComponent = GetComponent<WeaponComponent>();
+        _animator = GetComponent<PixelManAnimator>();
     }
 
     private void Start()
@@ -59,7 +66,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         while (inputsQueue.Count > 0)
         {
             var inputPayLoad = inputsQueue.Dequeue();
-            bufferIndex = inputPayLoad.tick % StickManData.NETWORK_BUFFER_SIZE;
+            bufferIndex = inputPayLoad.tick % PixelManData.NETWORK_BUFFER_SIZE;
 
             ProcessMovement(inputPayLoad);
             statePayLoads[bufferIndex] = new NetStatePayLoad()
@@ -88,7 +95,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
             NetInputPayLoad[] inputPayLoads = _data.GetInputPayload();
             NetInputPayLoad inputPayLoad = _data.GetCurrentInputPayLoad();
 
-            int bufferIndex = tickManager.GetTick() % StickManData.NETWORK_BUFFER_SIZE;
+            int bufferIndex = tickManager.GetTick() % PixelManData.NETWORK_BUFFER_SIZE;
             inputPayLoads[bufferIndex] = inputPayLoad;
             
             ProcessMovement(inputPayLoad);
@@ -111,7 +118,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         NetStatePayLoad latestServerState = _data.latestServerStatePayLoad;
         _data.lastProcessedStatePayLoad = latestServerState;
         
-        int serverStateBufferIndex = latestServerState.tick % StickManData.NETWORK_BUFFER_SIZE;
+        int serverStateBufferIndex = latestServerState.tick % PixelManData.NETWORK_BUFFER_SIZE;
         //float positionError = Vector3.Distance(latestServerState.position, stateBuffer[serverStateBufferIndex].position);
         //float rotationError = Mathf.Abs(latestServerState.aimAngle - stateBuffer[serverStateBufferIndex].aimAngle);
         
@@ -152,7 +159,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
     private void ProcessMovement(NetInputPayLoad inputPayLoad)
     {
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
-        transform.position += inputPayLoad.direction * tickManager.GetMinTickTime() * _data.speed;
+        transform.position += inputPayLoad.direction * tickManager.GetMinTickTime() * _data.speed.Value;
         _arm.transform.rotation = Quaternion.Euler(0,0,inputPayLoad.aimAngle);
         
         SpriteRenderer playerSprite = _playerSpriteObj.GetComponent<SpriteRenderer>();
@@ -161,10 +168,22 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         _weaponComponent.FlipWeapon(isFlip);
         
         _weaponComponent.UpdateComponent();
+
+        if (IsClient && IsOwner)
+        {
+            if (inputPayLoad.direction != Vector3.zero)
+            {
+                _animator.PlayWalk();
+            }
+            else
+            {
+                _animator.PlayIdle();
+            }
+        }
     }
     
     
-    public StickManData GetData()
+    public PixelManData GetData()
     {
         return _data;
     }
@@ -174,8 +193,16 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         return _weaponComponent;
     }
 
-    public void TakeDamage()
+    public void TakeDamage(float damage)
     {
-        Debug.Log("Take Damage");
+        if (IsServer)
+        {
+            _data.ReduceHealth(damage);
+        }
+
+        if (IsOwner)
+        {
+            _animator.PlayTakeDamage(false);
+        }
     }
 }

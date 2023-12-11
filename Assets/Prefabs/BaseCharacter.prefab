@@ -11,11 +11,13 @@ GameObject:
   - component: {fileID: 1598438211036252670}
   - component: {fileID: 8705390056453766226}
   - component: {fileID: 1100179948106655014}
-  - component: {fileID: 1349567828278437351}
   - component: {fileID: 712497789358402570}
   - component: {fileID: 881559729250533392}
+  - component: {fileID: 6476305301319678892}
   - component: {fileID: 8950913112381952094}
   - component: {fileID: 8786840818537277886}
+  - component: {fileID: 2820461575668416996}
+  - component: {fileID: 7732807367665121081}
   m_Layer: 6
   m_Name: BaseCharacter
   m_TagString: Player
@@ -74,34 +76,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerSpriteObj: {fileID: 4909385638617441054}
   _arm: {fileID: 6104598589221725590}
---- !u!114 &1349567828278437351
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2118129681642967876}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93d53f5444a5244aaa227261971b7bb8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _statsData: {fileID: 11400000, guid: 1940f93be73624e26a30fd104c9b5929, type: 2}
-  speed: 0
-  aimAngle: 0
-  interactPressed: 0
-  direction: {x: 0, y: 0}
-  attackPressed: 0
-  lastProcessedStatePayLoad:
-    tick: 0
-    position: {x: 0, y: 0, z: 0}
-    aimAngle: 0
-  latestServerStatePayLoad:
-    tick: 0
-    position: {x: 0, y: 0, z: 0}
-    aimAngle: 0
-  _inputPayLoads: []
-  _statePayLoads: []
 --- !u!114 &712497789358402570
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128,6 +102,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _inputReader: {fileID: 11400000, guid: 704e98e80c2d34825ac451cd8b1dabe0, type: 2}
+--- !u!114 &6476305301319678892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2118129681642967876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93d53f5444a5244aaa227261971b7bb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  aimAngle: 0
+  interactPressed: 0
+  attackPressed: 0
+  reloadPressed: 0
+  direction: {x: 0, y: 0}
+  health:
+    m_InternalValue: 0
+  speed:
+    m_InternalValue: 0
+  lastProcessedStatePayLoad:
+    tick: 0
+    position: {x: 0, y: 0, z: 0}
+    aimAngle: 0
+  latestServerStatePayLoad:
+    tick: 0
+    position: {x: 0, y: 0, z: 0}
+    aimAngle: 0
+  pixelManData: {fileID: 11400000, guid: 1940f93be73624e26a30fd104c9b5929, type: 2}
+  _inputPayLoads: []
+  _statePayLoads: []
 --- !u!50 &8950913112381952094
 Rigidbody2D:
   serializedVersion: 4
@@ -175,6 +181,54 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.19066918, y: 0.24866867}
   m_EdgeRadius: 0
+--- !u!114 &2820461575668416996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2118129681642967876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4eb658b3200642839f58d049b2492e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TransitionStateInfoList:
+  - IsCrossFadeExit: 0
+    Layer: 0
+    OriginatingState: 2081823275
+    DestinationState: 765711723
+    TransitionDuration: 0
+    TriggerNameHash: -1919845803
+    TransitionIndex: 0
+  - IsCrossFadeExit: 0
+    Layer: 0
+    OriginatingState: 765711723
+    DestinationState: 2081823275
+    TransitionDuration: 0
+    TriggerNameHash: -601574123
+    TransitionIndex: 0
+  m_Animator: {fileID: 7732807367665121081}
+--- !u!95 &7732807367665121081
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2118129681642967876}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: b9f79faa5f5c94149b829cdbfb3c1217, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &4909385638617441054
 GameObject:
   m_ObjectHideFlags: 0

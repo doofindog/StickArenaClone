@@ -3,30 +3,36 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class StickManData : NetworkBehaviour
+public class PixelManData : NetworkBehaviour
 {
     public const int NETWORK_BUFFER_SIZE = 1024;
     
-    [SerializeField] private CharacterStatsScriptable _statsData;
-    public float speed;
     public float aimAngle;
     public bool interactPressed;
     public bool attackPressed;
     public bool reloadPressed;
     public Vector2 direction;
-    
+
+    public NetworkVariable<float> health = new NetworkVariable<float>();
+    public NetworkVariable<float> speed = new NetworkVariable<float>();
     public NetStatePayLoad lastProcessedStatePayLoad;
     public NetStatePayLoad latestServerStatePayLoad;
     
     //ServerVariables;
-    [SerializeField]private NetInputPayLoad[] _inputPayLoads;
-    [SerializeField]private NetStatePayLoad[] _statePayLoads; 
+    [SerializeField] private BasePixelManDataScriptable pixelManData;
+    [SerializeField] private NetInputPayLoad[] _inputPayLoads;
+    [SerializeField] private NetStatePayLoad[] _statePayLoads; 
     private Queue<NetInputPayLoad> _inputsQueue;
 
     
     public void Init()
     {
-        speed = _statsData.speed;
+        if (IsServer)
+        {
+            health.Value = pixelManData.maxHealth;
+            speed.Value = pixelManData.speed;
+        }
+
         _inputPayLoads = new NetInputPayLoad[NETWORK_BUFFER_SIZE];
         _statePayLoads = new NetStatePayLoad[NETWORK_BUFFER_SIZE];
         _inputsQueue = new Queue<NetInputPayLoad>();
@@ -74,5 +80,9 @@ public class StickManData : NetworkBehaviour
     {
         return _inputsQueue;
     }
-    
+
+    public void ReduceHealth(float reduceBy)
+    {
+        health.Value -= reduceBy;
+    }
 }

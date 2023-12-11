@@ -8,6 +8,7 @@ public class WeaponDataScriptable : ScriptableObject
     public string weaponName;
     public WeaponType weaponType;
     public GameObject bulletPrefab;
+    public float damage;
     public float fireRate;
     public int ammoInClip;
     public int maxAmmo;

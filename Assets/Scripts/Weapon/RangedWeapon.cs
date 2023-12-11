@@ -137,7 +137,7 @@ public class RangedWeapon : Weapon, IReloadable
         Bullet bullet = bulletObj.GetComponent<Bullet>();
         NetworkObject bulletNetObj = bulletObj.GetComponent<NetworkObject>();
         bulletNetObj.Spawn();
-        bullet.Initialise(playerClientID);
+        bullet.Initialise(playerClientID, _weaponData.damage);
 
         _ammoInClip.Value -= 1;
     }

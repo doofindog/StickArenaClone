@@ -21,7 +21,7 @@ public class WeaponComponent : NetworkBehaviour
     
     public void UpdateComponent()
     {
-        StickManData data = _controller.GetData();
+        PixelManData data = _controller.GetData();
         if (data.interactPressed)
         {
             TryPickUpWeapon();

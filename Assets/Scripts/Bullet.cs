@@ -6,10 +6,10 @@ public class Bullet : NetworkBehaviour, ITickableEntity
 {
     private const float BULLET_SPEED = 15.0f;
     private const float BULLET_LIFE = 3.0f;
-
     
     private bool _isEnabled;
     private bool _hasHitObstacle;
+    private float _damage;
     private float _speed;
     private float _life;
     private NetworkVariable<ulong> _playerNetID = new NetworkVariable<ulong>();
@@ -28,9 +28,10 @@ public class Bullet : NetworkBehaviour, ITickableEntity
         TickManager.Instance.RemoveEntity(this);
     }
 
-    public void Initialise(ulong playerID)
+    public void Initialise(ulong playerID, float damage)
     {
         _playerNetID.Value = playerID;
+        _damage = damage;
     }
 
     public void Start()
@@ -52,17 +53,18 @@ public class Bullet : NetworkBehaviour, ITickableEntity
 
     public void OnTriggerEnter2D(Collider2D other)
     {
-        if (IsServer)
+        if (other.gameObject.TryGetComponent(out NetworkObject networkObject))
         {
-            if (other.gameObject.TryGetComponent(out NetworkObject networkObject))
+            IDamageableEntity damageableEntity = null;
+            bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value
+                                 && other.gameObject.TryGetComponent(out damageableEntity);
+            if (IsServer)
             {
-                IDamageableEntity damageableEntity = null;
-                bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value
-                                     && other.gameObject.TryGetComponent(out damageableEntity);
-                if (canTakeDamage)
-                { 
-                    damageableEntity.TakeDamage();
-                }
+                Debug.Log("Can take Damage" + canTakeDamage);
+            }
+            if (canTakeDamage)
+            { 
+                damageableEntity.TakeDamage(_damage);
             }
         }
      
