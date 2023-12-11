@@ -16,10 +16,13 @@ public class Weapon : NetworkBehaviour
     public GameObject _equipedWeaponObj;
     public GameObject _unequipedWeaponObj;
 
+    public NetworkObject weaponOwner;
+
     protected virtual void InitialiseData() { }
 
     public virtual void HandleOnEquipped(NetworkObject playerNetObj)
     {
+        weaponOwner = playerNetObj;
         playerClientID = playerNetObj.NetworkObjectId;
     }
 
@@ -35,5 +38,10 @@ public class Weapon : NetworkBehaviour
     protected virtual void UpdateAnimation()
     {
         
+    }
+
+    public virtual bool CanTrigger()
+    {
+        return false;
     }
 }

@@ -11,4 +11,11 @@ public class GameEvents : MonoBehaviour
     {
         PlayerConnectedEvent?.Invoke(playerObj);
     }
+
+    public static Action WeaponFiredEvent;
+    public static void SendWeaponFired()
+    {
+        WeaponFiredEvent?.Invoke();
+        
+    }
 }

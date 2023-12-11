@@ -29,12 +29,18 @@ public class RangedWeapon : Weapon, IReloadable
 
     protected override void InitialiseData()
     {
-        if (!IsServer) return;
-        
-        _ammoInClip.Value = _weaponData.ammoInClip;
-        _totalAmmo.Value = _weaponData.maxAmmo;
-        _fireType.Value = _weaponData.fireType;
-        _weaponState.Value = WeaponState.Ready;
+        if (IsServer)
+        {
+            _ammoInClip.Value = _weaponData.ammoInClip;
+            _totalAmmo.Value = _weaponData.maxAmmo;
+            _fireType.Value = _weaponData.fireType;
+            _weaponState.Value = WeaponState.Ready;
+        }
+
+        if (IsClient)
+        {
+            _weaponState.OnValueChanged += OnWeaponStateChanged;
+        }
     }
 
     public void Start()
@@ -121,8 +127,6 @@ public class RangedWeapon : Weapon, IReloadable
     protected virtual void HandleAutoFire()
     {
         if(_weaponState.Value != WeaponState.Ready) return;
-
-        _weaponState.Value = WeaponState.Fired;
         
         FireBullet();
         
@@ -131,6 +135,8 @@ public class RangedWeapon : Weapon, IReloadable
     
     protected virtual void FireBullet()
     {
+        _weaponState.Value = WeaponState.Fired;
+        
         _netAnimator.SetTrigger("fire");
         
         GameObject bulletObj = Instantiate(_weaponData.bulletPrefab, _barrelTransform.position, _barrelTransform.rotation);
@@ -175,5 +181,19 @@ public class RangedWeapon : Weapon, IReloadable
     private void SetWeaponAsReady()
     {
         _weaponState.Value = WeaponState.Ready;
+    }
+
+    private void OnWeaponStateChanged(WeaponState oldState, WeaponState newState)
+    {
+        Debug.Log(newState);
+        switch (newState)
+        {
+            case WeaponState.ResettingFireRate:
+                if (weaponOwner.IsOwner)
+                {
+                    GameEvents.SendWeaponFired();
+                }
+                break;
+        }
     }
 }

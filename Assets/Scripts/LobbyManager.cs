@@ -9,7 +9,7 @@ public class LobbyManager : Singleton<LobbyManager>
 {
   
     [SerializeField] private GameObject testWeaponPrefab;
-    [SerializeField] private GameObject owningNetworkObj;
+    [SerializeField] private NetworkObject owningNetworkObj;
     [SerializeField] private List<NetworkObject> clientNetworkObjects = new List<NetworkObject>();
 
     public void Init()
@@ -34,6 +34,16 @@ public class LobbyManager : Singleton<LobbyManager>
     {
         if (GUILayout.Button("Client")) NetworkManager.Singleton.StartClient();
         if (GUILayout.Button("Server")) NetworkManager.Singleton.StartServer();
+    }
+
+    private void SetOwningPlayer(GameObject obj)
+    {
+        obj.TryGetComponent<NetworkObject>(out owningNetworkObj);
+    }
+
+    public NetworkObject GetOwningPlayer()
+    {
+        return owningNetworkObj;
     }
 
     private void HandleClientStarted()
