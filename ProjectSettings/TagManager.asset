@@ -42,3 +42,6 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: StartScreenProps
+    uniqueID: 4259685749
+    locked: 0
