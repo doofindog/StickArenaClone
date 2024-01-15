@@ -78,7 +78,8 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
             {
                 tick = inputPayLoad.tick,
                 position = transform.position,
-                aimAngle = inputPayLoad.aimAngle
+                aimAngle = inputPayLoad.aimAngle,
+                dodge = inputPayLoad.dodgePressed
             };
         }
 
@@ -91,7 +92,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
     private void HandleClientTick()
     {
         if (IsServer && !IsHost) return;
-
+        
         if (!IsLocalPlayer)
         {
             SimulateMovement();
@@ -102,7 +103,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
             
             TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
             NetInputPayLoad[] inputPayLoads = _data.GetInputPayload();
-            NetInputPayLoad inputPayLoad = _data.GetCurrentInputPayLoad();
+            NetInputPayLoad inputPayLoad = _data.GetNewInputPayLoad();
 
             int bufferIndex = tickManager.GetTick() % PixelManData.NETWORK_BUFFER_SIZE;
             inputPayLoads[bufferIndex] = inputPayLoad;
@@ -114,7 +115,9 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
             {
                 tick = inputPayLoad.tick,
                 position = transform.position,
-                aimAngle = inputPayLoad.aimAngle
+                aimAngle = inputPayLoad.aimAngle,
+                dodge = inputPayLoad.dodgePressed,
+                canDodge = _data.canDodge
             };
             
             _data.SendInputServerRPC(inputPayLoad);
@@ -125,13 +128,8 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
     {
         NetStatePayLoad latestServerState = _data.latestServerStatePayLoad;
         transform.position = latestServerState.position;
-        
-        _arm.transform.rotation = Quaternion.Euler(0,0,latestServerState.aimAngle);
-        SpriteRenderer playerSprite = _playerSpriteObj.GetComponent<SpriteRenderer>();
-        bool isFlip = latestServerState.aimAngle is > 90 and < 270;
-            
-        playerSprite.flipX = isFlip;
-        _weaponComponent.FlipWeapon(isFlip);
+
+        Aim(latestServerState.aimAngle);
     }
 
     private void PerformServerReallocation()
@@ -142,7 +140,12 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         Vector3 serverPosition = serverState.position;
         Vector3 clientPosition = clientState.position;
         float positionError = Vector3.Distance(serverPosition, clientPosition);
-        if (positionError > 1.5)
+        if (_data.canDodge == false)
+        {
+            _data.canDodge = serverState.canDodge;
+        }
+        
+        if (positionError > 0.5)
         {
             transform.position = serverState.position;
             NetStatePayLoad[] stateBuffers = _data.GetStatePayLoads();
@@ -157,7 +160,8 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
                 {
                     tick = inputPayLoad.tick,
                     position = transform.position,
-                    aimAngle = inputPayLoad.aimAngle
+                    aimAngle = inputPayLoad.aimAngle,
+                    dodge = inputPayLoad.dodgePressed,
                 };
                 tickToProcess++;
             }
@@ -166,54 +170,68 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
 
     private void ProcessMovement(NetInputPayLoad inputPayLoad)
     {
-        Move(inputPayLoad);
-        Dodge(inputPayLoad);
-        Aim(inputPayLoad);
+        if (inputPayLoad.dodgePressed && _data.canDodge)
+        {
+            StartCoroutine(PerformDodge(inputPayLoad.direction));
+        }
+        
+        Move(inputPayLoad.direction);
+        Aim(inputPayLoad.aimAngle);
         
         _weaponComponent.UpdateComponent();
         
         UpdateAnimation(inputPayLoad);
     }
 
-    private void Move(NetInputPayLoad inputPayLoad)
+    private void Move(Vector3 direction)
     {
-        if(inputPayLoad.dodge) return;
+        if (_data.state == PixelManData.State.Dodge)
+        {
+            return;
+        }
+
+        _data.state = direction == Vector3.zero ? PixelManData.State.Idle : PixelManData.State.Move;
         
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
-        transform.position += inputPayLoad.direction * tickManager.GetMinTickTime() * _data.speed.Value;
+        transform.position += direction * (tickManager.GetMinTickTime() * _data.speed.Value);
     }
     
-    private void Aim(NetInputPayLoad inputPayLoad)
+    private void Aim(float aimAngle)
     {
-        _arm.transform.rotation = Quaternion.Euler(0,0,inputPayLoad.aimAngle);
+        _arm.transform.rotation = Quaternion.Euler(0,0,aimAngle);
         SpriteRenderer playerSprite = _playerSpriteObj.GetComponent<SpriteRenderer>();
-        bool isFlip = inputPayLoad.aimAngle is > 90 and < 270;
+        bool isFlip = aimAngle is > 90 and < 270;
         playerSprite.flipX = isFlip;
         _weaponComponent.FlipWeapon(isFlip);
     }
 
-    private void Dodge(NetInputPayLoad inputPayLoad)
+    
+    //Send Dodge Data back from the sevrer to stop in the client
+    private IEnumerator PerformDodge(Vector3 direction)
     {
-        if(inputPayLoad.dodge == false) return;
+        if (_data.state == PixelManData.State.Dodge) yield break;
 
-        StartCoroutine(StartDodge(inputPayLoad));
-    }
-
-    private IEnumerator StartDodge(NetInputPayLoad inputPayLoad)
-    {
+        _data.canDodge = false;
+        
         float timer = 0;
-        while (timer < _data.dodgeDuration)
+        _data.state = PixelManData.State.Dodge;
+        
+        while (timer < _data.dodgeDuration.Value)
         {
             TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
-            transform.position += inputPayLoad.direction.normalized * (tickManager.GetMinTickTime() * _data.dodgeSpeed.Value);
+            transform.position += direction.normalized * (tickManager.GetMinTickTime() * _data.dodgeSpeed.Value);
              
             yield return new WaitForSeconds(tickManager.GetMinTickTime());
 
             timer += tickManager.GetMinTickTime();
-            Debug.Log(timer);
+            
         }
+        
+        _data.state = PixelManData.State.Idle;
 
-        _data.dodgePressed = false;
+        yield return new WaitForSeconds(2);
+
+        _data.canDodge = true;
     }
     
     private void UpdateAnimation(NetInputPayLoad inputPayLoad)

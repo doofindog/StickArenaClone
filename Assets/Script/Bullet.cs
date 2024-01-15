@@ -10,8 +10,8 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     private bool _isEnabled;
     private bool _hasHitObstacle;
     private float _damage;
-    private float _speed;
     private float _life;
+    private NetworkVariable<float> _speed = new NetworkVariable<float>();
     private NetworkVariable<ulong> _playerNetID = new NetworkVariable<ulong>();
     private Animator _animator;
 
@@ -31,7 +31,10 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     public void Initialise(ulong playerID, float damage, float bulletSpeed)
     {
         _playerNetID.Value = playerID;
-        _speed = bulletSpeed;
+        if (IsServer)
+        {
+            _speed.Value = bulletSpeed;
+        }
         _damage = damage;
     }
 
@@ -42,9 +45,9 @@ public class Bullet : NetworkBehaviour, ITickableEntity
 
     public void UpdateTick(int tick)
     {
-        if (!_isEnabled) return;
-        transform.position += transform.right * (_speed * TickManager.Instance.GetMinTickTime());
+        if(!_isEnabled) return;
         
+        transform.position += transform.right * (_speed.Value * TickManager.Instance.GetMinTickTime());
         _life += TickManager.Instance.GetMinTickTime();
         if (_life > BULLET_LIFE)
         {

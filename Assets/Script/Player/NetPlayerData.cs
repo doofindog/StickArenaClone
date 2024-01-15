@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [System.Serializable]
 public struct NetInputPayLoad : INetworkSerializable
@@ -7,7 +8,7 @@ public struct NetInputPayLoad : INetworkSerializable
     public int tick;
     public Vector3 direction;
     public float aimAngle;
-    public bool dodge;
+    public bool dodgePressed;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -17,6 +18,7 @@ public struct NetInputPayLoad : INetworkSerializable
             reader.ReadValueSafe(out tick);
             reader.ReadValueSafe(out direction);
             reader.ReadValueSafe(out aimAngle);
+            reader.ReadValueSafe(out dodgePressed);
         }
         else
         {
@@ -24,6 +26,7 @@ public struct NetInputPayLoad : INetworkSerializable
             writer.WriteValueSafe(tick);
             writer.WriteValueSafe(direction);
             writer.WriteValueSafe(aimAngle);
+            writer.WriteValueSafe(dodgePressed);
         }
     }
 }
@@ -35,6 +38,7 @@ public struct NetStatePayLoad : INetworkSerializable
     public Vector3 position;
     public float aimAngle;
     public bool dodge;
+    public bool canDodge;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -44,6 +48,8 @@ public struct NetStatePayLoad : INetworkSerializable
             reader.ReadValueSafe(out tick);
             reader.ReadValueSafe(out position);
             reader.ReadValueSafe(out aimAngle);
+            reader.ReadValueSafe(out dodge);
+            reader.ReadValueSafe(out canDodge);
         }
         else
         {
@@ -51,6 +57,8 @@ public struct NetStatePayLoad : INetworkSerializable
             writer.WriteValueSafe(tick);
             writer.WriteValueSafe(position);
             writer.WriteValueSafe(aimAngle);
+            writer.WriteValueSafe(dodge);
+            writer.WriteValueSafe(canDodge);
         }
     }
 }

@@ -17,6 +17,7 @@ public class ConnectionManager : Singleton<ConnectionManager>
 
     
     [SerializeField] private int maxConnections = 2;
+    [SerializeField] private int maxPlayersToLoad = 1;
     
     private HashSet<ulong> _playersConnectedID = new HashSet<ulong>();
     private Dictionary<ulong, PlayerSessionData> _playerSessionDataCollection = new Dictionary<ulong, PlayerSessionData>();
@@ -46,7 +47,7 @@ public class ConnectionManager : Singleton<ConnectionManager>
             {
                 sessionData.IsConnected = true;
                 PlayersConnected++;
-                if (PlayersConnected == maxConnections)
+                if (PlayersConnected == maxPlayersToLoad)
                 {
                     NetworkSceneManager sceneManager = NetworkManager.Singleton.SceneManager;
                     sceneManager.LoadScene("SampleScene", LoadSceneMode.Single);

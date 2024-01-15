@@ -145,10 +145,9 @@ public class RangedWeapon : Weapon, IReloadable
         GameObject bulletObj = Instantiate(_weaponData.bulletPrefab, _barrelTransform.position, bulletRotation);
         Bullet bullet = bulletObj.GetComponent<Bullet>();
         NetworkObject bulletNetObj = bulletObj.GetComponent<NetworkObject>();
-        
         bulletNetObj.Spawn();
         bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
-
+        
         _ammoInClip.Value -= 1;
     }
 

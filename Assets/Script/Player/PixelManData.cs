@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,29 +8,43 @@ public class PixelManData : NetworkBehaviour
 {
     public const int NETWORK_BUFFER_SIZE = 1024;
 
-    public float dodgeDuration;
+    public enum State
+    {
+        Idle,
+        Move,
+        Dodge,
+        Dead
+    }
+
+    [Header("Movement")]
+    public NetworkVariable<float> speed = new NetworkVariable<float>();
+    public Vector2 direction;
+
+    [Header("Dodge")] public bool canDodge;
+    public NetworkVariable<float> dodgeDuration = new NetworkVariable<float>();
+    public NetworkVariable<float> dodgeSpeed = new NetworkVariable<float>();
+
+    [Header("Aim")]
     public float aimAngle;
+    
+    [Header("Interactions")]
     public bool dodgePressed;
     public bool interactPressed;
     public bool attackPressed;
     public bool reloadPressed;
     public bool swapPressed;
-    public Vector2 direction;
-
-    public NetworkVariable<float> health = new NetworkVariable<float>();
-    public NetworkVariable<float> speed = new NetworkVariable<float>();
-    public NetworkVariable<float> dodgeSpeed = new NetworkVariable<float>();
     
-    public NetStatePayLoad lastProcessedStatePayLoad;
-    public NetStatePayLoad latestServerStatePayLoad;
+    [Header("State")] 
+    public State state;
+    public NetworkVariable<float> health = new NetworkVariable<float>();
     
     //ServerVariables;
     [SerializeField] private BasePixelManDataScriptable pixelManData;
     [SerializeField] private NetInputPayLoad[] _inputPayLoads;
     [SerializeField] private NetStatePayLoad[] _statePayLoads; 
+    public NetStatePayLoad latestServerStatePayLoad;
     private Queue<NetInputPayLoad> _inputsQueue = new Queue<NetInputPayLoad>();
-
-    
+     
     public void Init()
     {
         if (IsServer)
@@ -37,12 +52,14 @@ public class PixelManData : NetworkBehaviour
             health.Value = pixelManData.maxHealth;
             speed.Value = pixelManData.speed;
             dodgeSpeed.Value = pixelManData.dodgeSpeed;
-            dodgeDuration = pixelManData.dodgeDuration;
+            dodgeDuration.Value = pixelManData.dodgeDuration;
         } 
 
         _inputPayLoads = new NetInputPayLoad[NETWORK_BUFFER_SIZE];
         _statePayLoads = new NetStatePayLoad[NETWORK_BUFFER_SIZE];
         _inputsQueue = new Queue<NetInputPayLoad>();
+        canDodge = true;
+        state = State.Idle;
     }
     
 
@@ -58,14 +75,14 @@ public class PixelManData : NetworkBehaviour
         latestServerStatePayLoad = statePayLoad;
     }
 
-    public NetInputPayLoad GetCurrentInputPayLoad()
+    public NetInputPayLoad GetNewInputPayLoad()
     {
         return new NetInputPayLoad()
         {
             tick = TickManager.Instance.GetTick(),
             direction = direction,
             aimAngle =  aimAngle,
-            dodge = dodgePressed
+            dodgePressed = dodgePressed
         };
     }
 

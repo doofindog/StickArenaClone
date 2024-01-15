@@ -5270,7 +5270,12 @@ PrefabInstance:
     - target: {fileID: 4280418150081988577, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
       propertyPath: maxConnections
-      value: 1
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4280418150081988577, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
+        type: 3}
+      propertyPath: maxPlayersToLoad
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4886915750441949397, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
@@ -5472,9 +5477,9 @@ Camera:
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0.11804385
+    y: 0
     width: 1
-    height: 0.7639123
+    height: 1
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60

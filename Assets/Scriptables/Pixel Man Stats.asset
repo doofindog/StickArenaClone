@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 13
   speed: 3
-  dodgeSpeed: 2
+  dodgeSpeed: 10
   dodgeDuration: 0.2
