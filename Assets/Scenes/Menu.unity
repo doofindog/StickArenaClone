@@ -5300,17 +5300,17 @@ PrefabInstance:
     - target: {fileID: 7723531697288480339, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7723531697288480339, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7723531697288480339, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7723531697288480339, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
@@ -5326,6 +5326,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7723531697288480343, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
+        type: 3}
+      propertyPath: NetworkConfig.ForceSamePrefabs
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7723531697288480343, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
+        type: 3}
+      propertyPath: NetworkConfig.ConnectionApproval
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7723531697288480350, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
@@ -5462,9 +5472,9 @@ Camera:
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0.10471204
+    y: 0.11804385
     width: 1
-    height: 0.7905759
+    height: 0.7639123
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60

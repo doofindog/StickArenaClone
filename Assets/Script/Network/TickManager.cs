@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -17,7 +18,6 @@ public class TickManager : Singleton<TickManager>
 
     public void AddEntity(ITickableEntity tickableEntity)
     {
-        Debug.Log("Added");
         _tickableEntities.Add(tickableEntity);
     }
 
@@ -46,7 +46,7 @@ public class TickManager : Singleton<TickManager>
         while (_timer >= _minTimeBetweenTicks)
         {
             _timer -= _minTimeBetweenTicks;
-            foreach (ITickableEntity entity in _tickableEntities)
+            foreach (ITickableEntity entity in _tickableEntities.ToList())
             {
                 entity.UpdateTick(_tick);
             }

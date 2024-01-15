@@ -17,11 +17,12 @@ public class ConnectionManager : Singleton<ConnectionManager>
 
     
     [SerializeField] private int maxConnections = 2;
-    [SerializeField] private int playersConnected = 0;
     
-    private Dictionary<ulong, PlayerSessionData> PlayerSessionDataCollection = new Dictionary<ulong, PlayerSessionData>();
+    private HashSet<ulong> _playersConnectedID = new HashSet<ulong>();
+    private Dictionary<ulong, PlayerSessionData> _playerSessionDataCollection = new Dictionary<ulong, PlayerSessionData>();
     
-
+    public int PlayersConnected { get; set; }
+    
     public void Start()
     {
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
@@ -37,16 +38,19 @@ public class ConnectionManager : Singleton<ConnectionManager>
 
     private void HandleClientConnected(ulong clientID)
     {
-        Debug.Log("Client Connected");
+        Debug.Log("Client Connected : " + clientID);
+        
         if (NetworkManager.Singleton.IsServer)
         {
-            playersConnected++;
-            if (playersConnected == maxConnections)
+            if (_playerSessionDataCollection.TryGetValue(clientID, out PlayerSessionData sessionData))
             {
-                //Start Game;
-                Debug.Log("Starting Game");
-                NetworkSceneManager sceneManager = NetworkManager.Singleton.SceneManager;
-                sceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
+                sessionData.IsConnected = true;
+                PlayersConnected++;
+                if (PlayersConnected == maxConnections)
+                {
+                    NetworkSceneManager sceneManager = NetworkManager.Singleton.SceneManager;
+                    sceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
+                } 
             }
         }
     }
@@ -56,20 +60,14 @@ public class ConnectionManager : Singleton<ConnectionManager>
         string disconnectReason = NetworkManager.Singleton.DisconnectReason;
         if (string.IsNullOrEmpty(disconnectReason))
         {
-            //m_ConnectStatusPublisher.Publish(ConnectStatus.StartClientFailed);
             Debug.Log("Could not Connect to Server");
         }
     }
 
     private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest approvalRequest, NetworkManager.ConnectionApprovalResponse approvalResponse)
     {
-        bool canConnect = playersConnected > maxConnections &&
-                             approvalRequest.ClientNetworkId != NetworkManager.Singleton.LocalClientId;
-        
-        if (canConnect)
+        if (PlayersConnected >= maxConnections)
         {
-            approvalResponse.Approved = false;
-            approvalResponse.Reason = "Max Players Reached";
             return;
         }
         
@@ -77,9 +75,20 @@ public class ConnectionManager : Singleton<ConnectionManager>
         {
             ClientID = approvalRequest.ClientNetworkId
         };
-
-        PlayerSessionDataCollection.Add(playerSessionData.ClientID, playerSessionData);
+        
+        _playerSessionDataCollection.Add(playerSessionData.ClientID, playerSessionData);
         approvalResponse.Approved = true;
+    }
+
+    public Dictionary<ulong, PlayerSessionData> GetPlayerSessionDataDict()
+    {
+        return _playerSessionDataCollection;
+    }
+
+    public PlayerSessionData GetPlayerSessionData(ulong clientID)
+    {
+        _playerSessionDataCollection.TryGetValue(clientID, out PlayerSessionData sessionData);
+        return sessionData;
     }
     
     public static void TryJoin()

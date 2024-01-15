@@ -7,6 +7,7 @@ public class PlayerSessionData: ISessionPlayerData
         
     }
 
+    public bool IsJoinSession { get; set; }
     public bool IsConnected { get; set; }
     public ulong ClientID { get; set; }
 }

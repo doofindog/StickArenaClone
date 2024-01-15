@@ -11,6 +11,7 @@ public class GameNetworkManager : Singleton<GameNetworkManager>
     [SerializeField] private NetworkManager _networkManager;
     [SerializeField] private TickManager _tickManager;
     [SerializeField] private LobbyManager _lobbyManager;
+    [SerializeField] private ConnectionManager _connectionManager;
 
     protected override void Awake()
     {
@@ -19,6 +20,7 @@ public class GameNetworkManager : Singleton<GameNetworkManager>
         _networkManager = _networkManager == null ? GetComponent<NetworkManager>() : _networkManager;
         _tickManager = _tickManager == null ? GetComponentInChildren<TickManager>() : _tickManager;
         _lobbyManager = _lobbyManager == null ? GetComponentInChildren<LobbyManager>() : _lobbyManager;
+        _connectionManager = _connectionManager == null ? GetComponentInChildren<ConnectionManager>() : _connectionManager;
 
         _networkManager.OnServerStarted += OnNetworkStart;
         _networkManager.OnClientStarted += OnNetworkStart;
@@ -39,8 +41,8 @@ public class GameNetworkManager : Singleton<GameNetworkManager>
         return _tickManager;
     }
 
-    public LobbyManager GetConnectionManager()
+    public ConnectionManager GetConnectionManager()
     {
-        return _lobbyManager;
+        return _connectionManager;
     }
 }

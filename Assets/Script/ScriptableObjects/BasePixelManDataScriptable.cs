@@ -7,4 +7,6 @@ public class BasePixelManDataScriptable : ScriptableObject
 {
     public float maxHealth;
     public float speed;
+    public float dodgeSpeed;
+    public float dodgeDuration;
 }

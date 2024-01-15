@@ -20,7 +20,13 @@ public class PlayerInputHandler : NetworkBehaviour
             _inputReader.AttackEvent += HandleAttackPressed;
             _inputReader.InteractEvent += HandleInteractPressed;
             _inputReader.ReloadEvent += HandleReloadPressed;
+            _inputReader.DodgeEvent += HandleDodgePressed;
         }
+    }
+
+    private void HandleDodgePressed(bool pressed)
+    {
+        _data.dodgePressed = pressed;
     }
 
     private void HandleMovePressed(Vector2 direction)

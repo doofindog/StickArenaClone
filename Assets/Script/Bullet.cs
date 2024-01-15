@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Bullet : NetworkBehaviour, ITickableEntity
 {
-    private const float BULLET_SPEED = 15.0f;
+    private const string TAG = "Bullet";
     private const float BULLET_LIFE = 3.0f;
     
     private bool _isEnabled;
@@ -28,9 +28,10 @@ public class Bullet : NetworkBehaviour, ITickableEntity
         TickManager.Instance.RemoveEntity(this);
     }
 
-    public void Initialise(ulong playerID, float damage)
+    public void Initialise(ulong playerID, float damage, float bulletSpeed)
     {
         _playerNetID.Value = playerID;
+        _speed = bulletSpeed;
         _damage = damage;
     }
 
@@ -42,7 +43,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     public void UpdateTick(int tick)
     {
         if (!_isEnabled) return;
-        transform.position += transform.right * BULLET_SPEED * TickManager.Instance.GetMinTickTime();
+        transform.position += transform.right * (_speed * TickManager.Instance.GetMinTickTime());
         
         _life += TickManager.Instance.GetMinTickTime();
         if (_life > BULLET_LIFE)

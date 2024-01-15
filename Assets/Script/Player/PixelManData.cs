@@ -6,15 +6,19 @@ using UnityEngine.Serialization;
 public class PixelManData : NetworkBehaviour
 {
     public const int NETWORK_BUFFER_SIZE = 1024;
-    
+
+    public float dodgeDuration;
     public float aimAngle;
+    public bool dodgePressed;
     public bool interactPressed;
     public bool attackPressed;
     public bool reloadPressed;
+    public bool swapPressed;
     public Vector2 direction;
 
     public NetworkVariable<float> health = new NetworkVariable<float>();
     public NetworkVariable<float> speed = new NetworkVariable<float>();
+    public NetworkVariable<float> dodgeSpeed = new NetworkVariable<float>();
     
     public NetStatePayLoad lastProcessedStatePayLoad;
     public NetStatePayLoad latestServerStatePayLoad;
@@ -32,7 +36,9 @@ public class PixelManData : NetworkBehaviour
         {
             health.Value = pixelManData.maxHealth;
             speed.Value = pixelManData.speed;
-        }
+            dodgeSpeed.Value = pixelManData.dodgeSpeed;
+            dodgeDuration = pixelManData.dodgeDuration;
+        } 
 
         _inputPayLoads = new NetInputPayLoad[NETWORK_BUFFER_SIZE];
         _statePayLoads = new NetStatePayLoad[NETWORK_BUFFER_SIZE];
@@ -58,13 +64,20 @@ public class PixelManData : NetworkBehaviour
         {
             tick = TickManager.Instance.GetTick(),
             direction = direction,
-            aimAngle =  aimAngle
+            aimAngle =  aimAngle,
+            dodge = dodgePressed
         };
     }
 
     public NetInputPayLoad[] GetInputPayload()
     {
         return _inputPayLoads;
+    }
+
+    public NetInputPayLoad GetInputPayloadAtTick(int tick)
+    {
+        int index = tick % PixelManData.NETWORK_BUFFER_SIZE;
+        return _inputPayLoads[index];
     }
 
     public NetStatePayLoad[] GetStatePayLoads()
@@ -75,6 +88,12 @@ public class PixelManData : NetworkBehaviour
     public NetStatePayLoad GetStatePayLoadAtIndex(int indexBuffer)
     {
         return _statePayLoads[indexBuffer];
+    }
+
+    public NetStatePayLoad GetStatePayLoadAtTick(int tick)
+    {
+        int index = tick % PixelManData.NETWORK_BUFFER_SIZE;
+        return _statePayLoads[index];
     }
 
     public Queue<NetInputPayLoad> GetInputQueued()

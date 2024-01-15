@@ -3,6 +3,7 @@ using System.Collections;
 using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Serialization;
 
 public class Weapon : NetworkBehaviour
@@ -43,5 +44,18 @@ public class Weapon : NetworkBehaviour
     public virtual bool CanTrigger()
     {
         return false;
+    }
+
+    public void Reset()
+    {
+        weaponOwner = null;
+        playerClientID = 0;
+        
+        ParentConstraint parentConstraint = GetComponent<ParentConstraint>();
+        parentConstraint.RemoveSource(0);
+        parentConstraint.constraintActive = false;
+        _equipedWeaponObj.SetActive(false);
+        _unequipedWeaponObj.SetActive(true);
+        transform.rotation = quaternion.Euler(Vector3.zero);
     }
 }

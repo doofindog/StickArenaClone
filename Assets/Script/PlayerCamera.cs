@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -35,7 +36,17 @@ public class PlayerCamera : MonoBehaviour, ITickableEntity
 
     private void HandlePlayerConnected(GameObject obj)
     {
-        _follow = obj.transform;
+        NetworkSpawnManager spawnManager = NetworkManager.Singleton.SpawnManager;
+        ulong playerId = NetworkManager.Singleton.LocalClientId;
+        if (spawnManager.GetPlayerNetworkObject(playerId) != null)
+        {
+            _follow = spawnManager.GetPlayerNetworkObject(playerId).gameObject.transform;
+        }
+        else
+        {
+            Debug.Log("No player Object found");
+        }
+        
         TickManager.Instance.AddEntity(this);
     }
 

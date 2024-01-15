@@ -7,6 +7,7 @@ public struct NetInputPayLoad : INetworkSerializable
     public int tick;
     public Vector3 direction;
     public float aimAngle;
+    public bool dodge;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -33,6 +34,7 @@ public struct NetStatePayLoad : INetworkSerializable
     public int tick;
     public Vector3 position;
     public float aimAngle;
+    public bool dodge;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {

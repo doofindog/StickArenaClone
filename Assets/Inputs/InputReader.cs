@@ -24,6 +24,8 @@ public class InputReader : ScriptableObject, CharacterInput.IGameplayActions
     public event Action<bool> AttackEvent;
     public event Action<bool> InteractEvent;
     public event Action<bool> ReloadEvent;
+
+    public event Action<bool> DodgeEvent;
     
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -63,6 +65,18 @@ public class InputReader : ScriptableObject, CharacterInput.IGameplayActions
         else if(context.canceled)
         {
             ReloadEvent?.Invoke(false);
+        }
+    }
+    
+    public void OnDodge(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            DodgeEvent?.Invoke(true);
+        }
+        else if(context.canceled)
+        {
+            DodgeEvent?.Invoke(false);
         }
     }
 }

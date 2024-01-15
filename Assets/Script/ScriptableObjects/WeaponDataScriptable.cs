@@ -10,10 +10,12 @@ public class WeaponDataScriptable : ScriptableObject
     public GameObject bulletPrefab;
     public float damage;
     public float fireRate;
+    public float spread;
     public int ammoInClip;
     public int maxAmmo;
     public float reloadTime;
     public FireType fireType;
+    public float bulletSpeed;
     public int burstBulletCount;
     public float burstFireRate;
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -40,6 +41,11 @@ public class WeaponComponent : NetworkBehaviour
         {
             ReloadWeapon();
         }
+
+        if (data.swapPressed)
+        {
+            
+        }
     }
     
     private void TryPickUpWeapon()
@@ -53,7 +59,12 @@ public class WeaponComponent : NetworkBehaviour
     private void EquipWeaponServerRpc(ServerRpcParams serverRpcParams = default)
     {
         if(_nearByWeapon == null) return;
-        
+
+        if (_equippedWeapon != null)
+        {
+            DestroyWeapon(_equippedWeapon);
+        }
+
         _equippedWeapon = _nearByWeapon;
         
         ConstraintSource constrainSource = new ConstraintSource
@@ -73,6 +84,26 @@ public class WeaponComponent : NetworkBehaviour
         
         _nearByWeapon = null;
         EquipWeaponClientRpc(_equippedWeapon.GetComponent<NetworkObject>());
+    }
+
+    private void DestroyWeapon(Weapon weapon)
+    {
+        if(!NetworkManager.Singleton.IsServer) return;
+        
+        weapon.GetComponent<NetworkObject>().Despawn();
+    }
+
+
+    private void DropEquippedWeapon()
+    {
+        if (_equippedWeapon == null)
+        {
+            return;
+        }
+
+        _equippedWeapon.GetComponent<BoxCollider2D>().enabled = true;
+        _equippedWeapon.Reset();
+        _equippedWeapon = null;
     }
 
     [ClientRpc]
@@ -156,6 +187,17 @@ public class WeaponComponent : NetworkBehaviour
             if(other.TryGetComponent(out Weapon weapon))
             {
                 _nearByWeapon = weapon;
+            }
+        }
+    }
+
+    public void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag(WEAPON_TAG))
+        {
+            if(other.TryGetComponent(out Weapon weapon) == _nearByWeapon)
+            {
+                _nearByWeapon = null;
             }
         }
     }

@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -17,9 +17,10 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
     {
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
         tickManager.AddEntity(this);
-
+        
         if (IsClient && IsOwner)
         {
+            Debug.Log("called network spawn");
             GameEvents.SendPlayerConnected(this.gameObject);
         }
     }
@@ -56,47 +57,49 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
 
     private void HandleServerTick()
     {
-        Debug.Log("network id : " + NetworkObjectId +" : " + IsOwner);
-        if (IsServer)
-        {
-            int bufferIndex = -1;
+        if (!IsServer) return;
+        
+        int bufferIndex = -1;
 
-            NetStatePayLoad[] statePayLoads = _data.GetStatePayLoads();
-            Queue<NetInputPayLoad> inputsQueue = _data.GetInputQueued();
+        NetStatePayLoad[] statePayLoads = _data.GetStatePayLoads();
+        Queue<NetInputPayLoad> inputsQueue = _data.GetInputQueued();
             
-            while (inputsQueue.Count > 0)
+        while (inputsQueue.Count > 0)
+        {
+            var inputPayLoad = inputsQueue.Dequeue();
+            bufferIndex = inputPayLoad.tick % PixelManData.NETWORK_BUFFER_SIZE;
+
+            if (!IsOwner)
             {
-                var inputPayLoad = inputsQueue.Dequeue();
-                bufferIndex = inputPayLoad.tick % PixelManData.NETWORK_BUFFER_SIZE;
-
-                if (!IsOwner)
-                {
-                    ProcessMovement(inputPayLoad);
-                }
-
-                statePayLoads[bufferIndex] = new NetStatePayLoad()
-                {
-                    tick = inputPayLoad.tick,
-                    position = transform.position,
-                    aimAngle = inputPayLoad.aimAngle
-                };
+                ProcessMovement(inputPayLoad);
             }
 
-            if (bufferIndex != -1)
+            statePayLoads[bufferIndex] = new NetStatePayLoad()
             {
-                _data.SendStateClientRPC(statePayLoads[bufferIndex]);
-            }
+                tick = inputPayLoad.tick,
+                position = transform.position,
+                aimAngle = inputPayLoad.aimAngle
+            };
+        }
+
+        if (bufferIndex != -1)
+        {
+            _data.SendStateClientRPC(statePayLoads[bufferIndex]);
         }
     }
 
     private void HandleClientTick()
     {
         if (IsServer && !IsHost) return;
-        
-        PerformServerReallocation();
-        
-        if (IsOwner)
+
+        if (!IsLocalPlayer)
         {
+            SimulateMovement();
+        }
+        else
+        {
+            PerformServerReallocation();
+            
             TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
             NetInputPayLoad[] inputPayLoads = _data.GetInputPayload();
             NetInputPayLoad inputPayLoad = _data.GetCurrentInputPayLoad();
@@ -105,6 +108,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
             inputPayLoads[bufferIndex] = inputPayLoad;
             
             ProcessMovement(inputPayLoad);
+            
             NetStatePayLoad[] statePayLoads = _data.GetStatePayLoads();
             statePayLoads[bufferIndex] = new NetStatePayLoad()
             {
@@ -112,82 +116,119 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
                 position = transform.position,
                 aimAngle = inputPayLoad.aimAngle
             };
-
-
+            
             _data.SendInputServerRPC(inputPayLoad);
         }
     }
 
-    private void PerformServerReallocation()
+    private void SimulateMovement()
     {
-        NetStatePayLoad[] stateBuffer = _data.GetStatePayLoads();
         NetStatePayLoad latestServerState = _data.latestServerStatePayLoad;
-        _data.lastProcessedStatePayLoad = latestServerState;
-        
-        int serverStateBufferIndex = latestServerState.tick % PixelManData.NETWORK_BUFFER_SIZE;
-        //float positionError = Vector3.Distance(latestServerState.position, stateBuffer[serverStateBufferIndex].position);
-        //float rotationError = Mathf.Abs(latestServerState.aimAngle - stateBuffer[serverStateBufferIndex].aimAngle);
-        
-        //NetInputPayLoad[] inputBuffer = _data.GetInputPayload();
         transform.position = latestServerState.position;
-        _arm.transform.rotation = Quaternion.Euler(0,0,latestServerState.aimAngle);
         
+        _arm.transform.rotation = Quaternion.Euler(0,0,latestServerState.aimAngle);
         SpriteRenderer playerSprite = _playerSpriteObj.GetComponent<SpriteRenderer>();
         bool isFlip = latestServerState.aimAngle is > 90 and < 270;
-        
+            
         playerSprite.flipX = isFlip;
         _weaponComponent.FlipWeapon(isFlip);
+    }
+
+    private void PerformServerReallocation()
+    {
+        NetStatePayLoad serverState = _data.latestServerStatePayLoad;
+        NetStatePayLoad clientState = _data.GetStatePayLoadAtTick(serverState.tick);
         
-        stateBuffer[serverStateBufferIndex] = latestServerState;
-        
-        //TODO : Server Reallocation
-        //Need to look into this setion --------->
-        /*int tickToProcess = latestServerState.tick - 1;
-        
-        while (tickToProcess < TickManager.Instance.GetTick())
+        Vector3 serverPosition = serverState.position;
+        Vector3 clientPosition = clientState.position;
+        float positionError = Vector3.Distance(serverPosition, clientPosition);
+        if (positionError > 1.5)
         {
-            int bufferIndex = tickToProcess % StickManData.NETWORK_BUFFER_SIZE;
-            if (bufferIndex != -1)
+            transform.position = serverState.position;
+            NetStatePayLoad[] stateBuffers = _data.GetStatePayLoads();
+            stateBuffers[serverState.tick % PixelManData.NETWORK_BUFFER_SIZE] = serverState;
+
+            int tickToProcess = serverState.tick + 1;
+            while (tickToProcess < TickManager.Instance.GetTick())
             {
-                ProcessMovement(inputBuffer[bufferIndex]);
-                stateBuffer[bufferIndex] = new NetStatePayLoad()
+                NetInputPayLoad inputPayLoad = _data.GetInputPayloadAtTick(tickToProcess);
+                ProcessMovement(inputPayLoad);
+                stateBuffers[tickToProcess % PixelManData.NETWORK_BUFFER_SIZE] = new NetStatePayLoad()
                 {
-                    tick = inputBuffer[bufferIndex].tick,
+                    tick = inputPayLoad.tick,
                     position = transform.position,
-                    aimAngle = latestServerState.aimAngle
+                    aimAngle = inputPayLoad.aimAngle
                 };
+                tickToProcess++;
             }
-                
-            tickToProcess++;
-        } <-----------*/
+        }
     }
 
     private void ProcessMovement(NetInputPayLoad inputPayLoad)
     {
+        Move(inputPayLoad);
+        Dodge(inputPayLoad);
+        Aim(inputPayLoad);
+        
+        _weaponComponent.UpdateComponent();
+        
+        UpdateAnimation(inputPayLoad);
+    }
+
+    private void Move(NetInputPayLoad inputPayLoad)
+    {
+        if(inputPayLoad.dodge) return;
+        
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
         transform.position += inputPayLoad.direction * tickManager.GetMinTickTime() * _data.speed.Value;
+    }
+    
+    private void Aim(NetInputPayLoad inputPayLoad)
+    {
         _arm.transform.rotation = Quaternion.Euler(0,0,inputPayLoad.aimAngle);
-        
         SpriteRenderer playerSprite = _playerSpriteObj.GetComponent<SpriteRenderer>();
         bool isFlip = inputPayLoad.aimAngle is > 90 and < 270;
         playerSprite.flipX = isFlip;
         _weaponComponent.FlipWeapon(isFlip);
-        
-        _weaponComponent.UpdateComponent();
+    }
 
-        if (IsClient && IsOwner)
+    private void Dodge(NetInputPayLoad inputPayLoad)
+    {
+        if(inputPayLoad.dodge == false) return;
+
+        StartCoroutine(StartDodge(inputPayLoad));
+    }
+
+    private IEnumerator StartDodge(NetInputPayLoad inputPayLoad)
+    {
+        float timer = 0;
+        while (timer < _data.dodgeDuration)
         {
-            if (inputPayLoad.direction != Vector3.zero)
-            {
-                _animator.PlayWalk();
-            }
-            else
-            {
-                _animator.PlayIdle();
-            }
+            TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
+            transform.position += inputPayLoad.direction.normalized * (tickManager.GetMinTickTime() * _data.dodgeSpeed.Value);
+             
+            yield return new WaitForSeconds(tickManager.GetMinTickTime());
+
+            timer += tickManager.GetMinTickTime();
+            Debug.Log(timer);
         }
+
+        _data.dodgePressed = false;
     }
     
+    private void UpdateAnimation(NetInputPayLoad inputPayLoad)
+    {
+        if (!IsClient || !IsOwner) return;
+        
+        if (inputPayLoad.direction != Vector3.zero)
+        {
+            _animator.PlayWalk();
+        }
+        else
+        {
+            _animator.PlayIdle();
+        }
+    }
     
     public PixelManData GetData()
     {
