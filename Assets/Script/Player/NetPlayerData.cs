@@ -9,6 +9,9 @@ public struct NetInputPayLoad : INetworkSerializable
     public Vector3 direction;
     public float aimAngle;
     public bool dodgePressed;
+    public bool attackPressed;
+    public bool reloadPressed;
+    public bool swapPressed;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {

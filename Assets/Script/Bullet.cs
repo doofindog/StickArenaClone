@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Bullet : NetworkBehaviour, ITickableEntity
 {
-    private const string TAG = "Bullet";
     private const float BULLET_LIFE = 3.0f;
     
     private bool _isEnabled;

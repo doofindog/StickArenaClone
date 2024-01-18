@@ -4,31 +4,28 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Serialization;
 
 public class WeaponComponent : NetworkBehaviour
 {
     private const string WEAPON_TAG = "Weapon";
 
-    [SerializeField] private GameObject _handObj;
+    [SerializeField] private GameObject _arm;
+    [SerializeField] private GameObject _hand;
     
-    private PixelManController _controller;
     private Weapon _equippedWeapon;
     private Weapon _nearByWeapon;
-
-    public void Init()
-    {
-        TryGetComponent(out _controller);
-    }
     
-    public void UpdateComponent()
+    public void UpdateComponent(NetInputPayLoad inputPayLoad)
     {
-        PixelManData data = _controller.GetData();
-        if (data.interactPressed)
+        CharacterDataHandler dataHandler = GetComponent<CharacterDataHandler>();
+        
+        if (dataHandler.interactPressed)
         {
             TryPickUpWeapon();
         }
 
-        if (data.attackPressed)
+        if (dataHandler.attackPressed)
         {
             TriggerWeapon();
         }
@@ -37,15 +34,12 @@ public class WeaponComponent : NetworkBehaviour
             ReleaseTrigger();
         }
 
-        if (data.reloadPressed)
+        if (dataHandler.reloadPressed)
         {
             ReloadWeapon();
         }
-
-        if (data.swapPressed)
-        {
-            
-        }
+        
+        Aim(inputPayLoad.aimAngle);
     }
     
     private void TryPickUpWeapon()
@@ -69,7 +63,7 @@ public class WeaponComponent : NetworkBehaviour
         
         ConstraintSource constrainSource = new ConstraintSource
         {
-            sourceTransform = _handObj.transform,
+            sourceTransform = _hand.transform,
             weight = 1
         };
 
@@ -115,7 +109,7 @@ public class WeaponComponent : NetworkBehaviour
             _equippedWeapon = targetObject.GetComponent<Weapon>();
             
             ConstraintSource constrainSource = new ConstraintSource();
-            constrainSource.sourceTransform = _handObj.transform;
+            constrainSource.sourceTransform = _hand.transform;
             constrainSource.weight = 1;
         
             ParentConstraint parentConstraint = _equippedWeapon.GetComponent<ParentConstraint>();
@@ -210,5 +204,13 @@ public class WeaponComponent : NetworkBehaviour
         {
             weaponSprite.flipY = isFlip;
         }
+    }
+    
+    public void Aim(float aimAngle)
+    {
+        _arm.transform.rotation = Quaternion.Euler(0,0,aimAngle);
+        
+        bool isFlip = aimAngle is > 90 and < 270;
+        FlipWeapon(isFlip);
     }
 }

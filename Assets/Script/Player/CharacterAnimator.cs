@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode.Components;
 using UnityEngine;
 
-public class PixelManAnimator : NetworkAnimator
+public class CharacterAnimator : NetworkAnimator
 {
     private const string DEATH_KEY = "death";
     private const string DAMAGE_KEY = "damage";

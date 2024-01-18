@@ -4,10 +4,8 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class PixelManData : NetworkBehaviour
+public class CharacterDataHandler : NetworkBehaviour
 {
-    public const int NETWORK_BUFFER_SIZE = 1024;
-
     public enum State
     {
         Idle,
@@ -15,6 +13,9 @@ public class PixelManData : NetworkBehaviour
         Dodge,
         Dead
     }
+    public const int NETWORK_BUFFER_SIZE = 1024;
+    
+    [SerializeField] private BasePixelManDataScriptable pixelManData;
 
     [Header("Movement")]
     public NetworkVariable<float> speed = new NetworkVariable<float>();
@@ -38,11 +39,10 @@ public class PixelManData : NetworkBehaviour
     public State state;
     public NetworkVariable<float> health = new NetworkVariable<float>();
     
-    //ServerVariables;
-    [SerializeField] private BasePixelManDataScriptable pixelManData;
-    [SerializeField] private NetInputPayLoad[] _inputPayLoads;
-    [SerializeField] private NetStatePayLoad[] _statePayLoads; 
-    public NetStatePayLoad latestServerStatePayLoad;
+    
+    private NetInputPayLoad[] _inputPayLoads;
+    private NetStatePayLoad[] _statePayLoads; 
+    private NetStatePayLoad _latestServerStatePayLoad;
     private Queue<NetInputPayLoad> _inputsQueue = new Queue<NetInputPayLoad>();
      
     public void Init()
@@ -72,7 +72,7 @@ public class PixelManData : NetworkBehaviour
     [ClientRpc]
     public void SendStateClientRPC(NetStatePayLoad statePayLoad)
     {
-        latestServerStatePayLoad = statePayLoad;
+        _latestServerStatePayLoad = statePayLoad;
     }
 
     public NetInputPayLoad GetNewInputPayLoad()
@@ -93,7 +93,7 @@ public class PixelManData : NetworkBehaviour
 
     public NetInputPayLoad GetInputPayloadAtTick(int tick)
     {
-        int index = tick % PixelManData.NETWORK_BUFFER_SIZE;
+        int index = tick % CharacterDataHandler.NETWORK_BUFFER_SIZE;
         return _inputPayLoads[index];
     }
 
@@ -109,7 +109,7 @@ public class PixelManData : NetworkBehaviour
 
     public NetStatePayLoad GetStatePayLoadAtTick(int tick)
     {
-        int index = tick % PixelManData.NETWORK_BUFFER_SIZE;
+        int index = tick % CharacterDataHandler.NETWORK_BUFFER_SIZE;
         return _statePayLoads[index];
     }
 
@@ -121,5 +121,10 @@ public class PixelManData : NetworkBehaviour
     public void ReduceHealth(float reduceBy)
     {
         health.Value -= reduceBy;
+    }
+
+    public NetStatePayLoad GetLastSeverStatePayLoad()
+    {
+        return _latestServerStatePayLoad;
     }
 }

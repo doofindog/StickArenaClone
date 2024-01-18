@@ -28,7 +28,7 @@ public class TickManager : Singleton<TickManager>
     
     public void Init()
     {
-        if(_enable == true) return;
+        if(_enable) return;
         
         _minTimeBetweenTicks = 1f / serverTickRate;
         _enable = _minTimeBetweenTicks != 0;
@@ -64,5 +64,4 @@ public class TickManager : Singleton<TickManager>
     {
         return _minTimeBetweenTicks;
     }
-    
 }

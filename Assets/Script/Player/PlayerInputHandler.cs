@@ -8,12 +8,14 @@ using UnityEngine.InputSystem;
 //Handles All the Data Being Passed through the Input Reader
 public class PlayerInputHandler : NetworkBehaviour
 {
-    private PixelManData _data;
+    private CharacterDataHandler _dataHandler;
     [SerializeField] private InputReader _inputReader;
+    
 
-    public void Init(PixelManController player)
+    public void Init(NetController netController)
     {
-        _data = player.GetData();
+        _dataHandler = GetComponent<CharacterDataHandler>();
+        
         if (IsClient && IsOwner)
         {
             _inputReader.MoveEvent += HandleMovePressed;
@@ -26,27 +28,27 @@ public class PlayerInputHandler : NetworkBehaviour
 
     private void HandleDodgePressed(bool pressed)
     {
-        _data.dodgePressed = pressed;
+        _dataHandler.dodgePressed = pressed;
     }
 
     private void HandleMovePressed(Vector2 direction)
     {
-        _data.direction = direction;
+        _dataHandler.direction = direction;
     }
     
     private void HandleAttackPressed(bool pressed)
     {
-        _data.attackPressed = pressed;
+        _dataHandler.attackPressed = pressed;
     }
 
     private void HandleInteractPressed(bool pressed)
     {
-        _data.interactPressed = pressed;
+        _dataHandler.interactPressed = pressed;
     }
 
     private void HandleReloadPressed(bool pressed)
     {
-        _data.reloadPressed = pressed;
+        _dataHandler.reloadPressed = pressed;
     }
     
     public void Update()
@@ -54,7 +56,7 @@ public class PlayerInputHandler : NetworkBehaviour
         if (IsClient && IsOwner)
         {
             float aimAngleTo360 = UpdateAim() < 0 ? 360 + UpdateAim() : UpdateAim();
-            _data.aimAngle = aimAngleTo360;
+            _dataHandler.aimAngle = aimAngleTo360;
         }
     }
 

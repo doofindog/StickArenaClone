@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class JogStateController : BaseStateController
 {
-    private CharacterController _controller;
+    private UnityEngine.CharacterController _controller;
 
     private int _tick;
     private float _tickRate = 1f / 60f;
@@ -12,10 +12,10 @@ public class JogStateController : BaseStateController
 
     private const int BUFFER_SIZE = 1024;
     
-    public JogStateController(PixelManController aircraft) : base(aircraft)
+    public JogStateController(PlayerController aircraft) : base(aircraft)
     {
         state = CharacterState.Jog;
-        _controller = aircraft.GetComponent<CharacterController>();
+        _controller = aircraft.GetComponent<UnityEngine.CharacterController>();
     }
     
     public override void EnterState()

@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageableEntity
+public class PlayerController : NetworkBehaviour, ITickableEntity, IDamageableEntity
 {
     [SerializeField] private GameObject _playerSpriteObj;
     [SerializeField] private GameObject _arm;
     
-    private PixelManData _data;
+    private CharacterDataHandler _dataHandler;
     private PlayerInputHandler _playerInputHandler;
     private WeaponComponent _weaponComponent;
-    private PixelManAnimator _animator;
+    private CharacterAnimator _animator;
+    private NetInputProcessor _netInputProcessor;
     
     public override void OnNetworkSpawn()
     {
@@ -20,7 +21,6 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         
         if (IsClient && IsOwner)
         {
-            Debug.Log("called network spawn");
             GameEvents.SendPlayerConnected(this.gameObject);
         }
     }
@@ -33,20 +33,15 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
 
     public void Awake()
     {
-        _data = GetComponent<PixelManData>();
+        _dataHandler = GetComponent<CharacterDataHandler>();
         _playerInputHandler = GetComponent<PlayerInputHandler>();
         _weaponComponent = GetComponent<WeaponComponent>();
-        _animator = GetComponent<PixelManAnimator>();
+        _animator = GetComponent<CharacterAnimator>();
     }
 
     private void Start()
     {
-        _data.Init();
-        _weaponComponent.Init();
-        if (IsOwner)
-        {
-            _playerInputHandler.Init(this);
-        }
+        _dataHandler.Init();
     }
 
     public void UpdateTick(int tick)
@@ -61,13 +56,13 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         
         int bufferIndex = -1;
 
-        NetStatePayLoad[] statePayLoads = _data.GetStatePayLoads();
-        Queue<NetInputPayLoad> inputsQueue = _data.GetInputQueued();
+        NetStatePayLoad[] statePayLoads = _dataHandler.GetStatePayLoads();
+        Queue<NetInputPayLoad> inputsQueue = _dataHandler.GetInputQueued();
             
         while (inputsQueue.Count > 0)
         {
             var inputPayLoad = inputsQueue.Dequeue();
-            bufferIndex = inputPayLoad.tick % PixelManData.NETWORK_BUFFER_SIZE;
+            bufferIndex = inputPayLoad.tick % CharacterDataHandler.NETWORK_BUFFER_SIZE;
 
             if (!IsOwner)
             {
@@ -85,7 +80,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
 
         if (bufferIndex != -1)
         {
-            _data.SendStateClientRPC(statePayLoads[bufferIndex]);
+            _dataHandler.SendStateClientRPC(statePayLoads[bufferIndex]);
         }
     }
 
@@ -102,31 +97,31 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
             PerformServerReallocation();
             
             TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
-            NetInputPayLoad[] inputPayLoads = _data.GetInputPayload();
-            NetInputPayLoad inputPayLoad = _data.GetNewInputPayLoad();
+            NetInputPayLoad[] inputPayLoads = _dataHandler.GetInputPayload();
+            NetInputPayLoad inputPayLoad = _dataHandler.GetNewInputPayLoad();
 
-            int bufferIndex = tickManager.GetTick() % PixelManData.NETWORK_BUFFER_SIZE;
+            int bufferIndex = tickManager.GetTick() % CharacterDataHandler.NETWORK_BUFFER_SIZE;
             inputPayLoads[bufferIndex] = inputPayLoad;
             
             ProcessMovement(inputPayLoad);
             
-            NetStatePayLoad[] statePayLoads = _data.GetStatePayLoads();
+            NetStatePayLoad[] statePayLoads = _dataHandler.GetStatePayLoads();
             statePayLoads[bufferIndex] = new NetStatePayLoad()
             {
                 tick = inputPayLoad.tick,
                 position = transform.position,
                 aimAngle = inputPayLoad.aimAngle,
                 dodge = inputPayLoad.dodgePressed,
-                canDodge = _data.canDodge
+                canDodge = _dataHandler.canDodge
             };
             
-            _data.SendInputServerRPC(inputPayLoad);
+            _dataHandler.SendInputServerRPC(inputPayLoad);
         }
     }
 
     private void SimulateMovement()
     {
-        NetStatePayLoad latestServerState = _data.latestServerStatePayLoad;
+        NetStatePayLoad latestServerState = _dataHandler.GetLastSeverStatePayLoad();
         transform.position = latestServerState.position;
 
         Aim(latestServerState.aimAngle);
@@ -134,29 +129,29 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
 
     private void PerformServerReallocation()
     {
-        NetStatePayLoad serverState = _data.latestServerStatePayLoad;
-        NetStatePayLoad clientState = _data.GetStatePayLoadAtTick(serverState.tick);
+        NetStatePayLoad serverState = _dataHandler.GetLastSeverStatePayLoad();
+        NetStatePayLoad clientState = _dataHandler.GetStatePayLoadAtTick(serverState.tick);
         
         Vector3 serverPosition = serverState.position;
         Vector3 clientPosition = clientState.position;
         float positionError = Vector3.Distance(serverPosition, clientPosition);
-        if (_data.canDodge == false)
+        if (_dataHandler.canDodge == false)
         {
-            _data.canDodge = serverState.canDodge;
+            _dataHandler.canDodge = serverState.canDodge;
         }
         
         if (positionError > 0.5)
         {
             transform.position = serverState.position;
-            NetStatePayLoad[] stateBuffers = _data.GetStatePayLoads();
-            stateBuffers[serverState.tick % PixelManData.NETWORK_BUFFER_SIZE] = serverState;
+            NetStatePayLoad[] stateBuffers = _dataHandler.GetStatePayLoads();
+            stateBuffers[serverState.tick % CharacterDataHandler.NETWORK_BUFFER_SIZE] = serverState;
 
             int tickToProcess = serverState.tick + 1;
             while (tickToProcess < TickManager.Instance.GetTick())
             {
-                NetInputPayLoad inputPayLoad = _data.GetInputPayloadAtTick(tickToProcess);
+                NetInputPayLoad inputPayLoad = _dataHandler.GetInputPayloadAtTick(tickToProcess);
                 ProcessMovement(inputPayLoad);
-                stateBuffers[tickToProcess % PixelManData.NETWORK_BUFFER_SIZE] = new NetStatePayLoad()
+                stateBuffers[tickToProcess % CharacterDataHandler.NETWORK_BUFFER_SIZE] = new NetStatePayLoad()
                 {
                     tick = inputPayLoad.tick,
                     position = transform.position,
@@ -170,7 +165,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
 
     private void ProcessMovement(NetInputPayLoad inputPayLoad)
     {
-        if (inputPayLoad.dodgePressed && _data.canDodge)
+        if (inputPayLoad.dodgePressed && _dataHandler.canDodge)
         {
             StartCoroutine(PerformDodge(inputPayLoad.direction));
         }
@@ -178,22 +173,22 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         Move(inputPayLoad.direction);
         Aim(inputPayLoad.aimAngle);
         
-        _weaponComponent.UpdateComponent();
+        _weaponComponent.UpdateComponent(inputPayLoad);
         
         UpdateAnimation(inputPayLoad);
     }
 
     private void Move(Vector3 direction)
     {
-        if (_data.state == PixelManData.State.Dodge)
+        if (_dataHandler.state == CharacterDataHandler.State.Dodge)
         {
             return;
         }
 
-        _data.state = direction == Vector3.zero ? PixelManData.State.Idle : PixelManData.State.Move;
+        _dataHandler.state = direction == Vector3.zero ? CharacterDataHandler.State.Idle : CharacterDataHandler.State.Move;
         
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
-        transform.position += direction * (tickManager.GetMinTickTime() * _data.speed.Value);
+        transform.position += direction * (tickManager.GetMinTickTime() * _dataHandler.speed.Value);
     }
     
     private void Aim(float aimAngle)
@@ -209,29 +204,28 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
     //Send Dodge Data back from the sevrer to stop in the client
     private IEnumerator PerformDodge(Vector3 direction)
     {
-        if (_data.state == PixelManData.State.Dodge) yield break;
+        if (_dataHandler.state == CharacterDataHandler.State.Dodge) yield break;
 
-        _data.canDodge = false;
+        _dataHandler.canDodge = false;
         
         float timer = 0;
-        _data.state = PixelManData.State.Dodge;
+        _dataHandler.state = CharacterDataHandler.State.Dodge;
         
-        while (timer < _data.dodgeDuration.Value)
+        while (timer < _dataHandler.dodgeDuration.Value)
         {
             TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
-            transform.position += direction.normalized * (tickManager.GetMinTickTime() * _data.dodgeSpeed.Value);
+            transform.position += direction.normalized * (tickManager.GetMinTickTime() * _dataHandler.dodgeSpeed.Value);
              
             yield return new WaitForSeconds(tickManager.GetMinTickTime());
 
             timer += tickManager.GetMinTickTime();
-            
         }
         
-        _data.state = PixelManData.State.Idle;
+        _dataHandler.state = CharacterDataHandler.State.Idle;
 
         yield return new WaitForSeconds(2);
 
-        _data.canDodge = true;
+        _dataHandler.canDodge = true;
     }
     
     private void UpdateAnimation(NetInputPayLoad inputPayLoad)
@@ -248,9 +242,9 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
         }
     }
     
-    public PixelManData GetData()
+    public CharacterDataHandler GetData()
     {
-        return _data;
+        return _dataHandler;
     }
 
     public WeaponComponent GetWeaponComponent()
@@ -262,7 +256,7 @@ public class PixelManController : NetworkBehaviour, ITickableEntity, IDamageable
     {
         if (IsServer)
         {
-            _data.ReduceHealth(damage);
+            _dataHandler.ReduceHealth(damage);
         }
 
         if (IsOwner)

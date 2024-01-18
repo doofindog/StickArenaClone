@@ -5,12 +5,12 @@ using UnityEngine;
 public abstract class BaseStateController
 {
     protected CharacterState state = CharacterState.None;
-    protected readonly PixelManController PixelManController;
+    protected readonly PlayerController PlayerController;
     protected StateManager stateManager;
 
-    protected BaseStateController(PixelManController aircraft)
+    protected BaseStateController(PlayerController aircraft)
     {
-        PixelManController = aircraft;
+        PlayerController = aircraft;
     }
 
     public abstract void EnterState();

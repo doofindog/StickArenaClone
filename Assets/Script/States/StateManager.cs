@@ -4,7 +4,7 @@ public class StateManager
     private IdleStateController _idleStateController;
     private JogStateController _jogStateController;
 
-    public void Init(PixelManController aircraft)
+    public void Init(PlayerController aircraft)
     {
         _idleStateController = new IdleStateController(aircraft);
         _jogStateController = new JogStateController(aircraft);

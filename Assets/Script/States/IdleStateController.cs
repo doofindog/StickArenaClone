@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class IdleStateController : BaseStateController
 {
-    private CharacterController _controller;
+    private PlayerController _controller;
 
-    public IdleStateController(PixelManController aircraft) : base(aircraft)
+    public IdleStateController(PlayerController aircraft) : base(aircraft)
     {
         state = CharacterState.Idle;
     }
