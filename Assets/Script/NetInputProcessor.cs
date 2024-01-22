@@ -43,5 +43,11 @@ public class NetInputProcessor : NetworkBehaviour
         }
         
     }
-    
+
+    public NetInputPayLoad GetPayloadAtTick(int tick)
+    {
+        int index = tick % NETWORK_BUFFER_SIZE;
+        return _inputPayLoads[index];
+    }
+
 }

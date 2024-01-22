@@ -35,44 +35,33 @@ public class CharacterDataHandler : NetworkBehaviour
     public bool reloadPressed;
     public bool swapPressed;
     
-    [Header("State")] 
-    public State state;
+    [Header("Health")] 
     public NetworkVariable<float> health = new NetworkVariable<float>();
+    public NetworkVariable<float> maxHealth = new NetworkVariable<float>();
     
+    public State state;
     
-    private NetInputPayLoad[] _inputPayLoads;
-    private NetStatePayLoad[] _statePayLoads; 
-    private NetStatePayLoad _latestServerStatePayLoad;
-    private Queue<NetInputPayLoad> _inputsQueue = new Queue<NetInputPayLoad>();
      
     public void Init()
     {
         if (IsServer)
         {
-            health.Value = pixelManData.maxHealth;
+            maxHealth.Value = health.Value = pixelManData.maxHealth;
             speed.Value = pixelManData.speed;
             dodgeSpeed.Value = pixelManData.dodgeSpeed;
             dodgeDuration.Value = pixelManData.dodgeDuration;
         } 
-
-        _inputPayLoads = new NetInputPayLoad[NETWORK_BUFFER_SIZE];
-        _statePayLoads = new NetStatePayLoad[NETWORK_BUFFER_SIZE];
-        _inputsQueue = new Queue<NetInputPayLoad>();
+        
         canDodge = true;
         state = State.Idle;
-    }
-    
 
-    [ServerRpc]
-    public void SendInputServerRPC(NetInputPayLoad inputPayLoad)
-    {
-        _inputsQueue.Enqueue(inputPayLoad);
-    }
-
-    [ClientRpc]
-    public void SendStateClientRPC(NetStatePayLoad statePayLoad)
-    {
-        _latestServerStatePayLoad = statePayLoad;
+        health.OnValueChanged = (value, newValue) =>
+        {
+            if (IsLocalPlayer)
+            {
+                PlayerEvents.SendPlayerDamageTake(this, MathF.Abs(value - newValue));
+            }
+        };
     }
 
     public NetInputPayLoad GetNewInputPayLoad()
@@ -85,46 +74,10 @@ public class CharacterDataHandler : NetworkBehaviour
             dodgePressed = dodgePressed
         };
     }
-
-    public NetInputPayLoad[] GetInputPayload()
-    {
-        return _inputPayLoads;
-    }
-
-    public NetInputPayLoad GetInputPayloadAtTick(int tick)
-    {
-        int index = tick % CharacterDataHandler.NETWORK_BUFFER_SIZE;
-        return _inputPayLoads[index];
-    }
-
-    public NetStatePayLoad[] GetStatePayLoads()
-    {
-        return _statePayLoads;
-    }
-
-    public NetStatePayLoad GetStatePayLoadAtIndex(int indexBuffer)
-    {
-        return _statePayLoads[indexBuffer];
-    }
-
-    public NetStatePayLoad GetStatePayLoadAtTick(int tick)
-    {
-        int index = tick % CharacterDataHandler.NETWORK_BUFFER_SIZE;
-        return _statePayLoads[index];
-    }
-
-    public Queue<NetInputPayLoad> GetInputQueued()
-    {
-        return _inputsQueue;
-    }
-
+    
     public void ReduceHealth(float reduceBy)
     {
+        Debug.Log("called On value changed");
         health.Value -= reduceBy;
-    }
-
-    public NetStatePayLoad GetLastSeverStatePayLoad()
-    {
-        return _latestServerStatePayLoad;
     }
 }

@@ -1,5 +1,3 @@
-using System;
-using Unity.Netcode;
 using UnityEngine;
 
 public class ClientController : NetController, ITickableEntity, IDamageableEntity
@@ -8,8 +6,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 	
 	private NetInputProcessor _netInputProcessor;
 	private NetStateProcessor _netStateProcessor;
-
-	private PlayerInputHandler _playerInputHandler;
+	
 
 	public override void Awake()
 	{
@@ -17,7 +14,6 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 
 		_netInputProcessor = GetComponent<NetInputProcessor>();
 		_netStateProcessor = GetComponent<NetStateProcessor>();
-		_playerInputHandler = GetComponent<PlayerInputHandler>();
 	}
 
 	public override void Start()
@@ -26,7 +22,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 
 		if (IsOwner)
 		{
-			playerInputHandler.Init(this);
+			PlayerInputHandler.Init(this);
 		}
 	}
 
@@ -54,7 +50,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		{
 			PerformServerReallocation();
 			
-			NetInputPayLoad inputPayLoad = dataHandler.GetNewInputPayLoad();
+			NetInputPayLoad inputPayLoad = DataHandler.GetNewInputPayLoad();
 			_netInputProcessor.AddInput(inputPayLoad);
 			
 			ProcessMovement(inputPayLoad);
@@ -65,7 +61,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 				position = transform.position,
 				aimAngle = inputPayLoad.aimAngle,
 				dodge = inputPayLoad.dodgePressed,
-				canDodge = dataHandler.canDodge
+				canDodge = DataHandler.canDodge
 			});
 		}
 	}
@@ -75,9 +71,9 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		NetStatePayLoad serverState = _netStateProcessor.GetLastProcessedState();
 		NetStatePayLoad clientState = _netStateProcessor.GetStateAtTick(serverState.tick);
 		
-		if (dataHandler.canDodge == false)
+		if (DataHandler.canDodge == false)
 		{
-			dataHandler.canDodge = dataHandler.canDodge;
+			DataHandler.canDodge = DataHandler.canDodge;
 		}
 		
 		Vector3 serverPosition = serverState.position;
@@ -92,7 +88,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 			int tickToProcess = serverState.tick + 1;
 			while (tickToProcess < TickManager.Instance.GetTick())
 			{
-				NetInputPayLoad inputPayLoad = dataHandler.GetInputPayloadAtTick(tickToProcess);
+				NetInputPayLoad inputPayLoad = _netInputProcessor.GetPayloadAtTick(tickToProcess);
 				ProcessMovement(inputPayLoad);
 				NetStatePayLoad netStatePayLoad = new NetStatePayLoad()
 				{
@@ -118,16 +114,17 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		NetStatePayLoad latestServerState = _netStateProcessor.GetLastProcessedState();
 		transform.position = latestServerState.position;
 
-		weaponComponent.Aim(latestServerState.aimAngle);
+		WeaponComponent.Aim(latestServerState.aimAngle);
 		
 		Flip(latestServerState.aimAngle);
 	}
 	
 	public override void TakeDamage(float damage)
 	{
+		Debug.Log("Client Take Damage");
 		if (IsOwner)
 		{
-			animator.PlayTakeDamage(false);
+			Animator.PlayTakeDamage(false);
 		}
 	}
 }

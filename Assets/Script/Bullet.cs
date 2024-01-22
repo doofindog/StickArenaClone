@@ -5,6 +5,8 @@ using UnityEngine;
 public class Bullet : NetworkBehaviour, ITickableEntity
 {
     private const float BULLET_LIFE = 3.0f;
+
+    [SerializeField] private GameObject impactParticle;
     
     private bool _isEnabled;
     private bool _hasHitObstacle;
@@ -58,25 +60,29 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     {
         if (other.gameObject.TryGetComponent(out NetworkObject networkObject))
         {
-            IDamageableEntity damageableEntity = null;
-            bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value
-                                 && other.gameObject.TryGetComponent(out damageableEntity);
-            if (IsServer)
-            {
-                Debug.Log("Can take Damage" + canTakeDamage);
-            }
+            
+            
+            bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value;
+            
             if (canTakeDamage)
-            { 
-                damageableEntity.TakeDamage(_damage);
+            {
+                IDamageableEntity[] components = other.GetComponents<IDamageableEntity>();
+                foreach (IDamageableEntity component in components)
+                {
+                    component.TakeDamage(_damage);
+                }
+                
             }
         }
      
         _isEnabled = false;
-        _animator.Play("Impact");
+        Instantiate(impactParticle, transform.position, Quaternion.identity);
+        HandleImpact();
     }
 
     public void HandleImpact()
     {
+        
         gameObject.SetActive(false);
         transform.position = new Vector3(-1000, -1000, -1000);
     }

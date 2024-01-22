@@ -5,28 +5,29 @@ using UnityEngine;
 
 public class NetController : NetworkBehaviour
 {
-    protected CharacterDataHandler dataHandler;
-    protected PlayerInputHandler playerInputHandler;
-    protected WeaponComponent weaponComponent;
-    protected CharacterAnimator animator;
+    protected bool IsEnabled;
+    protected CharacterDataHandler DataHandler;
+    protected PlayerInputHandler PlayerInputHandler;
+    protected WeaponComponent WeaponComponent;
+    protected CharacterAnimator Animator;
     
     public virtual void Awake()
     {
-        dataHandler = GetComponent<CharacterDataHandler>();
-        playerInputHandler = GetComponent<PlayerInputHandler>();
-        weaponComponent = GetComponent<WeaponComponent>();
-        animator = GetComponent<CharacterAnimator>();
+        DataHandler = GetComponent<CharacterDataHandler>();
+        PlayerInputHandler = GetComponent<PlayerInputHandler>();
+        WeaponComponent = GetComponent<WeaponComponent>();
+        Animator = GetComponent<CharacterAnimator>();
     }
     
     public virtual void Start()
     {
-        dataHandler.Init();
+        DataHandler.Init();
     }
     
     
     protected virtual void ProcessMovement(NetInputPayLoad inputPayLoad)
     {
-        if (inputPayLoad.dodgePressed && dataHandler.canDodge)
+        if (inputPayLoad.dodgePressed && DataHandler.canDodge)
         {
             StartCoroutine(PerformDodge(inputPayLoad.direction));
         }
@@ -34,22 +35,22 @@ public class NetController : NetworkBehaviour
         Move(inputPayLoad.direction);
         Flip(inputPayLoad.aimAngle);
         
-        weaponComponent.UpdateComponent(inputPayLoad);
+        WeaponComponent.UpdateComponent(inputPayLoad);
         
         UpdateAnimation(inputPayLoad);
     }
 
     protected virtual void Move(Vector3 direction)
     {
-        if (dataHandler.state == CharacterDataHandler.State.Dodge)
+        if (DataHandler.state == CharacterDataHandler.State.Dodge)
         {
             return;
         }
 
-        dataHandler.state = direction == Vector3.zero ? CharacterDataHandler.State.Idle : CharacterDataHandler.State.Move;
+        DataHandler.state = direction == Vector3.zero ? CharacterDataHandler.State.Idle : CharacterDataHandler.State.Move;
         
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
-        transform.position += direction * (tickManager.GetMinTickTime() * dataHandler.speed.Value);
+        transform.position += direction * (tickManager.GetMinTickTime() * DataHandler.speed.Value);
     }
 
     protected virtual void Flip(float aimAngle)
@@ -61,28 +62,28 @@ public class NetController : NetworkBehaviour
     
     protected virtual IEnumerator PerformDodge(Vector3 direction)
     {
-        if (dataHandler.state == CharacterDataHandler.State.Dodge) yield break;
+        if (DataHandler.state == CharacterDataHandler.State.Dodge) yield break;
 
-        dataHandler.canDodge = false;
+        DataHandler.canDodge = false;
         
         float timer = 0;
-        dataHandler.state = CharacterDataHandler.State.Dodge;
+        DataHandler.state = CharacterDataHandler.State.Dodge;
         
-        while (timer < dataHandler.dodgeDuration.Value)
+        while (timer < DataHandler.dodgeDuration.Value)
         {
             TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
-            transform.position += direction.normalized * (tickManager.GetMinTickTime() * dataHandler.dodgeSpeed.Value);
+            transform.position += direction.normalized * (tickManager.GetMinTickTime() * DataHandler.dodgeSpeed.Value);
              
             yield return new WaitForSeconds(tickManager.GetMinTickTime());
 
             timer += tickManager.GetMinTickTime();
         }
         
-        dataHandler.state = CharacterDataHandler.State.Idle;
+        DataHandler.state = CharacterDataHandler.State.Idle;
 
         yield return new WaitForSeconds(2);
 
-        dataHandler.canDodge = true;
+        DataHandler.canDodge = true;
     }
     
     protected virtual void UpdateAnimation(NetInputPayLoad inputPayLoad)
@@ -91,11 +92,11 @@ public class NetController : NetworkBehaviour
         
         if (inputPayLoad.direction != Vector3.zero)
         {
-            animator.PlayWalk();
+            Animator.PlayWalk();
         }
         else
         {
-            animator.PlayIdle();
+            Animator.PlayIdle();
         }
     }
     public virtual void TakeDamage(float damage)

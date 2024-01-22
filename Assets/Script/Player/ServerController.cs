@@ -60,10 +60,7 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
 
     public override void TakeDamage(float damage)
     {
-        if (IsServer)
-        {
-            dataHandler.ReduceHealth(damage);
-        }
+        DataHandler.ReduceHealth(damage);
     }
 
     public override void OnDestroy()
