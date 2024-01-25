@@ -1815,6 +1815,50 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &756506615
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 756506616}
+  - component: {fileID: 756506617}
+  m_Layer: 0
+  m_Name: HelperManagers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &756506616
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 756506615}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6835041562262815459}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &756506617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 756506615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6932b8a46c81b415684c23525d9000d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &860263574
 GameObject:
   m_ObjectHideFlags: 0
@@ -5349,9 +5393,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 7723531697288480339, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 756506616}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d28c9fab99e6b4dd3a5c3adc514e792b, type: 3}
+--- !u!4 &6835041562262815459 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7723531697288480339, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
+    type: 3}
+  m_PrefabInstance: {fileID: 6835041562262815458}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &7314809499162650162
 GameObject:
   m_ObjectHideFlags: 0
@@ -5477,9 +5531,9 @@ Camera:
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0.13098729
-    width: 1
-    height: 0.7380254
+    y: 0.13669065
+    width: 1.0006744
+    height: 0.72422063
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60

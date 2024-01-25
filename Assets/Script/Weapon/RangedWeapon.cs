@@ -142,10 +142,11 @@ public class RangedWeapon : Weapon, IReloadable
 
         Quaternion bulletRotation = _barrelTransform.rotation * Quaternion.Euler(0, 0, Random.Range(-_weaponData.spread, _weaponData.spread));
         
-        GameObject bulletObj = Instantiate(_weaponData.bulletPrefab, _barrelTransform.position, bulletRotation);
-        Bullet bullet = bulletObj.GetComponent<Bullet>();
-        NetworkObject bulletNetObj = bulletObj.GetComponent<NetworkObject>();
+        //GameObject bulletObj = Instantiate(_weaponData.bulletPrefab, _barrelTransform.position, bulletRotation);
+        NetworkObject bulletNetObj = NetworkObjectPool.Singleton.GetNetworkObject(_weaponData.bulletPrefab, _barrelTransform.position, bulletRotation);
         bulletNetObj.Spawn();
+        
+        Bullet bullet = bulletNetObj.GetComponent<Bullet>();
         bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
         
         _ammoInClip.Value -= 1;

@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -19,14 +21,17 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        gameObject.SetActive(true);
         TickManager.Instance.AddEntity(this);
         _isEnabled = true;
+        _life = 0;
     }
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
         TickManager.Instance.RemoveEntity(this);
+        _isEnabled = false;
     }
 
     public void Initialise(ulong playerID, float damage, float bulletSpeed)
@@ -60,8 +65,6 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     {
         if (other.gameObject.TryGetComponent(out NetworkObject networkObject))
         {
-            
-            
             bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value;
             
             if (canTakeDamage)
@@ -71,19 +74,34 @@ public class Bullet : NetworkBehaviour, ITickableEntity
                 {
                     component.TakeDamage(_damage);
                 }
-                
             }
         }
-     
-        _isEnabled = false;
-        Instantiate(impactParticle, transform.position, Quaternion.identity);
+
+        GameObject particle = ObjectPool.Instance.GetPooledObject(impactParticle, transform.position, quaternion.identity).gameObject;
+        particle.SetActive(true);
         HandleImpact();
     }
 
     public void HandleImpact()
     {
-        
+        _isEnabled = false;
+        if (IsServer)
+        {
+            CoroutineHelper.Instance.StartCoroutine(ServerDestroy());
+        }
+        else
+        {
+            gameObject.SetActive(false);
+            transform.position = new Vector3(-1000, -1000, -1000);
+        }
+       
+    }
+
+    private IEnumerator ServerDestroy()
+    {
         gameObject.SetActive(false);
+        yield return new WaitForSeconds(1);
+        GetComponent<NetworkObject>().Despawn(true);
         transform.position = new Vector3(-1000, -1000, -1000);
     }
 }
