@@ -64,6 +64,18 @@ public class CharacterDataHandler : NetworkBehaviour
         };
     }
 
+    public void Refresh()
+    {
+        if (IsServer)
+        {
+            maxHealth.Value = health.Value = pixelManData.maxHealth;
+            speed.Value = pixelManData.speed;
+        } 
+        
+        canDodge = true;
+        state = State.Idle;
+    }
+
     public NetInputPayLoad GetNewInputPayLoad()
     {
         return new NetInputPayLoad()
@@ -77,7 +89,11 @@ public class CharacterDataHandler : NetworkBehaviour
     
     public void ReduceHealth(float reduceBy)
     {
-        Debug.Log("called On value changed");
         health.Value -= reduceBy;
+        if (health.Value <= 0)
+        {
+            ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
+            GameSessionManager.Singleton.DespawnPlayer(clientID);
+        }
     }
 }

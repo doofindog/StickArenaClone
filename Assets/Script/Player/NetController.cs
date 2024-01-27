@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class NetController : NetworkBehaviour
 {
@@ -10,6 +11,8 @@ public class NetController : NetworkBehaviour
     protected PlayerInputHandler PlayerInputHandler;
     protected WeaponComponent WeaponComponent;
     protected CharacterAnimator Animator;
+
+    [SerializeField] private CharacterAnimator _animator;
     
     public virtual void Awake()
     {
@@ -17,13 +20,14 @@ public class NetController : NetworkBehaviour
         PlayerInputHandler = GetComponent<PlayerInputHandler>();
         WeaponComponent = GetComponent<WeaponComponent>();
         Animator = GetComponent<CharacterAnimator>();
+        IsEnabled = true;
     }
     
+
     public virtual void Start()
     {
         DataHandler.Init();
     }
-    
     
     protected virtual void ProcessMovement(NetInputPayLoad inputPayLoad)
     {
@@ -46,7 +50,7 @@ public class NetController : NetworkBehaviour
         {
             return;
         }
-
+        
         DataHandler.state = direction == Vector3.zero ? CharacterDataHandler.State.Idle : CharacterDataHandler.State.Move;
         
         TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
@@ -81,7 +85,7 @@ public class NetController : NetworkBehaviour
         
         DataHandler.state = CharacterDataHandler.State.Idle;
 
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1.5f);
 
         DataHandler.canDodge = true;
     }
@@ -90,18 +94,33 @@ public class NetController : NetworkBehaviour
     {
         if (!IsClient || !IsOwner) return;
         
+        if(DataHandler.state == CharacterDataHandler.State.Dead) return;
+        
         if (inputPayLoad.direction != Vector3.zero)
         {
             Animator.PlayWalk();
         }
         else
         {
-            Animator.PlayIdle();
+            Animator.PlayIdle(true);
         }
     }
     public virtual void TakeDamage(float damage)
     {
         
     }
+
+    public virtual void Die()
+    {
+        
+    }
     
+    public virtual void Respawn()
+    {
+        IsEnabled = true;
+        Animator.PlayIdle(false);
+        gameObject.SetActive(true);
+        DataHandler.Refresh();
+        GetComponent<Collider2D>().enabled = true;
+    }
 }

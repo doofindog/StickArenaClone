@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class ClientController : NetController, ITickableEntity, IDamageableEntity
@@ -36,12 +37,17 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		TickManager.Instance.AddEntity(this);
 		if (IsOwner)
 		{
-			GameEvents.SendPlayerConnected(gameObject);
+			PlayerEvents.SendPlayerSpawned(gameObject);
 		}
+
+		NetworkObject networkObject = GetComponent<NetworkObject>();
+		GameEvents.SendPlayerSpawned(networkObject.OwnerClientId, networkObject);
 	}
 
 	public void UpdateTick(int tick)
 	{
+		if (IsEnabled == false) return; 
+		
 		if (!IsLocalPlayer)
 		{
 			SimulateMovement();
@@ -121,10 +127,24 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 	
 	public override void TakeDamage(float damage)
 	{
-		Debug.Log("Client Take Damage");
 		if (IsOwner)
 		{
+			if(DataHandler.state == CharacterDataHandler.State.Dead) return;
+			
 			Animator.PlayTakeDamage(false);
+		}
+	}
+
+	public override void Die()
+	{
+		DataHandler.state = CharacterDataHandler.State.Dead;
+		IsEnabled = false;
+		Animator.PlayDeathAnimation(true);
+		GetComponent<Collider2D>().enabled = false;
+
+		if (IsLocalPlayer)
+		{
+			PlayerEvents.SendPlayerDied();
 		}
 	}
 }

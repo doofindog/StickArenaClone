@@ -24,7 +24,8 @@ public class PlayerCamera : MonoBehaviour, ITickableEntity
 
     public void Awake()
     {
-        GameEvents.PlayerConnectedEvent += HandlePlayerConnected;
+        PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
+        PlayerEvents.PlayerDiedEvent += PerformShake;
         GameEvents.WeaponFiredEvent += PerformShake;
     }
 

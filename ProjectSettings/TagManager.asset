@@ -45,3 +45,9 @@ TagManager:
   - name: StartScreenProps
     uniqueID: 4259685749
     locked: 0
+  - name: Props
+    uniqueID: 2728334501
+    locked: 0
+  - name: Player
+    uniqueID: 2002075529
+    locked: 0

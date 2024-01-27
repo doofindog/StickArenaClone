@@ -34,7 +34,7 @@ public class ConnectionManager : Singleton<ConnectionManager>
 
     private void HandleServerStarted()
     {
-        Debug.Log("Server Started");
+        //Debug.Log("Server Started");
     }
 
     private void HandleClientConnected(ulong clientID)

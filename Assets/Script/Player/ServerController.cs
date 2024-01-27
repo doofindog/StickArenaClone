@@ -67,4 +67,10 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     {
         TickManager.Instance.RemoveEntity(this);
     }
+
+    public override void Die()
+    {
+        base.Die();
+        DataHandler.state = CharacterDataHandler.State.Dead;
+    }
 }

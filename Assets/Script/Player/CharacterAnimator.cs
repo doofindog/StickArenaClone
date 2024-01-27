@@ -27,9 +27,15 @@ public class CharacterAnimator : NetworkAnimator
         SetTrigger("walk");
     }
 
-    public void PlayIdle()
+    public void PlayIdle(bool isSync)
     {
-        SetTrigger("idle");
+        if (isSync)
+        {
+            SetTrigger("idle");
+            return;
+        }
+
+        Animator.Play("Idle");
     }
 
     public void PlayTakeDamage(bool isSync)
@@ -43,7 +49,7 @@ public class CharacterAnimator : NetworkAnimator
         Animator.SetTrigger(Damage);
     }
 
-    public void DeathAnimation(bool isSync)
+    public void PlayDeathAnimation(bool isSync)
     {
         if (isSync)
         {
