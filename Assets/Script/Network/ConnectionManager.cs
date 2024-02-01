@@ -1,12 +1,15 @@
 using System.Collections;
-using System.Collections.Generic;using System.Data;
-using Unity.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
-public class ConnectionManager : Singleton<ConnectionManager>
+public class ConnectionManager : NetworkBehaviour
 {
+    public static ConnectionManager Instance;
+    
     public enum ConnectionState
     {
         Online,
@@ -14,16 +17,28 @@ public class ConnectionManager : Singleton<ConnectionManager>
         Connected,
         ConnectionFailed,
     }
-
     
     [SerializeField] private int maxConnections = 2;
     [SerializeField] private int maxPlayersToLoad = 1;
     
-    private HashSet<ulong> _playersConnectedID = new HashSet<ulong>();
     private Dictionary<ulong, PlayerSessionData> _playerSessionDataCollection = new Dictionary<ulong, PlayerSessionData>();
     
     public int PlayersConnected { get; set; }
-    
+
+    public void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        
+        DontDestroyOnLoad(this.gameObject);
+    }
+
     public void Start()
     {
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
@@ -39,29 +54,69 @@ public class ConnectionManager : Singleton<ConnectionManager>
 
     private void HandleClientConnected(ulong clientID)
     {
-        Debug.Log("Client Connected : " + clientID);
-        
         if (NetworkManager.Singleton.IsServer)
         {
+            PlayerSessionData[] sessionDatas = _playerSessionDataCollection.Values.ToArray();
+            if (sessionDatas.Length > 0)
+            {
+                UpdatedPlayerCollectionsClientRPC(sessionDatas);
+            }
+
             if (_playerSessionDataCollection.TryGetValue(clientID, out PlayerSessionData sessionData))
             {
-                sessionData.IsConnected = true;
+                sessionData.isConnected = true;
                 PlayersConnected++;
                 if (PlayersConnected == maxPlayersToLoad)
                 {
-                    NetworkSceneManager sceneManager = NetworkManager.Singleton.SceneManager;
-                    sceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
+                    CustomNetworkEvents.SendAllPlayersConnectedEvent();
                 } 
             }
         }
     }
 
+
+
     private void HandleClientDisconnected(ulong clientID)
     {
-        string disconnectReason = NetworkManager.Singleton.DisconnectReason;
-        if (string.IsNullOrEmpty(disconnectReason))
+        if (IsClient)
         {
-            Debug.Log("Could not Connect to Server");
+            if (clientID == 0)
+            {
+                Debug.Log("[CONNECTION] Host has Disconnected");
+                TryDisconnect();
+            }
+        }
+        
+        if (IsServer)
+        {
+            PlayersConnected--;
+            if (!_playerSessionDataCollection.ContainsKey(clientID)) return;
+            
+            _playerSessionDataCollection.Remove(clientID);
+                
+            PlayerSessionData[] sessionDatas = _playerSessionDataCollection.Values.ToArray();
+            UpdatedPlayerCollectionsClientRPC(sessionDatas);
+        }
+    }
+
+    [ClientRpc]
+    private void UpdatedPlayerCollectionsClientRPC(PlayerSessionData[] playerSessionDataArray)
+    {
+        if (NetworkManager.Singleton.IsHost || playerSessionDataArray == null || playerSessionDataArray.Length == 0) return;
+        _playerSessionDataCollection.Clear();
+        foreach (PlayerSessionData data in playerSessionDataArray)
+        {
+            ulong clientID = data.clientID;
+            _playerSessionDataCollection.TryAdd(clientID, data);
+        }
+    }
+
+    [ClientRpc]
+    private void UpdatePlayerDataClientRPC(ulong clientID, PlayerSessionData sessionData)
+    {
+        if (_playerSessionDataCollection.ContainsKey(clientID))
+        {
+            _playerSessionDataCollection[clientID] = sessionData;
         }
     }
 
@@ -72,12 +127,17 @@ public class ConnectionManager : Singleton<ConnectionManager>
             return;
         }
         
+        string payloadJson = System.Text.Encoding.ASCII.GetString(approvalRequest.Payload);
+        
+        ConnectionPayload connectionPayload = JsonUtility.FromJson<ConnectionPayload>(payloadJson);
         PlayerSessionData playerSessionData = new PlayerSessionData
         {
-            ClientID = approvalRequest.ClientNetworkId
+            clientID = approvalRequest.ClientNetworkId,
+            userName = connectionPayload.userName
         };
         
-        _playerSessionDataCollection.Add(playerSessionData.ClientID, playerSessionData);
+        _playerSessionDataCollection.Add(playerSessionData.clientID, playerSessionData);
+        Debug.Log("[CONNECTION] user : " + playerSessionData.userName + " Connection Approved");
         approvalResponse.Approved = true;
     }
 
@@ -91,14 +151,25 @@ public class ConnectionManager : Singleton<ConnectionManager>
         _playerSessionDataCollection.TryGetValue(clientID, out PlayerSessionData sessionData);
         return sessionData;
     }
-    
-    public static void TryJoin()
+
+    private void ClearData()
     {
+        _playerSessionDataCollection.Clear();
+    }
+    
+    public static void TryJoin(string username)
+    {
+        ConnectionPayload connectionPayload = new ConnectionPayload() { userName = username };
+        string payloadJson = JsonUtility.ToJson(connectionPayload);
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
         NetworkManager.Singleton.StartClient();
     }
 
-    public static void TryStartHost()
+    public static void TryStartHost(string username)
     {
+        ConnectionPayload connectionPayload = new ConnectionPayload() { userName = username };
+        string payloadJson = JsonUtility.ToJson(connectionPayload);
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
         NetworkManager.Singleton.StartHost();
     }
 
@@ -106,4 +177,12 @@ public class ConnectionManager : Singleton<ConnectionManager>
     {
         NetworkManager.Singleton.StartServer();
     }
+
+    public static void TryDisconnect()
+    {
+        NetworkManager.Singleton.Shutdown();
+        Instance.ClearData();
+        CustomNetworkEvents.SendDisconnectedEvent();
+    }
+    
 }

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -12,7 +13,8 @@ public class GameSessionManager : NetworkBehaviour
     [SerializeField] private Transform[] spawnPoints;
     
     private Dictionary<ulong, NetworkObject> clientObjects = new Dictionary<ulong, NetworkObject>();
-    
+    private static readonly int NewColour = Shader.PropertyToID("newColour");
+
 
     public void Awake()
     {
@@ -35,13 +37,18 @@ public class GameSessionManager : NetworkBehaviour
             PlayerJoinedSessionServerRpc(NetworkManager.Singleton.LocalClientId);
         }
     }
+    
 
     [ServerRpc(RequireOwnership = false)]
     private void PlayerJoinedSessionServerRpc(ulong clientID)
     {
         ConnectionManager connectionManager = GameNetworkManager.Instance.GetConnectionManager();
-        PlayerSessionData sessionData = connectionManager.GetPlayerSessionData(clientID);
-        sessionData.IsJoinSession = true;
+        PlayerSessionData playerData = connectionManager.GetPlayerSessionData(clientID);
+        playerData.isJoinSession = true;
+        
+        SessionTeamManager.Instance.AddPlayerToTeam(playerData);
+        
+        Debug.Log($"[Game Session] {playerData.userName} has joined Game Session");
 
         if (IsServer)
         {
@@ -57,27 +64,40 @@ public class GameSessionManager : NetworkBehaviour
         foreach (ulong clientID in networkManager.ConnectedClients.Keys)
         {
             PlayerSessionData sessionData = connectionManager.GetPlayerSessionData(clientID);
-            if (sessionData.IsJoinSession)
+            if (sessionData.isJoinSession)
             {
                 count++;
                 continue;
             }
-
-            Debug.Log("Waiting for players : " + count + " / " + connectionManager.PlayersConnected);
+            
             return;
         }
+
+        StartCoroutine(StartGame());
+    }
+
+    private IEnumerator StartGame()
+    {
+        StartGameClientRPC();
+        
+        yield return new WaitForSeconds(3);
         
         SpawnAllPlayers();
     }
 
+    [ClientRpc]
+    private void StartGameClientRPC()
+    {
+        GameEvents.SendStartGameEvent();
+    }
+
     private void AddPlayer(ulong clientId, NetworkObject networkObject)
     {
-        if (clientObjects == null)
+        clientObjects ??= new Dictionary<ulong, NetworkObject>();
+        if (clientObjects.ContainsKey(clientId))
         {
-            clientObjects = new Dictionary<ulong, NetworkObject>();
+            return;
         }
-        
-        if(clientObjects.ContainsKey(clientId)) return;
 
         clientObjects.Add(clientId, networkObject);
     }
@@ -85,15 +105,14 @@ public class GameSessionManager : NetworkBehaviour
     private void SpawnPlayer(ulong clientID)
     {
         NetworkManager networkManager = NetworkManager.Singleton;
-        GameObject playerPrefab = Instantiate(networkManager.NetworkConfig.PlayerPrefab);
-        playerPrefab.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].position;
-        AddPlayer(clientID, playerPrefab.GetComponent<NetworkObject>());
-        playerPrefab.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
+        GameObject playerObj = Instantiate(networkManager.NetworkConfig.PlayerPrefab);
+        playerObj.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].position;
+        AddPlayer(clientID, playerObj.GetComponent<NetworkObject>());
+        playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
     }
 
     private void RespawnPlayer(ulong clientID)
     {
-        Debug.Log("called");
         NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(clientID);
         ServerController serverController = networkObject.GetComponent<ServerController>();
         serverController.Respawn();
@@ -104,7 +123,8 @@ public class GameSessionManager : NetworkBehaviour
     [ClientRpc]
     private void RespawnPlayerClientRpc(ulong clientID)
     {
-        Debug.Log("called RPC");
+       if(IsHost) return;
+       
         if (clientObjects.TryGetValue(clientID, out NetworkObject networkObject))
         {
             ClientController clientController = networkObject.GetComponent<ClientController>();
@@ -114,6 +134,8 @@ public class GameSessionManager : NetworkBehaviour
 
     private void SpawnAllPlayers()
     {
+        Debug.Log("[GAME SESSION] Spawning Players");
+        
         NetworkManager networkManager = NetworkManager.Singleton;
         foreach (ulong clientID in networkManager.ConnectedClients.Keys)
         {

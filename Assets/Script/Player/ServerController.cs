@@ -20,6 +20,7 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
         if (!IsServer && !IsHost)
         {
             Destroy(this);
@@ -72,5 +73,6 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     {
         base.Die();
         DataHandler.state = CharacterDataHandler.State.Dead;
+        WeaponComponent.DropEquippedWeapon();
     }
 }

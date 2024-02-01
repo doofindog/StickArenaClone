@@ -119,9 +119,6 @@ MonoBehaviour:
   m_Name: Bloom
   m_EditorClassIdentifier: 
   active: 1
-  skipIterations:
-    m_OverrideState: 1
-    m_Value: 1
   threshold:
     m_OverrideState: 1
     m_Value: 0.9
@@ -140,12 +137,9 @@ MonoBehaviour:
   highQualityFiltering:
     m_OverrideState: 1
     m_Value: 0
-  downscale:
+  skipIterations:
     m_OverrideState: 1
-    m_Value: 0
-  maxIterations:
-    m_OverrideState: 1
-    m_Value: 6
+    m_Value: 1
   dirtTexture:
     m_OverrideState: 1
     m_Value: {fileID: 0}
@@ -169,30 +163,6 @@ MonoBehaviour:
   mode:
     m_OverrideState: 1
     m_Value: 0
-  neutralHDRRangeReductionMode:
-    m_OverrideState: 1
-    m_Value: 2
-  acesPreset:
-    m_OverrideState: 1
-    m_Value: 3
-  hueShiftAmount:
-    m_OverrideState: 1
-    m_Value: 0
-  detectPaperWhite:
-    m_OverrideState: 1
-    m_Value: 0
-  paperWhite:
-    m_OverrideState: 1
-    m_Value: 300
-  detectBrightnessLimits:
-    m_OverrideState: 1
-    m_Value: 1
-  minNits:
-    m_OverrideState: 1
-    m_Value: 0.005
-  maxNits:
-    m_OverrideState: 1
-    m_Value: 1000
 --- !u!114 &-4302305696848114706
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -541,13 +511,11 @@ MonoBehaviour:
   - {fileID: -8869754304878708858}
   - {fileID: -1331048602864476622}
   - {fileID: -7417958415751418001}
-  - {fileID: 2430788693165974742}
   - {fileID: -3818257017528726554}
   - {fileID: 8072922578449500954}
   - {fileID: 626962293727563351}
   - {fileID: 2576661102385966099}
   - {fileID: -5127175499704082749}
-  - {fileID: -8258729667457147910}
 --- !u!114 &626962293727563351
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -588,13 +556,13 @@ MonoBehaviour:
   active: 1
   type:
     m_OverrideState: 1
-    m_Value: 7
+    m_Value: 6
   intensity:
     m_OverrideState: 1
     m_Value: 1
   response:
     m_OverrideState: 1
-    m_Value: 0.8
+    m_Value: 0.472
   texture:
     m_OverrideState: 1
     m_Value: {fileID: 0}

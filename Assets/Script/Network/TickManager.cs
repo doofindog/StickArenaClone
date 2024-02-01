@@ -32,7 +32,6 @@ public class TickManager : Singleton<TickManager>
         
         _minTimeBetweenTicks = 1f / serverTickRate;
         _enable = _minTimeBetweenTicks != 0;
-        Debug.Log("Min Time Between Ticks" + _minTimeBetweenTicks);
     }
 
     public void Update()

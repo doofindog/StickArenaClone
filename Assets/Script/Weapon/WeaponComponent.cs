@@ -88,7 +88,22 @@ public class WeaponComponent : NetworkBehaviour
     }
 
 
-    private void DropEquippedWeapon()
+    public void DropEquippedWeapon()
+    {
+        if (_equippedWeapon == null)
+        {
+            return;
+        }
+
+        _equippedWeapon.GetComponent<BoxCollider2D>().enabled = true;
+        _equippedWeapon.Reset();
+        _equippedWeapon = null;
+        
+        DropEquippedWeaponClientRpc();
+    }
+
+    [ClientRpc]
+    private void DropEquippedWeaponClientRpc()
     {
         if (_equippedWeapon == null)
         {
@@ -103,6 +118,8 @@ public class WeaponComponent : NetworkBehaviour
     [ClientRpc]
     private void EquipWeaponClientRpc(NetworkObjectReference weapon)
     {
+        if(IsHost) return;
+        
         if (weapon.TryGet(out NetworkObject targetObject))
         {
             NetworkObject playerNetObj = GetComponent<NetworkObject>();

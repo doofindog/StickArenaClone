@@ -101,7 +101,11 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     {
         gameObject.SetActive(false);
         yield return new WaitForSeconds(1);
-        GetComponent<NetworkObject>().Despawn(true);
+        if (IsSpawned)
+        {
+            GetComponent<NetworkObject>().Despawn(true);
+        }
+
         transform.position = new Vector3(-1000, -1000, -1000);
     }
 }

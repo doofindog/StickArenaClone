@@ -1,14 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Experimental.GlobalIllumination;
 
 public class GameEvents : MonoBehaviour
 {
     public static Action<ulong, NetworkObject> PlayerSpawnedEvent;
-
     public static void SendPlayerSpawned(ulong clientId, NetworkObject networkObject)
     {
         PlayerSpawnedEvent?.Invoke(clientId, networkObject);
@@ -20,10 +16,10 @@ public class GameEvents : MonoBehaviour
         WeaponFiredEvent?.Invoke();
     }
 
-    public static Action GameSessionStartedEvent;
+    public static Action StartGameEvent;
 
-    public static void SendGameSessionStarted()
+    public static void SendStartGameEvent()
     {
-        GameSessionStartedEvent?.Invoke();
+        StartGameEvent?.Invoke();
     }
 }

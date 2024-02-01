@@ -52,7 +52,10 @@ public class Weapon : NetworkBehaviour
         playerClientID = 0;
         
         ParentConstraint parentConstraint = GetComponent<ParentConstraint>();
-        parentConstraint.RemoveSource(0);
+        for(int i = 0; i< parentConstraint.sourceCount; i++)
+        {
+            parentConstraint.RemoveSource(i);
+        }
         parentConstraint.constraintActive = false;
         _equipedWeaponObj.SetActive(false);
         _unequipedWeaponObj.SetActive(true);

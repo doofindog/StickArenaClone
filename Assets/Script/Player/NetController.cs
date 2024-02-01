@@ -12,6 +12,7 @@ public class NetController : NetworkBehaviour
     protected WeaponComponent WeaponComponent;
     protected CharacterAnimator Animator;
 
+    [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private CharacterAnimator _animator;
     
     public virtual void Awake()
@@ -22,8 +23,14 @@ public class NetController : NetworkBehaviour
         Animator = GetComponent<CharacterAnimator>();
         IsEnabled = true;
     }
-    
 
+    public override void OnNetworkSpawn()
+    {
+        ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
+        Team team = SessionTeamManager.Instance.GetPlayerTeam(clientID);
+        _spriteRenderer.material.SetColor("_newColour", team.color);
+    }
+    
     public virtual void Start()
     {
         DataHandler.Init();
@@ -122,5 +129,10 @@ public class NetController : NetworkBehaviour
         gameObject.SetActive(true);
         DataHandler.Refresh();
         GetComponent<Collider2D>().enabled = true;
+    }
+
+    public SpriteRenderer GetSpriteRendered()
+    {
+        return _spriteRenderer;
     }
 }

@@ -15,7 +15,7 @@ public class DeathScreenUI : MonoBehaviour
         respawnButton.onClick.AddListener(SpawnPlayer);
     }
 
-    public void ShowScreen()
+    public void OnEnable()
     {
         gameObject.SetActive(true);
         counterText.gameObject.SetActive(true);

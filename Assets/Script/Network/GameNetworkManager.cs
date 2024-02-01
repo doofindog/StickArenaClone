@@ -4,26 +4,29 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Services.Core;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
 public class GameNetworkManager : Singleton<GameNetworkManager>
 {
     [SerializeField] private NetworkManager _networkManager;
     [SerializeField] private TickManager _tickManager;
-    [SerializeField] private LobbyManager _lobbyManager;
     [SerializeField] private ConnectionManager _connectionManager;
-
+    
     protected override void Awake()
     {
         base.Awake();
         
-        _networkManager = _networkManager == null ? GetComponent<NetworkManager>() : _networkManager;
-        _tickManager = _tickManager == null ? GetComponentInChildren<TickManager>() : _tickManager;
-        _lobbyManager = _lobbyManager == null ? GetComponentInChildren<LobbyManager>() : _lobbyManager;
-        _connectionManager = _connectionManager == null ? GetComponentInChildren<ConnectionManager>() : _connectionManager;
-
         _networkManager.OnServerStarted += OnNetworkStart;
         _networkManager.OnClientStarted += OnNetworkStart;
+        CustomNetworkEvents.AllPlayersConnectedEvent += StartGame;
+    }
+
+    protected void OnDestroy()
+    {
+        _networkManager.OnServerStarted -= OnNetworkStart;
+        _networkManager.OnClientStarted -= OnNetworkStart;
+        CustomNetworkEvents.AllPlayersConnectedEvent -= StartGame;
     }
 
     private void OnNetworkStart()
@@ -44,5 +47,19 @@ public class GameNetworkManager : Singleton<GameNetworkManager>
     public ConnectionManager GetConnectionManager()
     {
         return _connectionManager;
+    }
+
+
+    private void StartGame()
+    {
+        StartCoroutine(LoadGame());
+    }
+
+    private IEnumerator LoadGame()
+    {
+        yield return new WaitForSeconds(3);
+        
+        NetworkSceneManager sceneManager = NetworkManager.Singleton.SceneManager;
+        sceneManager.LoadScene("SampleScene", LoadSceneMode.Single);
     }
 }
