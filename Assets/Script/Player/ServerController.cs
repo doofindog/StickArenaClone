@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class ServerController : NetController, ITickableEntity, IDamageableEntity
@@ -59,9 +60,16 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         _netStateProcessor.SendStateClientRpc(_netStateProcessor.GetLastProcessedState());
     }
 
-    public override void TakeDamage(float damage)
+    public override void TakeDamage(float damage, NetworkObject source)
     {
-        DataHandler.ReduceHealth(damage);
+        float currentHealth = DataHandler.ReduceHealth(damage);
+        if (currentHealth <= 0)
+        {
+            ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
+            GameSessionManager.Singleton.DespawnPlayer(clientID);
+
+            GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
+        }
     }
 
     public override void OnDestroy()

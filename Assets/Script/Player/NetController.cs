@@ -26,9 +26,12 @@ public class NetController : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
-        Team team = SessionTeamManager.Instance.GetPlayerTeam(clientID);
+        NetworkObject netObj = GetComponent<NetworkObject>();
+        ulong clientID = netObj.OwnerClientId;
+        Team team = TeamManager.Instance.GetTeamFromID(clientID);
         _spriteRenderer.material.SetColor("_newColour", team.color);
+        
+        GameSessionManager.Singleton.AddPlayer(clientID, netObj);
     }
     
     public virtual void Start()
@@ -112,14 +115,14 @@ public class NetController : NetworkBehaviour
             Animator.PlayIdle(true);
         }
     }
-    public virtual void TakeDamage(float damage)
+    public virtual void TakeDamage(float damage,NetworkObject source)
     {
         
     }
 
     public virtual void Die()
     {
-        
+        GetComponent<Collider2D>().enabled = false;
     }
     
     public virtual void Respawn()

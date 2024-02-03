@@ -125,7 +125,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		Flip(latestServerState.aimAngle);
 	}
 	
-	public override void TakeDamage(float damage)
+	public override void TakeDamage(float damage, NetworkObject source)
 	{
 		if (IsOwner)
 		{
@@ -137,11 +137,11 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 
 	public override void Die()
 	{
+		base.Die();
 		DataHandler.state = CharacterDataHandler.State.Dead;
 		IsEnabled = false;
 		Animator.PlayDeathAnimation(true);
-		GetComponent<Collider2D>().enabled = false;
-
+		
 		if (IsLocalPlayer)
 		{
 			PlayerEvents.SendPlayerDied();

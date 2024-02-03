@@ -87,13 +87,10 @@ public class CharacterDataHandler : NetworkBehaviour
         };
     }
     
-    public void ReduceHealth(float reduceBy)
+    public float ReduceHealth(float reduceBy)
     {
         health.Value -= reduceBy;
-        if (health.Value <= 0)
-        {
-            ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
-            GameSessionManager.Singleton.DespawnPlayer(clientID);
-        }
+
+        return health.Value;
     }
 }

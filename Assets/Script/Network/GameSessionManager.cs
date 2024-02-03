@@ -13,9 +13,7 @@ public class GameSessionManager : NetworkBehaviour
     [SerializeField] private Transform[] spawnPoints;
     
     private Dictionary<ulong, NetworkObject> clientObjects = new Dictionary<ulong, NetworkObject>();
-    private static readonly int NewColour = Shader.PropertyToID("newColour");
-
-
+    
     public void Awake()
     {
         if (_instance != null && _instance != this)
@@ -46,7 +44,7 @@ public class GameSessionManager : NetworkBehaviour
         PlayerSessionData playerData = connectionManager.GetPlayerSessionData(clientID);
         playerData.isJoinSession = true;
         
-        SessionTeamManager.Instance.AddPlayerToTeam(playerData);
+        TeamManager.Instance.AddPlayerToTeam(playerData);
         
         Debug.Log($"[Game Session] {playerData.userName} has joined Game Session");
 
@@ -91,7 +89,7 @@ public class GameSessionManager : NetworkBehaviour
         GameEvents.SendStartGameEvent();
     }
 
-    private void AddPlayer(ulong clientId, NetworkObject networkObject)
+    public void AddPlayer(ulong clientId, NetworkObject networkObject)
     {
         clientObjects ??= new Dictionary<ulong, NetworkObject>();
         if (clientObjects.ContainsKey(clientId))
@@ -102,12 +100,17 @@ public class GameSessionManager : NetworkBehaviour
         clientObjects.Add(clientId, networkObject);
     }
 
+    public NetworkObject GetPlayerNetObject(ulong clientID)
+    {
+        clientObjects.TryGetValue(clientID, out NetworkObject netObj);
+        return netObj;
+    }
+
     private void SpawnPlayer(ulong clientID)
     {
         NetworkManager networkManager = NetworkManager.Singleton;
         GameObject playerObj = Instantiate(networkManager.NetworkConfig.PlayerPrefab);
         playerObj.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].position;
-        AddPlayer(clientID, playerObj.GetComponent<NetworkObject>());
         playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
     }
 
@@ -123,11 +126,12 @@ public class GameSessionManager : NetworkBehaviour
     [ClientRpc]
     private void RespawnPlayerClientRpc(ulong clientID)
     {
-       if(IsHost) return;
-       
-        if (clientObjects.TryGetValue(clientID, out NetworkObject networkObject))
+        if (!clientObjects.TryGetValue(clientID, out NetworkObject networkObject)) return;
+        
+        
+        ClientController clientController = networkObject.GetComponent<ClientController>();
+        if (clientController != null)
         {
-            ClientController clientController = networkObject.GetComponent<ClientController>();
             clientController.Respawn();
         }
     }

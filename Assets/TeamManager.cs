@@ -9,7 +9,7 @@ public enum TeamType
 {
     Blue,
     Red,
-    Grey,
+    Green,
     Yellow,
 }
 
@@ -19,6 +19,7 @@ public class Team
     public string name;
     public TeamType teamType;
     public Color color;
+    public int score;
     public List<PlayerSessionData> players;
 
     public Team(TeamType teamType, Color color)
@@ -36,9 +37,10 @@ public class Team
     }
 }
 
-public class SessionTeamManager : NetworkBehaviour
+public class TeamManager : NetworkBehaviour
 {
-    public static SessionTeamManager Instance { get; private set; }
+    public static TeamManager Instance { get; private set; }
+    
     [SerializeField] private List<Team> _teams = new List<Team>();
 
     public void Awake()
@@ -52,6 +54,8 @@ public class SessionTeamManager : NetworkBehaviour
         {
             Destroy(this.gameObject);
         }
+
+        GameEvents.PlayerDiedEvent += UpdateScoreToTeam;
         
         CreateTeams();
     }
@@ -62,7 +66,7 @@ public class SessionTeamManager : NetworkBehaviour
         _teams.Add(new Team(TeamType.Blue, Color.blue));
         _teams.Add(new Team(TeamType.Yellow, Color.yellow));
         _teams.Add(new Team(TeamType.Red, Color.red));
-        _teams.Add(new Team(TeamType.Grey, Color.grey));
+        _teams.Add(new Team(TeamType.Green, Color.green));
     }
 
     public void AddPlayerToTeam(PlayerSessionData player)
@@ -79,17 +83,17 @@ public class SessionTeamManager : NetworkBehaviour
         if(NetworkManager.Singleton.IsHost) return;
 
         PlayerSessionData playerData = ConnectionManager.Instance.GetPlayerSessionData(clientID);
-        Team team = GetTeamData(type);
+        Team team = GetTeamFromType(type);
         team.AddPlayer(playerData);
     }
     
-    public Team GetPlayerTeam(ulong clientID)
+    public Team GetTeamFromID(ulong clientID)
     {
         TeamType teamType = ConnectionManager.Instance.GetPlayerSessionData(clientID).teamType;
-        return GetTeamData(teamType);
+        return GetTeamFromType(teamType);
     }
 
-    private Team GetTeamData(TeamType teamType)
+    public Team GetTeamFromType(TeamType teamType)
     {
         foreach(Team team in _teams)
         {
@@ -100,5 +104,33 @@ public class SessionTeamManager : NetworkBehaviour
         }
 
         return null;
+    }
+
+    private void UpdateScoreToTeam(NetworkObject killedPlayer, NetworkObject source)
+    {
+        if (source.gameObject.CompareTag("Player"))
+        {
+            Team winTeam = GetTeamFromID(source.OwnerClientId);
+            UpdateScoreToTeam(winTeam.teamType, 1);
+            
+            return;
+        }
+        
+        Team killedTeam = GetTeamFromID(killedPlayer.OwnerClientId);
+        UpdateScoreToTeam(killedTeam.teamType, -1);
+    }
+    
+    private void UpdateScoreToTeam(TeamType type, int score)
+    {
+        GetTeamFromType(type).score += score;
+        UpdateScoreToTeamClientRPC(type, score);
+    }
+
+    [ClientRpc]
+    private void UpdateScoreToTeamClientRPC(TeamType type, int score)
+    {
+        if(IsHost) return;
+        
+        GetTeamFromType(type).score += 1;
     }
 }

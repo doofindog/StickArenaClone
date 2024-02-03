@@ -24,7 +24,7 @@ public class Weapon : NetworkBehaviour
     public virtual void HandleOnEquipped(NetworkObject playerNetObj)
     {
         weaponOwner = playerNetObj;
-        playerClientID = playerNetObj.NetworkObjectId;
+        playerClientID = playerNetObj.OwnerClientId;
     }
 
     public virtual void Trigger() { }

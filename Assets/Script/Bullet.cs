@@ -66,13 +66,13 @@ public class Bullet : NetworkBehaviour, ITickableEntity
         if (other.gameObject.TryGetComponent(out NetworkObject networkObject))
         {
             bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value;
-            
             if (canTakeDamage)
             {
+                NetworkObject source = GameSessionManager.Singleton.GetPlayerNetObject(_playerNetID.Value);
                 IDamageableEntity[] components = other.GetComponents<IDamageableEntity>();
                 foreach (IDamageableEntity component in components)
                 {
-                    component.TakeDamage(_damage);
+                    component.TakeDamage(_damage, source);
                 }
             }
         }
@@ -94,7 +94,6 @@ public class Bullet : NetworkBehaviour, ITickableEntity
             gameObject.SetActive(false);
             transform.position = new Vector3(-1000, -1000, -1000);
         }
-       
     }
 
     private IEnumerator ServerDestroy()
