@@ -118,7 +118,7 @@ public class GameSessionManager : NetworkBehaviour
     {
         NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(clientID);
         ServerController serverController = networkObject.GetComponent<ServerController>();
-        serverController.Respawn();
+        serverController.OnRespawn();
         
         RespawnPlayerClientRpc(clientID);
     }
@@ -132,7 +132,7 @@ public class GameSessionManager : NetworkBehaviour
         ClientController clientController = networkObject.GetComponent<ClientController>();
         if (clientController != null)
         {
-            clientController.Respawn();
+            clientController.OnRespawn();
         }
     }
 
@@ -155,7 +155,7 @@ public class GameSessionManager : NetworkBehaviour
         {
             if(obj.TryGetComponent(out ServerController controller))
             {
-                controller.Die();
+                controller.OnDespawn();
             }
         }
         
@@ -170,7 +170,7 @@ public class GameSessionManager : NetworkBehaviour
             ClientController controller = networkObject.GetComponent<ClientController>();
             if (controller != null)
             {
-                controller.Die();
+                controller.OnDespawn();
             }
         }
     }

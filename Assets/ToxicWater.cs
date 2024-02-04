@@ -8,13 +8,15 @@ public class ToxicWater : MonoBehaviour
 {
     public void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Called");
         if (NetworkManager.Singleton.IsServer)
         {
             if (other.CompareTag("Player"))
             {
-                ulong clientID = other.GetComponent<NetworkObject>().OwnerClientId;
-                GameSessionManager.Singleton.DespawnPlayer(clientID);      
+                NetController[] components = other.GetComponents<NetController>();
+                foreach (NetController component in components)
+                {
+                    component.Drown();
+                }
             }
         }
     }

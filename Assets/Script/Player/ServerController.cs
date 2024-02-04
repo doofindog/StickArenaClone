@@ -69,6 +69,8 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
             GameSessionManager.Singleton.DespawnPlayer(clientID);
 
             GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
+            
+            Animator.PlayDeathAnimation(true);
         }
     }
 
@@ -77,10 +79,16 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         TickManager.Instance.RemoveEntity(this);
     }
 
-    public override void Die()
+    public override void OnDespawn()
     {
-        base.Die();
+        base.OnDespawn();
         DataHandler.state = CharacterDataHandler.State.Dead;
         WeaponComponent.DropEquippedWeapon();
+    }
+
+    public override void Drown()
+    {
+        Animator.PlayDrownAnimation(true);
+        GameSessionManager.Singleton.DespawnPlayer(NetworkObject.OwnerClientId);
     }
 }

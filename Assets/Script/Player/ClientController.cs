@@ -137,14 +137,23 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 
 	public override void Die()
 	{
-		base.Die();
+		
+	}
+
+	public override void OnDespawn()
+	{
+		base.OnDespawn();
 		DataHandler.state = CharacterDataHandler.State.Dead;
 		IsEnabled = false;
-		Animator.PlayDeathAnimation(true);
 		
 		if (IsLocalPlayer)
 		{
 			PlayerEvents.SendPlayerDied();
 		}
+	}
+
+	public override void Drown()
+	{
+		Animator.PlayDeathAnimation(true);
 	}
 }

@@ -983,7 +983,7 @@ GameObject:
   - component: {fileID: 278552355}
   - component: {fileID: 278552358}
   - component: {fileID: 278552359}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: boxCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1054,7 +1054,7 @@ GameObject:
   - component: {fileID: 322539773}
   - component: {fileID: 322539776}
   - component: {fileID: 322539777}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: boxCollider (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1876,7 +1876,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 605561772}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Colliders
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2303,7 +2303,7 @@ GameObject:
   - component: {fileID: 875177218}
   - component: {fileID: 875177221}
   - component: {fileID: 875177222}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: boxCollider (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2638,7 +2638,7 @@ GameObject:
   - component: {fileID: 1062429924}
   - component: {fileID: 1062429927}
   - component: {fileID: 1062429928}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: boxCollider (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3111,7 +3111,7 @@ GameObject:
   - component: {fileID: 1363823957}
   - component: {fileID: 1363823960}
   - component: {fileID: 1363823961}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: boxCollider (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3395,7 +3395,7 @@ GameObject:
   - component: {fileID: 1639731054}
   - component: {fileID: 1639731057}
   - component: {fileID: 1639731058}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: boxCollider (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3942,7 +3942,7 @@ GameObject:
   - component: {fileID: 1964662755}
   - component: {fileID: 1964662758}
   - component: {fileID: 1964662759}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: boxCollider (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4013,7 +4013,7 @@ GameObject:
   - component: {fileID: 1994301708}
   - component: {fileID: 1994301711}
   - component: {fileID: 1994301712}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: boxCollider (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4980,7 +4980,7 @@ PrefabInstance:
     - target: {fileID: 7314809498314850561, guid: 27532893f34514fd7aeae12000861c28,
         type: 3}
       propertyPath: orthographic size
-      value: 5.71875
+      value: 2.8125
       objectReference: {fileID: 0}
     - target: {fileID: 7314809498314850561, guid: 27532893f34514fd7aeae12000861c28,
         type: 3}

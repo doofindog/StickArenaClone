@@ -8,9 +8,11 @@ public class CharacterAnimator : NetworkAnimator
 {
     private const string DEATH_KEY = "death";
     private const string DAMAGE_KEY = "damage";
+    private const string DROWN_KEY = "drown";
     
     private static readonly int Death = Animator.StringToHash(DEATH_KEY);
     private static readonly int Damage = Animator.StringToHash(DAMAGE_KEY);
+    private static readonly int Drown = Animator.StringToHash(DROWN_KEY);
 
     public void Start()
     {
@@ -42,7 +44,7 @@ public class CharacterAnimator : NetworkAnimator
     {
         if (isSync)
         {
-            SetTrigger("damage");
+            SetTrigger(Damage);
             return;
         }
         
@@ -53,10 +55,21 @@ public class CharacterAnimator : NetworkAnimator
     {
         if (isSync)
         {
-            SetTrigger("death");
+            SetTrigger(Death);
             return;
         }
         
         Animator.SetTrigger(Death);
+    }
+
+    public void PlayDrownAnimation(bool isSync)
+    {
+        if (isSync)
+        {
+            SetTrigger(Drown);
+            return;
+        }
+        
+        Animator.SetTrigger(Drown);
     }
 } 

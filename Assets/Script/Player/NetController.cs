@@ -120,18 +120,28 @@ public class NetController : NetworkBehaviour
         
     }
 
-    public virtual void Die()
+    public virtual void OnDespawn()
     {
         GetComponent<Collider2D>().enabled = false;
     }
     
-    public virtual void Respawn()
+    public virtual void OnRespawn()
     {
         IsEnabled = true;
         Animator.PlayIdle(false);
         gameObject.SetActive(true);
         DataHandler.Refresh();
         GetComponent<Collider2D>().enabled = true;
+    }
+
+    public virtual void Die()
+    {
+        
+    }
+
+    public virtual void Drown()
+    {
+        
     }
 
     public SpriteRenderer GetSpriteRendered()
