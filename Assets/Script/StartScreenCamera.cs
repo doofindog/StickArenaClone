@@ -1,14 +1,27 @@
+using System;
 using Cinemachine;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.U2D;
 using Random = UnityEngine.Random;
 
 public class StartScreenCamera : MonoBehaviour
 {
+
+    [SerializeField] private PixelPerfectCamera _pixelPerfectCamera;
     [SerializeField] private float _cameraSpeed;
+    [SerializeField] private Vector3 _networkStartPosition;
     [SerializeField] private Transform[] _locations;
 
     private Transform _followTransform;
     private Vector3 _direction;
+    private bool _networkStarted;
+
+    private void Awake()
+    {
+        _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
+        CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
+    }
 
     private void Start()
     {
@@ -17,15 +30,24 @@ public class StartScreenCamera : MonoBehaviour
 
     private void Update()
     {
-        //throw new NotImplementedException();
-        if (Vector2.Distance(transform.position, _followTransform.position) <= 0.1f)
+        if (!_networkStarted)
         {
-            UpdateNextLocation();
+            if (Vector2.Distance(transform.position, _followTransform.position) <= 0.1f)
+            {
+                UpdateNextLocation();
+            }
+            else
+            {
+                transform.position += _direction * Time.deltaTime * _cameraSpeed;
+            }
         }
         else
         {
-            //transform.position= Vector3.Lerp(transform.position, _followTransform.position, 0.4f * Time.deltaTime );
-            transform.position += _direction * Time.deltaTime * _cameraSpeed;
+            if (Vector3.Distance(transform.position, _networkStartPosition) > 0)
+            {
+                Vector3 startPosition = Vector3.Lerp(transform.position, _networkStartPosition, 0.005f);
+                transform.position = startPosition;
+            }
         }
     }
 
@@ -44,5 +66,11 @@ public class StartScreenCamera : MonoBehaviour
             -10
         );
         _direction = _followTransform.position - transform.position;
+    }
+
+    private void MoveCameraToCenter()
+    {
+        Debug.Log("Called");
+        _networkStarted = true;
     }
 }

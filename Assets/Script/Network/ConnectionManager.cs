@@ -163,6 +163,8 @@ public class ConnectionManager : NetworkBehaviour
         string payloadJson = JsonUtility.ToJson(connectionPayload);
         NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
         NetworkManager.Singleton.StartClient();
+        
+        CustomNetworkEvents.SendNetworkStartedEvent();
     }
 
     public static void TryStartHost(string username)
@@ -171,6 +173,8 @@ public class ConnectionManager : NetworkBehaviour
         string payloadJson = JsonUtility.ToJson(connectionPayload);
         NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
         NetworkManager.Singleton.StartHost();
+        
+        CustomNetworkEvents.SendNetworkStartedEvent();
     }
 
     public static void TryStartServer()

@@ -19,4 +19,11 @@ public static class CustomNetworkEvents
     {
         DisconnectedEvent?.Invoke();
     }
+
+    public static Action NetworkStartedEvent;
+
+    public static void SendNetworkStartedEvent()
+    {
+        NetworkStartedEvent?.Invoke();
+    }
 }
