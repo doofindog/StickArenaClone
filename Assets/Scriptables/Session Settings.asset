@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Session Settings
   m_EditorClassIdentifier: 
   gameBeingCountDown: 3
-  playerRespawnTime: 10
+  playerRespawnTime: 5

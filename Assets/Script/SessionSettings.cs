@@ -8,4 +8,8 @@ public class SessionSettings : ScriptableObject
 {
     public int gameBeingCountDown;
     public int playerRespawnTime;
+    
+    [Header("Dynamic Tiles")]
+    public int minDynamicTiles;
+    public int maxDynamicTiles;
 }

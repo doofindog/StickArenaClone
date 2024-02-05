@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -10,7 +11,7 @@ public class GameSessionManager : NetworkBehaviour
     public static GameSessionManager Singleton => _instance;
 
     [SerializeField] private SessionSettings _sessionSettings;
-    [SerializeField] private Transform[] spawnPoints;
+    [SerializeField] private List<SpawnData> spawnLocations;
     
     private Dictionary<ulong, NetworkObject> clientObjects = new Dictionary<ulong, NetworkObject>();
     
@@ -106,11 +107,18 @@ public class GameSessionManager : NetworkBehaviour
         return netObj;
     }
 
+    private Transform GetSpawnLocation(TeamType type)
+    {
+        return (from location in spawnLocations where type == location.teamType select location.spawnLocation[Random.Range(0, location.spawnLocation.Length)]).FirstOrDefault();
+    }
+
     private void SpawnPlayer(ulong clientID)
     {
         NetworkManager networkManager = NetworkManager.Singleton;
         GameObject playerObj = Instantiate(networkManager.NetworkConfig.PlayerPrefab);
-        playerObj.transform.position = spawnPoints[Random.Range(0, spawnPoints.Length)].position;
+        TeamType playerTeam = TeamManager.Instance.GetTeamFromID(clientID).teamType;
+        Transform spawnTransform = GetSpawnLocation(playerTeam);
+        playerObj.transform.position = spawnTransform.position;
         playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
     }
 
@@ -118,6 +126,9 @@ public class GameSessionManager : NetworkBehaviour
     {
         NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(clientID);
         ServerController serverController = networkObject.GetComponent<ServerController>();
+        TeamType playerTeam = TeamManager.Instance.GetTeamFromID(clientID).teamType;
+        Transform spawnTransform = GetSpawnLocation(playerTeam);
+        serverController.transform.position = spawnTransform.position;
         serverController.OnRespawn();
         
         RespawnPlayerClientRpc(clientID);
