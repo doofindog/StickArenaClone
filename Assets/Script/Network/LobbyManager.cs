@@ -155,7 +155,7 @@ public class LobbyManager : Singleton<LobbyManager>
 
     private void OnPlayerConnected(ulong clientID)
     {
-        NetworkSpawnManager spawnManager = GameNetworkManager.Instance.GetNetworkManager().SpawnManager;
+        NetworkSpawnManager spawnManager = NetworkManager.Singleton.SpawnManager;
         NetworkObject clientObj = spawnManager.GetPlayerNetworkObject(clientID);
         clientNetworkObjects.Add(clientObj);
 

@@ -31,7 +31,7 @@ public class NetController : NetworkBehaviour
         Team team = TeamManager.Instance.GetTeamFromID(clientID);
         _spriteRenderer.material.SetColor("_newColour", team.color);
         
-        GameSessionManager.Singleton.AddPlayer(clientID, netObj);
+        GameManager.Singleton.AddPlayer(clientID, netObj);
     }
     
     public virtual void Start()
@@ -63,7 +63,7 @@ public class NetController : NetworkBehaviour
         
         DataHandler.state = direction == Vector3.zero ? CharacterDataHandler.State.Idle : CharacterDataHandler.State.Move;
         
-        TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
+        TickManager tickManager = TickManager.Instance;
         transform.position += direction * (tickManager.GetMinTickTime() * DataHandler.speed.Value);
     }
 
@@ -85,7 +85,7 @@ public class NetController : NetworkBehaviour
         
         while (timer < DataHandler.dodgeDuration.Value)
         {
-            TickManager tickManager = GameNetworkManager.Instance.GetTickManager();
+            TickManager tickManager = TickManager.Instance;
             transform.position += direction.normalized * (tickManager.GetMinTickTime() * DataHandler.dodgeSpeed.Value);
              
             yield return new WaitForSeconds(tickManager.GetMinTickTime());

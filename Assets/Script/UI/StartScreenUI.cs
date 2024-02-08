@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class StartScreen : MonoBehaviour
+public class StartScreenUI : MonoBehaviour
 {
     [SerializeField] private TMP_InputField usernameField;
     [SerializeField] private Animator animator;
@@ -45,6 +45,7 @@ public class StartScreen : MonoBehaviour
     {
         animator.Play("usernameError");
     }
+    
 }
 
 

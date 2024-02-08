@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,15 +25,15 @@ public class DeathScreenUI : MonoBehaviour
 
     private IEnumerator StartRespawnCounter()
     {
-        SessionSettings sessionSettings = GameSessionManager.Singleton.GetSessionSettings();
-        int counter = sessionSettings.playerRespawnTime;
-        counterText.text = counter.ToString();
+        SessionSettings sessionSettings = GameManager.Singleton.GetSessionSettings();
+        float counter = sessionSettings.playerRespawnTime;
+        counterText.text = counter.ToString(CultureInfo.InvariantCulture);
         
         while (counter > 0)
         {
             yield return new WaitForSeconds(1);
             counter--;
-            counterText.text = counter.ToString();
+            counterText.text = counter.ToString(CultureInfo.InvariantCulture);
         }
         
         counterText.gameObject.SetActive(false);
@@ -43,6 +44,6 @@ public class DeathScreenUI : MonoBehaviour
     {
         respawnButton.gameObject.SetActive(false);
         gameObject.SetActive(false);
-        GameSessionManager.Singleton.RequestSpawnPlayerServerRPC(Unity.Netcode.NetworkManager.Singleton.LocalClientId);
+        GameManager.Singleton.RequestSpawnPlayerServerRPC(Unity.Netcode.NetworkManager.Singleton.LocalClientId);
     }
 }

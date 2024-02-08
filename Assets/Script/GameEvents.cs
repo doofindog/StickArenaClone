@@ -4,6 +4,18 @@ using UnityEngine;
 
 public class GameEvents : MonoBehaviour
 {
+    public static Action PreparingArenaEvent;
+    public static void SendPreparingArenaEvent()
+    {
+        PreparingArenaEvent?.Invoke();
+    }
+    
+    public static Action StartGameEvent;
+    public static void SendStartGameEvent()
+    {
+        StartGameEvent?.Invoke();
+    }
+    
     public static Action<NetworkObject,NetworkObject> PlayerDiedEvent;
     public static void SendPlayerKilledEvent(NetworkObject player, NetworkObject source)
     {
@@ -20,11 +32,5 @@ public class GameEvents : MonoBehaviour
     public static void SendWeaponFired()
     {
         WeaponFiredEvent?.Invoke();
-    }
-
-    public static Action StartGameEvent;
-    public static void SendStartGameEvent()
-    {
-        StartGameEvent?.Invoke();
     }
 }

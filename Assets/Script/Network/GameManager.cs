@@ -5,83 +5,65 @@ using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class GameSessionManager : NetworkBehaviour
+public class GameManager : NetworkBehaviour
 {
-    private static GameSessionManager _instance;
-    public static GameSessionManager Singleton => _instance;
-
-    [SerializeField] private SessionSettings _sessionSettings;
-    [SerializeField] private List<SpawnData> spawnLocations;
+    private static GameManager _instance;
+    public static GameManager Singleton => _instance;
     
-    private Dictionary<ulong, NetworkObject> clientObjects = new Dictionary<ulong, NetworkObject>();
+    [SerializeField] private SessionSettings sessionSettings;
+    [SerializeField] private List<SpawnData> spawnLocations;
+    private Dictionary<ulong, NetworkObject> _clientObjects = new Dictionary<ulong, NetworkObject>();
+    
+    public NetworkVariable<float> prepTimer = new NetworkVariable<float>();
+    public NetworkVariable<float> startGameTimer = new NetworkVariable<float>();
     
     public void Awake()
     {
         if (_instance != null && _instance != this)
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
         }
         else
         {
             _instance = this;
         }
-
-        GameEvents.PlayerSpawnedEvent += AddPlayer;
-    }
-    
-    public override void OnNetworkSpawn()
-    {
-        if (IsClient)
-        {
-            PlayerJoinedSessionServerRpc(NetworkManager.Singleton.LocalClientId);
-        }
-    }
-    
-
-    [ServerRpc(RequireOwnership = false)]
-    private void PlayerJoinedSessionServerRpc(ulong clientID)
-    {
-        ConnectionManager connectionManager = GameNetworkManager.Instance.GetConnectionManager();
-        PlayerSessionData playerData = connectionManager.GetPlayerSessionData(clientID);
-        playerData.isJoinSession = true;
         
-        TeamManager.Instance.AddPlayerToTeam(playerData);
         
-        Debug.Log($"[Game Session] {playerData.userName} has joined Game Session");
-
-        if (IsServer)
-        {
-            StartGameSession();
-        }
+        CustomNetworkEvents.AllPlayersConnectedEvent += StartGameSession;
     }
 
     private void StartGameSession()
     {
-        NetworkManager networkManager = NetworkManager.Singleton;
-        ConnectionManager connectionManager = GameNetworkManager.Instance.GetConnectionManager();
-        int count = 0;
-        foreach (ulong clientID in networkManager.ConnectedClients.Keys)
+        if (IsServer)
         {
-            PlayerSessionData sessionData = connectionManager.GetPlayerSessionData(clientID);
-            if (sessionData.isJoinSession)
-            {
-                count++;
-                continue;
-            }
-            
-            return;
+            StartCoroutine(StartGame());
         }
-
-        StartCoroutine(StartGame());
     }
 
     private IEnumerator StartGame()
     {
+        PreparingGameClientRPC();
+        while (prepTimer.Value < sessionSettings.prepGameTime)
+        {
+            yield return new WaitForSeconds(1);
+            prepTimer.Value++;
+        }
+
+        startGameTimer.Value = sessionSettings.startGameTime;
         StartGameClientRPC();
-        
-        yield return new WaitForSeconds(3);
+        while (startGameTimer.Value > 0)
+        {
+            yield return new WaitForSeconds(1);
+            startGameTimer.Value--;
+        }
         
         SpawnAllPlayers();
+    }
+
+    [ClientRpc]
+    private void PreparingGameClientRPC()
+    {
+        GameEvents.SendPreparingArenaEvent();
     }
 
     [ClientRpc]
@@ -92,18 +74,18 @@ public class GameSessionManager : NetworkBehaviour
 
     public void AddPlayer(ulong clientId, NetworkObject networkObject)
     {
-        clientObjects ??= new Dictionary<ulong, NetworkObject>();
-        if (clientObjects.ContainsKey(clientId))
+        _clientObjects ??= new Dictionary<ulong, NetworkObject>();
+        if (_clientObjects.ContainsKey(clientId))
         {
             return;
         }
 
-        clientObjects.Add(clientId, networkObject);
+        _clientObjects.Add(clientId, networkObject);
     }
 
     public NetworkObject GetPlayerNetObject(ulong clientID)
     {
-        clientObjects.TryGetValue(clientID, out NetworkObject netObj);
+        _clientObjects.TryGetValue(clientID, out NetworkObject netObj);
         return netObj;
     }
 
@@ -137,7 +119,7 @@ public class GameSessionManager : NetworkBehaviour
     [ClientRpc]
     private void RespawnPlayerClientRpc(ulong clientID)
     {
-        if (!clientObjects.TryGetValue(clientID, out NetworkObject networkObject)) return;
+        if (!_clientObjects.TryGetValue(clientID, out NetworkObject networkObject)) return;
         
         
         ClientController clientController = networkObject.GetComponent<ClientController>();
@@ -162,7 +144,7 @@ public class GameSessionManager : NetworkBehaviour
     {
         if(!IsServer) return;
         
-        if (clientObjects.TryGetValue(clientId, out NetworkObject obj))
+        if (_clientObjects.TryGetValue(clientId, out NetworkObject obj))
         {
             if(obj.TryGetComponent(out ServerController controller))
             {
@@ -176,7 +158,7 @@ public class GameSessionManager : NetworkBehaviour
     [ClientRpc]
     private void SendDespawnClientRpc(ulong clientID)
     {
-        if (clientObjects.TryGetValue(clientID, out NetworkObject networkObject))
+        if (_clientObjects.TryGetValue(clientID, out NetworkObject networkObject))
         {
             ClientController controller = networkObject.GetComponent<ClientController>();
             if (controller != null)
@@ -188,7 +170,7 @@ public class GameSessionManager : NetworkBehaviour
 
     public SessionSettings GetSessionSettings()
     {
-        return _sessionSettings;
+        return sessionSettings;
     }
 
     [ServerRpc(RequireOwnership =false)]

@@ -6,7 +6,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class PlayerCamera : MonoBehaviour, ITickableEntity
+public class CameraController : MonoBehaviour, ITickableEntity
 {
     [SerializeField] private Transform _follow;
     [SerializeField] private Vector3 _cameraOffset;
@@ -37,6 +37,7 @@ public class PlayerCamera : MonoBehaviour, ITickableEntity
 
     private void HandlePlayerConnected(GameObject obj)
     {
+        enabled = true;
         NetworkSpawnManager spawnManager = NetworkManager.Singleton.SpawnManager;
         ulong playerId = NetworkManager.Singleton.LocalClientId;
         if (spawnManager.GetPlayerNetworkObject(playerId) != null)
@@ -53,7 +54,7 @@ public class PlayerCamera : MonoBehaviour, ITickableEntity
 
     public void UpdateTick(int tick)
     {
-        if(_follow == null) return;
+        if(_follow == null || enabled == false) return;
 
         Vector3 followPosition = _follow.position + _cameraOffset;
         Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition,

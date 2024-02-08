@@ -6,13 +6,17 @@ using UnityEngine.Serialization;
 
 public class GameUIManager : MonoBehaviour
 {
-    [SerializeField] private StartGameUI startPanel;
+    [SerializeField] private PreGameUI prePanel;
     [SerializeField] private DeathScreenUI deathPanel;
     
     public void Awake()
     {
         PlayerEvents.PlayerDiedEvent += DisplayDeathScreen;
-        GameEvents.StartGameEvent += DisplayStarGameScreen;
+    }
+
+    public void OnEnable()
+    {
+        DisplayPreGameScreen();
     }
 
     private void DisplayDeathScreen()
@@ -20,9 +24,10 @@ public class GameUIManager : MonoBehaviour
         deathPanel.gameObject.SetActive(true);
     }
 
-    private void DisplayStarGameScreen()
+    private void DisplayPreGameScreen()
     {
-        startPanel.gameObject.SetActive(true);
+        gameObject.SetActive(true);
+        prePanel.gameObject.SetActive(true);
     }
     
     public void OnDestroy()

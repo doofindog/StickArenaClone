@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
@@ -8,7 +9,7 @@ using Random = UnityEngine.Random;
 public class StartScreenCamera : MonoBehaviour
 {
 
-    [SerializeField] private PixelPerfectCamera _pixelPerfectCamera;
+    [SerializeField] private UnityEngine.Experimental.Rendering.Universal.PixelPerfectCamera _pixelPerfectCamera;
     [SerializeField] private float _cameraSpeed;
     [SerializeField] private Vector3 _networkStartPosition;
     [SerializeField] private Transform[] _locations;
@@ -16,16 +17,24 @@ public class StartScreenCamera : MonoBehaviour
     private Transform _followTransform;
     private Vector3 _direction;
     private bool _networkStarted;
+    
 
     private void Awake()
     {
-        _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
+        _pixelPerfectCamera = GetComponent<UnityEngine.Experimental.Rendering.Universal.PixelPerfectCamera>();
         CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
+        GameEvents.StartGameEvent += HandleOnGameStarted;
+        PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
     }
 
     private void Start()
     {
         UpdateNextLocation();
+    }
+
+    private void HandlePlayerConnected(GameObject obj)
+    {
+        enabled = false;
     }
 
     private void Update()
@@ -70,7 +79,26 @@ public class StartScreenCamera : MonoBehaviour
 
     private void MoveCameraToCenter()
     {
-        Debug.Log("Called");
         _networkStarted = true;
+    }
+
+    private void HandleOnGameStarted()
+    {
+        StartCoroutine(RemovedCropCameraFrame());
+    }
+
+    private IEnumerator RemovedCropCameraFrame()
+    {
+        float elapsedTime = 0.0f;
+        float duration = GameManager.Singleton.GetSessionSettings().startGameTime;
+        while (elapsedTime < duration)
+        {
+            int pixelY = (int)Mathf.Lerp(130, 180, elapsedTime / duration);
+            _pixelPerfectCamera.refResolutionY = pixelY;
+            elapsedTime+=Time.deltaTime;
+            yield return null;
+        }
+
+        _pixelPerfectCamera.refResolutionY = 180;
     }
 }

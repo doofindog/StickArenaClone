@@ -25,6 +25,14 @@ public class TickManager : Singleton<TickManager>
     {
         _tickableEntities.Remove(tickableEntity);
     }
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        NetworkManager.Singleton.OnClientStarted += Init;
+        NetworkManager.Singleton.OnServerStarted += Init;
+    }
     
     public void Init()
     {

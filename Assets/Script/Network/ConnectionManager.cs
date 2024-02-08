@@ -18,12 +18,14 @@ public class ConnectionManager : NetworkBehaviour
         ConnectionFailed,
     }
     
-    [SerializeField] private int maxConnections = 2;
+    [SerializeField] private int maxConnections = 1;
     [SerializeField] private int maxPlayersToLoad = 1;
     
     private Dictionary<ulong, PlayerSessionData> _playerSessionDataCollection = new Dictionary<ulong, PlayerSessionData>();
-    
-    public int PlayersConnected { get; set; }
+
+    public NetworkVariable<int> playersConnected = new NetworkVariable<int>();
+
+    public int MaxPlayers => maxConnections;
 
     public void Awake()
     {
@@ -49,33 +51,45 @@ public class ConnectionManager : NetworkBehaviour
 
     private void HandleServerStarted()
     {
-        //Debug.Log("Server Started");
+        
     }
 
     private void HandleClientConnected(ulong clientID)
     {
         if (NetworkManager.Singleton.IsServer)
-        {
-            PlayerSessionData[] sessionDatas = _playerSessionDataCollection.Values.ToArray();
-            if (sessionDatas.Length > 0)
-            {
-                UpdatedPlayerCollectionsClientRPC(sessionDatas);
-            }
-
-            if (_playerSessionDataCollection.TryGetValue(clientID, out PlayerSessionData sessionData))
-            {
-                sessionData.isConnected = true;
-                PlayersConnected++;
-                if (PlayersConnected == maxPlayersToLoad)
-                {
-                    CustomNetworkEvents.SendAllPlayersConnectedEvent();
-                } 
-            }
+        { 
+            HandleClientConnectedOnServer(clientID);
         }
     }
 
+    private void HandleClientConnectedOnServer(ulong clientID)
+    {
+        PlayerSessionData[] sessionDatas = _playerSessionDataCollection.Values.ToArray();
+        if (sessionDatas.Length > 0)
+        {
+            UpdatedPlayerCollectionsClientRPC(sessionDatas);
+        }
 
+        TeamManager.Instance.AddPlayerToTeam(clientID);
 
+        if (_playerSessionDataCollection.TryGetValue(clientID, out PlayerSessionData sessionData))
+        {
+            sessionData.isConnected = true;
+            playersConnected.Value ++;
+            if (playersConnected.Value == maxConnections)
+            {
+                SendAllClientsConnectedClientRPC();
+            } 
+        }
+    }
+
+    [ClientRpc]
+    private void SendAllClientsConnectedClientRPC()
+    {
+        CustomNetworkEvents.SendAllPlayersConnectedEvent();
+    }
+
+    
     private void HandleClientDisconnected(ulong clientID)
     {
         if (IsClient)
@@ -89,7 +103,7 @@ public class ConnectionManager : NetworkBehaviour
         
         if (IsServer)
         {
-            PlayersConnected--;
+            playersConnected.Value--;
             if (!_playerSessionDataCollection.ContainsKey(clientID)) return;
             
             _playerSessionDataCollection.Remove(clientID);
@@ -122,13 +136,9 @@ public class ConnectionManager : NetworkBehaviour
 
     private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest approvalRequest, NetworkManager.ConnectionApprovalResponse approvalResponse)
     {
-        if (PlayersConnected >= maxConnections)
-        {
-            return;
-        }
+        if (playersConnected.Value >= maxConnections) return;
         
         string payloadJson = System.Text.Encoding.ASCII.GetString(approvalRequest.Payload);
-        
         ConnectionPayload connectionPayload = JsonUtility.FromJson<ConnectionPayload>(payloadJson);
         PlayerSessionData playerSessionData = new PlayerSessionData
         {
@@ -137,8 +147,10 @@ public class ConnectionManager : NetworkBehaviour
         };
         
         _playerSessionDataCollection.Add(playerSessionData.clientID, playerSessionData);
-        Debug.Log("[CONNECTION] user : " + playerSessionData.userName + " Connection Approved");
+        
         approvalResponse.Approved = true;
+        
+        Debug.Log("[CONNECTION] user : " + playerSessionData.userName + " Connection Approved");
     }
 
     public Dictionary<ulong, PlayerSessionData> GetPlayerSessionDataDict()
@@ -176,11 +188,7 @@ public class ConnectionManager : NetworkBehaviour
         
         CustomNetworkEvents.SendNetworkStartedEvent();
     }
-
-    public static void TryStartServer()
-    {
-        NetworkManager.Singleton.StartServer();
-    }
+    
 
     public static void TryDisconnect()
     {

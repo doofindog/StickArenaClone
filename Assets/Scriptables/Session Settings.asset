@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfa4d990813ff42079777a21ded18b97, type: 3}
   m_Name: Session Settings
   m_EditorClassIdentifier: 
-  gameBeingCountDown: 3
+  startGameTime: 3
+  prepGameTime: 2
   playerRespawnTime: 5
+  minDynamicTiles: 0
+  maxDynamicTiles: 0

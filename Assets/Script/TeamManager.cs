@@ -69,12 +69,18 @@ public class TeamManager : NetworkBehaviour
         _teams.Add(new Team(TeamType.Green, Color.green));
     }
 
-    public void AddPlayerToTeam(PlayerSessionData player)
+    public void AddPlayerToTeam(PlayerSessionData playerData)
     {
         _teams.Sort((team1, team2)=> team1.players.Count.CompareTo(team2.players.Count));
-        _teams[0].AddPlayer(player);
+        _teams[0].AddPlayer(playerData);
 
-        AddPlayerClientRpc(player.clientID, player.teamType);
+        AddPlayerClientRpc(playerData.clientID, playerData.teamType);
+    }
+
+    public void AddPlayerToTeam(ulong clientID)
+    {
+        PlayerSessionData playerData = ConnectionManager.Instance.GetPlayerSessionData(clientID);
+        AddPlayerToTeam(playerData);
     }
 
     [ClientRpc]

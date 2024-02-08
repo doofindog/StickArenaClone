@@ -6,8 +6,9 @@ using UnityEngine.Serialization;
 [CreateAssetMenu(menuName = "Pixel Arena/Session Setting")]
 public class SessionSettings : ScriptableObject
 {
-    public int gameBeingCountDown;
-    public int playerRespawnTime;
+    public float startGameTime;
+    public float prepGameTime;
+    public float playerRespawnTime;
     
     [Header("Dynamic Tiles")]
     public int minDynamicTiles;

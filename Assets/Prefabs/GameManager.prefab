@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4509026029122035308
+--- !u!1 &2340155477909359203
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,44 +8,44 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8545455777682058970}
-  - component: {fileID: 3207057183558178310}
-  - component: {fileID: 212505130919246960}
+  - component: {fileID: 7529225329785420501}
+  - component: {fileID: 3633105066081010185}
+  - component: {fileID: 2024464793256355967}
   m_Layer: 0
-  m_Name: GameSessionManager
+  m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8545455777682058970
+--- !u!4 &7529225329785420501
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4509026029122035308}
+  m_GameObject: {fileID: 2340155477909359203}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8878102, y: -1.1611332, z: -9.915744}
+  m_LocalPosition: {x: 10.075678, y: -2.822906, z: -9.8676605}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3207057183558178310
+--- !u!114 &3633105066081010185
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4509026029122035308}
+  m_GameObject: {fileID: 2340155477909359203}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2226094196
+  GlobalObjectIdHash: 2980865114
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -53,19 +53,19 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &212505130919246960
+--- !u!114 &2024464793256355967
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4509026029122035308}
+  m_GameObject: {fileID: 2340155477909359203}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cd7c5d51902de4a208eb6bf6a59653b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sessionSettings: {fileID: 0}
+  sessionSettings: {fileID: 11400000, guid: e5f5cfcf5cdef4583baad6f58e67334f, type: 2}
   spawnLocations:
   - spawnLocation:
     - {fileID: 0}
