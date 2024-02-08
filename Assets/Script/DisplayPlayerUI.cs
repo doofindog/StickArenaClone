@@ -45,7 +45,7 @@ public class DisplayPlayerUI : MonoBehaviour
                 cell.UpdateCell(data);
             }
 
-            yield return new WaitForSeconds(1);
+            yield return null;
         }
     }
 }

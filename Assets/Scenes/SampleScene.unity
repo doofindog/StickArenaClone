@@ -493,7 +493,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &78267681
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7558,12 +7558,12 @@ PrefabInstance:
     - target: {fileID: 1432074236227732506, guid: 2bcad31ea3f8749718796a93fae1535f,
         type: 3}
       propertyPath: maxConnections
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1432074236227732506, guid: 2bcad31ea3f8749718796a93fae1535f,
         type: 3}
       propertyPath: maxPlayersToLoad
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1504323529492548992, guid: 2bcad31ea3f8749718796a93fae1535f,
         type: 3}

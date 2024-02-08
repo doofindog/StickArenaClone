@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Session Settings
   m_EditorClassIdentifier: 
   startGameTime: 3
-  prepGameTime: 2
+  prepGameTime: 4
   playerRespawnTime: 5
   minDynamicTiles: 0
   maxDynamicTiles: 0
