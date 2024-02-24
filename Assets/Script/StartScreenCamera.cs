@@ -90,7 +90,7 @@ public class StartScreenCamera : MonoBehaviour
     private IEnumerator RemovedCropCameraFrame()
     {
         float elapsedTime = 0.0f;
-        float duration = GameManager.Singleton.GetSessionSettings().startGameTime;
+        float duration = GameManager.Instance.GetSessionSettings().startGameTime;
         while (elapsedTime < duration)
         {
             int pixelY = (int)Mathf.Lerp(130, 180, elapsedTime / duration);

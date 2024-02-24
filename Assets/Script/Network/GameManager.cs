@@ -7,29 +7,32 @@ using Random = UnityEngine.Random;
 
 public class GameManager : NetworkBehaviour
 {
-    private static GameManager _instance;
-    public static GameManager Singleton => _instance;
-    
-    [SerializeField] private SessionSettings sessionSettings;
-    [SerializeField] private List<SpawnData> spawnLocations;
-    private Dictionary<ulong, NetworkObject> _clientObjects = new Dictionary<ulong, NetworkObject>();
-    
+    public static GameManager Instance { get; private set; }
+
     public NetworkVariable<float> prepTimer = new NetworkVariable<float>();
     public NetworkVariable<float> startGameTimer = new NetworkVariable<float>();
     
+    private Dictionary<ulong, NetworkObject> _clientObjects = new Dictionary<ulong, NetworkObject>();
+    
+    [SerializeField] private SessionSettings sessionSettings;
+    [SerializeField] private List<SpawnData> spawnLocations;
+    [SerializeField] private List<NetworkObject> crownedPlayers= new List<NetworkObject>();
+    
+    
     public void Awake()
     {
-        if (_instance != null && _instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
         }
         else
         {
-            _instance = this;
+            Instance = this;
         }
         
         
         CustomNetworkEvents.AllPlayersConnectedEvent += StartGameSession;
+        GameEvents.TeamWonEvent += StopGame;
     }
 
     private void StartGameSession()
@@ -70,6 +73,28 @@ public class GameManager : NetworkBehaviour
     private void StartGameClientRPC()
     {
         GameEvents.SendStartGameEvent();
+    }
+    
+    private void StopGame(TeamType teamType)
+    {
+        StartCoroutine(SlowDownGame(teamType));
+    }
+
+    private IEnumerator SlowDownGame(TeamType teamType)
+    {
+        float timeScale = Time.timeScale;
+        while (timeScale > 0f)
+        {
+            timeScale -= TickManager.Instance.GetMinTickTime();
+            Time.timeScale = timeScale;
+
+            yield return new WaitForSeconds(TickManager.Instance.GetMinTickTime());
+
+            if (timeScale <= 0.2f)
+            {
+                GameEvents.SendGameOver(teamType);
+            }
+        }
     }
 
     public void AddPlayer(ulong clientId, NetworkObject networkObject)

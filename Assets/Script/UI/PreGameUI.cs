@@ -12,7 +12,7 @@ public class PreGameUI : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Singleton.startGameTimer.OnValueChanged += (value, newValue) =>
+        GameManager.Instance.startGameTimer.OnValueChanged += (value, newValue) =>
         {
             timerAnim.Play("Timer");
             countText.text = newValue.ToString(CultureInfo.InvariantCulture);

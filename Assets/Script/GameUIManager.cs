@@ -8,10 +8,12 @@ public class GameUIManager : MonoBehaviour
 {
     [SerializeField] private PreGameUI prePanel;
     [SerializeField] private DeathScreenUI deathPanel;
+    [SerializeField] private GameoverUI gameoverUI;
     
     public void Awake()
     {
         PlayerEvents.PlayerDiedEvent += DisplayDeathScreen;
+        GameEvents.GameOverEvent += DisplayGameOverScreen;
     }
 
     public void OnEnable()
@@ -28,6 +30,12 @@ public class GameUIManager : MonoBehaviour
     {
         gameObject.SetActive(true);
         prePanel.gameObject.SetActive(true);
+    }
+
+    private void DisplayGameOverScreen(TeamType teamType)
+    {
+        gameoverUI.gameObject.SetActive(true);
+        gameoverUI.SetText(teamType);
     }
     
     public void OnDestroy()

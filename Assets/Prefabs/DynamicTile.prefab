@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5427697464873233852}
   - component: {fileID: 5946990732743244074}
   m_Layer: 0
-  m_Name: GroundTile
+  m_Name: DynamicTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

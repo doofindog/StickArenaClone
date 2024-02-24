@@ -42,6 +42,7 @@ Transform:
   m_Children:
   - {fileID: 8612883016920563870}
   - {fileID: 2386387799413524683}
+  - {fileID: 7399879958705547695}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -12554,6 +12555,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _spriteRenderer: {fileID: 5809556419327203723}
   _animator: {fileID: 2820461575668416996}
+  _crownPlaceholder: {fileID: 7399879958705547695}
 --- !u!114 &6372269911326027360
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12568,6 +12570,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _spriteRenderer: {fileID: 5809556419327203723}
   _animator: {fileID: 2820461575668416996}
+  _crownPlaceholder: {fileID: 7399879958705547695}
 --- !u!1 &4909385638617441054
 GameObject:
   m_ObjectHideFlags: 0
@@ -12652,6 +12655,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &5609727489213568835
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7399879958705547695}
+  m_Layer: 6
+  m_Name: CrownHolder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7399879958705547695
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609727489213568835}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1598438211036252670}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5938617096141422552
 GameObject:
   m_ObjectHideFlags: 0

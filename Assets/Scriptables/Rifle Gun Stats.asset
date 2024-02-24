@@ -23,6 +23,6 @@ MonoBehaviour:
   maxAmmo: 100
   reloadTime: 3
   fireType: 2
-  bulletSpeed: 15
+  bulletSpeed: 18
   burstBulletCount: 3
   burstFireRate: 0.075

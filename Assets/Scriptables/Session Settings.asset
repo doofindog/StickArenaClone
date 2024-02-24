@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfa4d990813ff42079777a21ded18b97, type: 3}
   m_Name: Session Settings
   m_EditorClassIdentifier: 
-  startGameTime: 3
-  prepGameTime: 4
-  playerRespawnTime: 5
-  minDynamicTiles: 0
-  maxDynamicTiles: 0
+  startGameTime: 2
+  prepGameTime: 2
+  playerRespawnTime: 0
+  pitSize: {x: 0, y: 0}
+  scoreUpdateTime: 1.5
+  winThreshold: 10

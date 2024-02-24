@@ -14,6 +14,7 @@ public class NetController : NetworkBehaviour
 
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private CharacterAnimator _animator;
+    [SerializeField] private Transform _crownPlaceholder;
     
     public virtual void Awake()
     {
@@ -31,7 +32,7 @@ public class NetController : NetworkBehaviour
         Team team = TeamManager.Instance.GetTeamFromID(clientID);
         _spriteRenderer.material.SetColor("_newColour", team.color);
         
-        GameManager.Singleton.AddPlayer(clientID, netObj);
+        GameManager.Instance.AddPlayer(clientID, netObj);
     }
     
     public virtual void Start()
@@ -147,5 +148,10 @@ public class NetController : NetworkBehaviour
     public SpriteRenderer GetSpriteRendered()
     {
         return _spriteRenderer;
+    }
+
+    public Transform GetCrownPlaceholder()
+    {
+        return _crownPlaceholder;
     }
 }

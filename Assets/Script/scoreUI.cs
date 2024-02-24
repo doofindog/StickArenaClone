@@ -13,9 +13,9 @@ public class scoreUI : MonoBehaviour
 
     private void Update()
     {
-        //redScoreText.text = TeamManager.Instance.GetTeamFromType(TeamType.Red).score.ToString();
-        //greenScoreText.text = TeamManager.Instance.GetTeamFromType(TeamType.Green).score.ToString();
-        //blueScoreText.text = TeamManager.Instance.GetTeamFromType(TeamType.Blue).score.ToString();
-        //yellowScoreText.text = TeamManager.Instance.GetTeamFromType(TeamType.Yellow).score.ToString();
+        redScoreText.text = TeamManager.Instance.GetTeamFromType(TeamType.Red).score.ToString();
+        greenScoreText.text = TeamManager.Instance.GetTeamFromType(TeamType.Green).score.ToString();
+        blueScoreText.text = TeamManager.Instance.GetTeamFromType(TeamType.Blue).score.ToString();
+        yellowScoreText.text = TeamManager.Instance.GetTeamFromType(TeamType.Yellow).score.ToString();
     }
 }

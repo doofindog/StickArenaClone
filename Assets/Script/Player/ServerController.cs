@@ -66,7 +66,7 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         if (currentHealth <= 0)
         {
             ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
-            GameManager.Singleton.DespawnPlayer(clientID);
+            GameManager.Instance.DespawnPlayer(clientID);
 
             GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
             
@@ -89,6 +89,6 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     public override void Drown()
     {
         Animator.PlayDrownAnimation(true);
-        GameManager.Singleton.DespawnPlayer(NetworkObject.OwnerClientId);
+        GameManager.Instance.DespawnPlayer(NetworkObject.OwnerClientId);
     }
 }

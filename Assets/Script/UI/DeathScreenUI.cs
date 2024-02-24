@@ -25,7 +25,7 @@ public class DeathScreenUI : MonoBehaviour
 
     private IEnumerator StartRespawnCounter()
     {
-        SessionSettings sessionSettings = GameManager.Singleton.GetSessionSettings();
+        SessionSettings sessionSettings = GameManager.Instance.GetSessionSettings();
         float counter = sessionSettings.playerRespawnTime;
         counterText.text = counter.ToString(CultureInfo.InvariantCulture);
         
@@ -44,6 +44,6 @@ public class DeathScreenUI : MonoBehaviour
     {
         respawnButton.gameObject.SetActive(false);
         gameObject.SetActive(false);
-        GameManager.Singleton.RequestSpawnPlayerServerRPC(Unity.Netcode.NetworkManager.Singleton.LocalClientId);
+        GameManager.Instance.RequestSpawnPlayerServerRPC(Unity.Netcode.NetworkManager.Singleton.LocalClientId);
     }
 }

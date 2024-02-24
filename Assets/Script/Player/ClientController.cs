@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ClientController : NetController, ITickableEntity, IDamageableEntity
 {
-	private const float POSITION_ERROR_THRESHOLD = 0.5f;
+	private const float POSITION_ERROR_THRESHOLD = 0.1f;
 	
 	private NetInputProcessor _netInputProcessor;
 	private NetStateProcessor _netStateProcessor;
@@ -86,6 +86,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		Vector3 clientPosition = clientState.position;
 
 		float positionError = Vector3.Distance(serverPosition, clientPosition);
+
 		if (positionError > POSITION_ERROR_THRESHOLD)
 		{
 			transform.position = serverState.position;

@@ -9,8 +9,12 @@ public class SessionSettings : ScriptableObject
     public float startGameTime;
     public float prepGameTime;
     public float playerRespawnTime;
-    
+
     [Header("Dynamic Tiles")]
-    public int minDynamicTiles;
-    public int maxDynamicTiles;
+    public Vector2 pitSize;
+
+
+    [Header("Score")] 
+    public float scoreUpdateTime;
+    public int winThreshold;
 }

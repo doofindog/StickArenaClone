@@ -68,7 +68,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
             bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value;
             if (canTakeDamage)
             {
-                NetworkObject source = GameManager.Singleton.GetPlayerNetObject(_playerNetID.Value);
+                NetworkObject source = GameManager.Instance.GetPlayerNetObject(_playerNetID.Value);
                 IDamageableEntity[] components = other.GetComponents<IDamageableEntity>();
                 foreach (IDamageableEntity component in components)
                 {

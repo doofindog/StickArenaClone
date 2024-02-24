@@ -54,8 +54,6 @@ public class TeamManager : NetworkBehaviour
         {
             Destroy(this.gameObject);
         }
-
-        GameEvents.PlayerDiedEvent += UpdateScoreToTeam;
         
         CreateTeams();
     }
@@ -110,33 +108,5 @@ public class TeamManager : NetworkBehaviour
         }
 
         return null;
-    }
-
-    private void UpdateScoreToTeam(NetworkObject killedPlayer, NetworkObject source)
-    {
-        if (source.gameObject.CompareTag("Player"))
-        {
-            Team winTeam = GetTeamFromID(source.OwnerClientId);
-            UpdateScoreToTeam(winTeam.teamType, 1);
-            
-            return;
-        }
-        
-        Team killedTeam = GetTeamFromID(killedPlayer.OwnerClientId);
-        UpdateScoreToTeam(killedTeam.teamType, -1);
-    }
-    
-    private void UpdateScoreToTeam(TeamType type, int score)
-    {
-        GetTeamFromType(type).score += score;
-        UpdateScoreToTeamClientRPC(type, score);
-    }
-
-    [ClientRpc]
-    private void UpdateScoreToTeamClientRPC(TeamType type, int score)
-    {
-        if(IsHost) return;
-        
-        GetTeamFromType(type).score += 1;
     }
 }

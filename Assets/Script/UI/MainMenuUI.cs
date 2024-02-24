@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class StartScreenUI : MonoBehaviour
+public class MainMenuUI : MonoBehaviour
 {
     [SerializeField] private TMP_InputField usernameField;
     [SerializeField] private Animator animator;

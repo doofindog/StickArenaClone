@@ -11,6 +11,7 @@ public class WeaponDataScriptable : ScriptableObject
     public float damage;
     public float fireRate;
     public float spread;
+    public float recoil;
     public int ammoInClip;
     public int maxAmmo;
     public float reloadTime;
