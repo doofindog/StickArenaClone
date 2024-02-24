@@ -60,6 +60,7 @@ public class CameraController : MonoBehaviour, ITickableEntity
         Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition,
             _interpolationSpeed * TickManager.Instance.GetMinTickTime());
 
+        _originalPosition = smoothedPosition;
         transform.position = smoothedPosition;
     }
 
