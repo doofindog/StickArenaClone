@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class GameEvents : MonoBehaviour
 {
+    public static Action GameOnCompleteEvent;
+
+    public static void SendGameOnComplete()
+    {
+        GameOnCompleteEvent?.Invoke();
+    }
+    
     public static Action PreparingArenaEvent;
     public static void SendPreparingArenaEvent()
     {

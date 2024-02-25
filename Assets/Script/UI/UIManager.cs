@@ -11,6 +11,13 @@ public class UIManager : MonoBehaviour
     public void Awake()
     {
         GameEvents.StartGameEvent += HandleOnGameStarted;
+        GameEvents.GameOnCompleteEvent += ShowMainMenu;
+    }
+
+    private void ShowMainMenu()
+    {
+        startScreenPanel.SetActive(true);
+        AudioManager.Instance.PlayThemeSong();
     }
 
     private void HandleOnGameStarted()
