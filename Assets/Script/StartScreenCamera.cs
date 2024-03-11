@@ -8,11 +8,9 @@ using Random = UnityEngine.Random;
 
 public class StartScreenCamera : MonoBehaviour
 {
-
-    [SerializeField] private UnityEngine.Experimental.Rendering.Universal.PixelPerfectCamera _pixelPerfectCamera;
-    [SerializeField] private float _cameraSpeed;
-    [SerializeField] private Vector3 _networkStartPosition;
-    [SerializeField] private Transform[] _locations;
+    [SerializeField] private float cameraSpeed;
+    [SerializeField] private Vector3 networkStartPosition;
+    [SerializeField] private Transform[] locations;
 
     private Transform _followTransform;
     private Vector3 _direction;
@@ -21,9 +19,7 @@ public class StartScreenCamera : MonoBehaviour
 
     private void Awake()
     {
-        _pixelPerfectCamera = GetComponent<UnityEngine.Experimental.Rendering.Universal.PixelPerfectCamera>();
         CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
-        GameEvents.StartGameEvent += HandleOnGameStarted;
         PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
     }
 
@@ -47,14 +43,14 @@ public class StartScreenCamera : MonoBehaviour
             }
             else
             {
-                transform.position += _direction * Time.deltaTime * _cameraSpeed;
+                transform.position += _direction * Time.deltaTime * cameraSpeed;
             }
         }
         else
         {
-            if (Vector3.Distance(transform.position, _networkStartPosition) > 0)
+            if (Vector3.Distance(transform.position, networkStartPosition) > 0)
             {
-                Vector3 startPosition = Vector3.Lerp(transform.position, _networkStartPosition, 0.005f);
+                Vector3 startPosition = Vector3.Lerp(transform.position, networkStartPosition, 0.05f);
                 transform.position = startPosition;
             }
         }
@@ -62,43 +58,25 @@ public class StartScreenCamera : MonoBehaviour
 
     private void UpdateNextLocation()
     {
-        if (_locations == null || _locations.Length <= 0)
+        if (locations == null || locations.Length <= 0)
         {
             return;
         }
 
-        _followTransform  = _locations[Random.Range(0, _locations.Length)];
-        _followTransform.position = new Vector3
+        _followTransform  = locations[Random.Range(0, locations.Length)];
+        var followPosition = _followTransform.position;
+        followPosition = new Vector3
         (
-            _followTransform.position.x,
-            _followTransform.position.y,
+            followPosition.x,
+            followPosition.y,
             -10
         );
-        _direction = _followTransform.position - transform.position;
+        _followTransform.position = followPosition;
+        _direction = followPosition - transform.position;
     }
 
     private void MoveCameraToCenter()
     {
         _networkStarted = true;
-    }
-
-    private void HandleOnGameStarted()
-    {
-        StartCoroutine(RemovedCropCameraFrame());
-    }
-
-    private IEnumerator RemovedCropCameraFrame()
-    {
-        float elapsedTime = 0.0f;
-        float duration = GameManager.Instance.GetSessionSettings().startGameTime;
-        while (elapsedTime < duration)
-        {
-            int pixelY = (int)Mathf.Lerp(130, 180, elapsedTime / duration);
-            _pixelPerfectCamera.refResolutionY = pixelY;
-            elapsedTime+=Time.deltaTime;
-            yield return null;
-        }
-
-        _pixelPerfectCamera.refResolutionY = 180;
     }
 }

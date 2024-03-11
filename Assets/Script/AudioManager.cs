@@ -12,10 +12,22 @@ public class AudioManager : Singleton<AudioManager>
         source.PlayOneShot(clip);
     }
 
+    public void Play(AudioClip clip, float delay = 0.0f)
+    {
+        source.Stop();
+        source.clip = clip;
+        source.PlayDelayed(delay);
+    }
+
     public void PlayThemeSong()
     {
         source.clip = themeSong;
         source.PlayDelayed(0.3f);
+    }
+
+    public void Stop()
+    {
+        source.Stop();
     }
     
 }

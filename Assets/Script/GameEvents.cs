@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class GameEvents : MonoBehaviour
 {
-    public static Action GameOnCompleteEvent;
+    public static Action SplashCompleted;
 
-    public static void SendGameOnComplete()
+    public static void SendSplashCompleted()
     {
-        GameOnCompleteEvent?.Invoke();
+        SplashCompleted?.Invoke();
     }
     
     public static Action PreparingArenaEvent;

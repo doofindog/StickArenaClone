@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +9,22 @@ using Random = UnityEngine.Random;
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance { get; private set; }
-
+    
     public NetworkVariable<float> prepTimer = new NetworkVariable<float>();
     public NetworkVariable<float> startGameTimer = new NetworkVariable<float>();
     
     private Dictionary<ulong, NetworkObject> _clientObjects = new Dictionary<ulong, NetworkObject>();
     
+    [SerializeField] private GameStateController stateController;
     [SerializeField] private SessionSettings sessionSettings;
     [SerializeField] private List<SpawnData> spawnLocations;
     [SerializeField] private List<NetworkObject> crownedPlayers= new List<NetworkObject>();
-    
+
+
+    public void ChangeState(GameStates state)
+    {
+        stateController.SwitchState(state);
+    }
     
     public void Awake()
     {
@@ -30,37 +37,12 @@ public class GameManager : NetworkBehaviour
             Instance = this;
         }
         
-        
-        CustomNetworkEvents.AllPlayersConnectedEvent += StartGameSession;
         GameEvents.TeamWonEvent += StopGame;
     }
 
-    private void StartGameSession()
+    public void Start()
     {
-        if (IsServer)
-        {
-            StartCoroutine(StartGame());
-        }
-    }
-
-    private IEnumerator StartGame()
-    {
-        PreparingGameClientRPC();
-        while (prepTimer.Value < sessionSettings.prepGameTime)
-        {
-            yield return new WaitForSeconds(1);
-            prepTimer.Value++;
-        }
-
-        startGameTimer.Value = sessionSettings.startGameTime;
-        StartGameClientRPC();
-        while (startGameTimer.Value > 0)
-        {
-            yield return new WaitForSeconds(1);
-            startGameTimer.Value--;
-        }
-        
-        SpawnAllPlayers();
+        stateController.SwitchState(GameStates.MENU);
     }
 
     [ClientRpc]
@@ -154,7 +136,7 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    private void SpawnAllPlayers()
+    public void SpawnAllPlayers()
     {
         Debug.Log("[GAME SESSION] Spawning Players");
         

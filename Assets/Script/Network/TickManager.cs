@@ -29,7 +29,7 @@ public class TickManager : Singleton<TickManager>
     protected override void Awake()
     {
         base.Awake();
-
+        
         NetworkManager.Singleton.OnClientStarted += Init;
         NetworkManager.Singleton.OnServerStarted += Init;
     }

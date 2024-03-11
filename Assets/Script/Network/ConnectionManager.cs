@@ -78,9 +78,16 @@ public class ConnectionManager : NetworkBehaviour
             playersConnected.Value ++;
             if (playersConnected.Value == maxConnections)
             {
-                SendAllClientsConnectedClientRPC();
+                StartCoroutine(SendClient());
             } 
         }
+    }
+
+    private IEnumerator SendClient()
+    {
+        yield return new WaitForSeconds(3);
+        
+        SendAllClientsConnectedClientRPC();
     }
 
     [ClientRpc]

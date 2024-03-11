@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameoverUI : MonoBehaviour
+public class GameoverScreen : MonoBehaviour
 {
     [SerializeField] private TMP_Text teamText;
     [SerializeField] private TMP_Text wonText;

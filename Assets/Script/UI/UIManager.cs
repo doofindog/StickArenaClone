@@ -1,33 +1,31 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
-public class UIManager : MonoBehaviour
+public enum Screens
 {
-    [SerializeField] private GameObject startScreenPanel;
-    [SerializeField] private GameObject gameUIPanel;
+    Menu = 0,
+    Game = 1,
+    GameOver = 2,
+    None = 3,
+}
 
-    public void Awake()
-    {
-        GameEvents.StartGameEvent += HandleOnGameStarted;
-        GameEvents.GameOnCompleteEvent += ShowMainMenu;
-    }
+public class UIManager : Singleton<UIManager>
+{
+    [SerializeField] private GameObject[] screens;
 
-    private void ShowMainMenu()
+    public void ReplaceScreen(Screens screenEnum)
     {
-        startScreenPanel.SetActive(true);
-        AudioManager.Instance.PlayThemeSong();
-    }
+        foreach (GameObject screen in screens)
+        {
+            screen.SetActive(false);
+        }
 
-    private void HandleOnGameStarted()
-    {
-        startScreenPanel.SetActive(false);
-        gameUIPanel.SetActive(true);
-    }
-
-    private void HandleOnGameEnded()
-    {
-        
+        if (screens != null && screens.Length > 0 && (int)screenEnum < screens.Length)
+        {
+            screens[(int)screenEnum].SetActive(true);
+        }
     }
 }

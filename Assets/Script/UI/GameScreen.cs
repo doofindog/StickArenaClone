@@ -4,21 +4,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class GameUIManager : MonoBehaviour
+public class GameScreen : MonoBehaviour
 {
     [SerializeField] private PreGameUI prePanel;
-    [SerializeField] private DeathScreenUI deathPanel;
-    [SerializeField] private GameoverUI gameoverUI;
+    [SerializeField] private DeathPanel deathPanel;
+    [SerializeField] private GameoverScreen gameoverScreen;
     
     public void Awake()
     {
         PlayerEvents.PlayerDiedEvent += DisplayDeathScreen;
         GameEvents.GameOverEvent += DisplayGameOverScreen;
-    }
-
-    public void OnEnable()
-    {
-        DisplayPreGameScreen();
+        GameEvents.PreparingArenaEvent += DisplayPreGameScreen;
     }
 
     private void DisplayDeathScreen()
@@ -28,14 +24,14 @@ public class GameUIManager : MonoBehaviour
 
     private void DisplayPreGameScreen()
     {
-        gameObject.SetActive(true);
+        Debug.Log("Called");
         prePanel.gameObject.SetActive(true);
     }
 
     private void DisplayGameOverScreen(TeamType teamType)
     {
-        gameoverUI.gameObject.SetActive(true);
-        gameoverUI.SetText(teamType);
+        gameoverScreen.gameObject.SetActive(true);
+        gameoverScreen.SetText(teamType);
     }
     
     public void OnDestroy()

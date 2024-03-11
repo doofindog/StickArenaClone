@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DeathScreenUI : MonoBehaviour
+public class DeathPanel : MonoBehaviour
 {
     [SerializeField] private TMP_Text counterText;
     [SerializeField] private Button respawnButton;
