@@ -1,6 +1,5 @@
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 [System.Serializable]
 public struct NetInputPayLoad : INetworkSerializable
@@ -22,6 +21,7 @@ public struct NetInputPayLoad : INetworkSerializable
             reader.ReadValueSafe(out direction);
             reader.ReadValueSafe(out aimAngle);
             reader.ReadValueSafe(out dodgePressed);
+            reader.ReadValueSafe(out attackPressed);
         }
         else
         {
@@ -30,6 +30,7 @@ public struct NetInputPayLoad : INetworkSerializable
             writer.WriteValueSafe(direction);
             writer.WriteValueSafe(aimAngle);
             writer.WriteValueSafe(dodgePressed);
+            writer.WriteValueSafe(attackPressed);
         }
     }
 }

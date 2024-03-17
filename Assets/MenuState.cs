@@ -6,6 +6,7 @@ using UnityEngine;
 public class MenuState : BaseGameState
 {
     [SerializeField] private TvController controller;
+    [SerializeField] public AudioClip menuMusic;
     [SerializeField] public AudioClip cassetteAudio;
     [SerializeField] public AudioClip turnOffAudio;
 
@@ -19,8 +20,12 @@ public class MenuState : BaseGameState
 
     public override void OnEnter()
     {
-        
         StartCoroutine(ShowScreen());
+    }
+
+    public void Update()
+    {
+        
     }
 
     private IEnumerator ShowScreen()
@@ -39,12 +44,13 @@ public class MenuState : BaseGameState
     private void HandleSplashCompleted()
     {
         UIManager.Instance.ReplaceScreen(Screens.Menu);
+        AudioManager.Instance.Play(menuMusic);
         GameEvents.SendSplashCompleted();
     }
 
     private void LoadToGame()
     {
-        GameManager.Instance.ChangeState(GameStates.GAME);
+        GameManager.Instance.ChangeState(EGameStates.GAME);
     }
 
     public override void OnExit()

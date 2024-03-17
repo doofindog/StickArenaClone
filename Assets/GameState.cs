@@ -7,12 +7,17 @@ using UnityEngine;
 public class GameState : BaseGameState
 {
     [SerializeField] private TvController tvController;
-    
+
+    public void Awake()
+    {
+        GameEvents.TeamWonEvent += StopGame;
+    }
+
     public override void OnEnter()
     {
         if (NetworkManager.Singleton == null)
         {
-            GameManager.Instance.ChangeState(GameStates.MENU);
+            GameManager.Instance.ChangeState(EGameStates.MENU);
         }
         
         UIManager.Instance.ReplaceScreen(Screens.Game);
@@ -27,11 +32,11 @@ public class GameState : BaseGameState
         SessionSettings sessionSettings = GameManager.Instance.GetSessionSettings();
         while (GameManager.Instance.prepTimer.Value < sessionSettings.prepGameTime)
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(3);
             GameManager.Instance.prepTimer.Value++;
         }
 
-        tvController.TurnOn(PreparingGameClientRPC);
+        PreparingGameClientRPC();
         
         GameManager.Instance.startGameTimer.Value = sessionSettings.startGameTime;
         while (GameManager.Instance.startGameTimer.Value > 0)
@@ -44,10 +49,32 @@ public class GameState : BaseGameState
         StartGameClientRPC();
     }
     
+    private void StopGame(TeamType teamType)
+    {
+        StartCoroutine(SlowDownGame(teamType));
+    }
+
+    private IEnumerator SlowDownGame(TeamType teamType)
+    {
+        float timeScale = Time.timeScale;
+        while (timeScale > 0f)
+        {
+            timeScale -= TickManager.Instance.GetMinTickTime();
+            Time.timeScale = timeScale;
+
+            yield return new WaitForSeconds(TickManager.Instance.GetMinTickTime());
+
+            if (timeScale <= 0.2f)
+            {
+                GameEvents.SendGameOver(teamType);
+            }
+        }
+    }
+    
     [ClientRpc]
     private void  PreparingGameClientRPC()
     {
-        GameEvents.SendPreparingArenaEvent();
+        tvController.TurnOn(GameEvents.SendPreparingArenaEvent);
     }
     
     [ClientRpc]

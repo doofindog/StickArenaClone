@@ -55,7 +55,7 @@ public class Crown : NetworkBehaviour, ITickableEntity
     {
 
         NetworkObject playerNetObj = GameManager.Instance.GetPlayerNetObject(clientID);
-        _playerCrownHolder = playerNetObj.GetComponent<ClientController>().GetCrownPlaceholder();
+        _playerCrownHolder = playerNetObj.GetComponent<NetController>().GetCrownPlaceholder();
         gameObject.GetComponent<Collider2D>().enabled = false;
     }
 

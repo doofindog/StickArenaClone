@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum GameStates
+public enum EGameStates
 {
     MENU,
     GAME,
@@ -15,17 +15,17 @@ public enum GameStates
 public class GameStateController : Singleton<GameStateController>
 {
     private BaseGameState currentState;
-    private Dictionary<GameStates, BaseGameState> gameStates = new Dictionary<GameStates, BaseGameState>();
+    private Dictionary<EGameStates, BaseGameState> gameStates = new Dictionary<EGameStates, BaseGameState>();
 
     protected override void Awake()
     {
         base.Awake();
         
-        gameStates.Add(GameStates.MENU, GetComponent<MenuState>());
-        gameStates.Add(GameStates.GAME, GetComponent<GameState>());
+        gameStates.Add(EGameStates.MENU, GetComponent<MenuState>());
+        gameStates.Add(EGameStates.GAME, GetComponent<GameState>());
     }
 
-    public void SwitchState(GameStates state)
+    public void SwitchState(EGameStates state)
     {
         if (currentState != null)
         {
@@ -36,9 +36,17 @@ public class GameStateController : Singleton<GameStateController>
         currentState.OnEnter();
     }
 
-    private BaseGameState GetGameState(GameStates state)
+    private BaseGameState GetGameState(EGameStates state)
     {
         gameStates.TryGetValue(state, out BaseGameState gameState);
         return gameState;
+    }
+
+    private BaseGameState GetState(EGameStates stateType)
+    {
+        if (gameStates == null) return null;
+        
+        gameStates.TryGetValue(stateType, out BaseGameState state);
+        return state;
     }
 }

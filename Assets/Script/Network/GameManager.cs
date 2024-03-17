@@ -21,7 +21,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private List<NetworkObject> crownedPlayers= new List<NetworkObject>();
 
 
-    public void ChangeState(GameStates state)
+    public void ChangeState(EGameStates state)
     {
         stateController.SwitchState(state);
     }
@@ -36,47 +36,11 @@ public class GameManager : NetworkBehaviour
         {
             Instance = this;
         }
-        
-        GameEvents.TeamWonEvent += StopGame;
     }
 
     public void Start()
     {
-        stateController.SwitchState(GameStates.MENU);
-    }
-
-    [ClientRpc]
-    private void PreparingGameClientRPC()
-    {
-        GameEvents.SendPreparingArenaEvent();
-    }
-
-    [ClientRpc]
-    private void StartGameClientRPC()
-    {
-        GameEvents.SendStartGameEvent();
-    }
-    
-    private void StopGame(TeamType teamType)
-    {
-        StartCoroutine(SlowDownGame(teamType));
-    }
-
-    private IEnumerator SlowDownGame(TeamType teamType)
-    {
-        float timeScale = Time.timeScale;
-        while (timeScale > 0f)
-        {
-            timeScale -= TickManager.Instance.GetMinTickTime();
-            Time.timeScale = timeScale;
-
-            yield return new WaitForSeconds(TickManager.Instance.GetMinTickTime());
-
-            if (timeScale <= 0.2f)
-            {
-                GameEvents.SendGameOver(teamType);
-            }
-        }
+        stateController.SwitchState(EGameStates.MENU);
     }
 
     public void AddPlayer(ulong clientId, NetworkObject networkObject)

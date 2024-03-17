@@ -33,8 +33,8 @@ public class TickManager : Singleton<TickManager>
         NetworkManager.Singleton.OnClientStarted += Init;
         NetworkManager.Singleton.OnServerStarted += Init;
     }
-    
-    public void Init()
+
+    private void Init()
     {
         if(_enable) return;
         

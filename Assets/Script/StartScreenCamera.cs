@@ -20,7 +20,19 @@ public class StartScreenCamera : MonoBehaviour
     private void Awake()
     {
         CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
+        CustomNetworkEvents.DisconnectedEvent += HandleNetworkStopped;
         PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
+    }
+
+    private void MoveCameraToCenter()
+    {
+        _networkStarted = true;
+    }
+
+    private void HandleNetworkStopped()
+    {
+        UpdateNextLocation();   
+        _networkStarted = false;
     }
 
     private void Start()
@@ -74,9 +86,6 @@ public class StartScreenCamera : MonoBehaviour
         _followTransform.position = followPosition;
         _direction = followPosition - transform.position;
     }
-
-    private void MoveCameraToCenter()
-    {
-        _networkStarted = true;
-    }
+    
+    
 }

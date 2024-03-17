@@ -12,19 +12,17 @@ public class ConnectionManager : NetworkBehaviour
     
     public enum ConnectionState
     {
-        Online,
+        Disconnected,
         Connecting,
         Connected,
         ConnectionFailed,
     }
     
     [SerializeField] private int maxConnections = 1;
-    [SerializeField] private int maxPlayersToLoad = 1;
     
     private Dictionary<ulong, PlayerSessionData> _playerSessionDataCollection = new Dictionary<ulong, PlayerSessionData>();
-
+    
     public NetworkVariable<int> playersConnected = new NetworkVariable<int>();
-
     public int MaxPlayers => maxConnections;
 
     public void Awake()
@@ -44,14 +42,14 @@ public class ConnectionManager : NetworkBehaviour
     public void Start()
     {
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
-        NetworkManager.Singleton.OnServerStarted += HandleServerStarted;
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnected;
+        NetworkManager.Singleton.OnServerStarted += HandleOnServerStarted;
     }
 
-    private void HandleServerStarted()
+    private void HandleOnServerStarted()
     {
-        
+        playersConnected.Value = 0;
     }
 
     private void HandleClientConnected(ulong clientID)
@@ -95,10 +93,23 @@ public class ConnectionManager : NetworkBehaviour
     {
         CustomNetworkEvents.SendAllPlayersConnectedEvent();
     }
-
     
     private void HandleClientDisconnected(ulong clientID)
     {
+        if (IsServer)
+        {
+            
+            if (!_playerSessionDataCollection.ContainsKey(clientID))
+            {
+                return;
+            }
+            
+            _playerSessionDataCollection.Remove(clientID);
+            playersConnected.Value--;
+            PlayerSessionData[] sessionDatas = _playerSessionDataCollection.Values.ToArray();
+            UpdatedPlayerCollectionsClientRPC(sessionDatas);
+        }
+        
         if (IsClient)
         {
             if (clientID == 0)
@@ -106,17 +117,6 @@ public class ConnectionManager : NetworkBehaviour
                 Debug.Log("[CONNECTION] Host has Disconnected");
                 TryDisconnect();
             }
-        }
-        
-        if (IsServer)
-        {
-            playersConnected.Value--;
-            if (!_playerSessionDataCollection.ContainsKey(clientID)) return;
-            
-            _playerSessionDataCollection.Remove(clientID);
-                
-            PlayerSessionData[] sessionDatas = _playerSessionDataCollection.Values.ToArray();
-            UpdatedPlayerCollectionsClientRPC(sessionDatas);
         }
     }
 
@@ -196,12 +196,10 @@ public class ConnectionManager : NetworkBehaviour
         CustomNetworkEvents.SendNetworkStartedEvent();
     }
     
-
     public static void TryDisconnect()
     {
-        NetworkManager.Singleton.Shutdown();
         Instance.ClearData();
+        NetworkManager.Singleton.Shutdown();
         CustomNetworkEvents.SendDisconnectedEvent();
     }
-    
 }

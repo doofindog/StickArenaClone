@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class CharacterDataHandler : NetworkBehaviour
 {
@@ -83,7 +81,8 @@ public class CharacterDataHandler : NetworkBehaviour
             tick = TickManager.Instance.GetTick(),
             direction = direction,
             aimAngle =  aimAngle,
-            dodgePressed = dodgePressed
+            dodgePressed = dodgePressed,
+            attackPressed = attackPressed
         };
     }
     

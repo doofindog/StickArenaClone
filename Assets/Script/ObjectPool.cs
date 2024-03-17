@@ -37,19 +37,19 @@ public class ObjectPool : Singleton<ObjectPool>
     {
         if (_objectPoolDictionary.TryGetValue(prefab, out List<GameObject> objectPool))
         {
-            for (int i = 0; i < objectPool.Count; i++)
+            foreach (var pooledObjects in objectPool)
             {
-                if (!objectPool[i].activeInHierarchy)
+                if (!pooledObjects.activeInHierarchy)
                 {
-                    objectPool[i].transform.position = position;
-                    objectPool[i].transform.rotation = rotation;
-                    return objectPool[i];
+                    pooledObjects.transform.position = position;
+                    pooledObjects.transform.rotation = rotation;
+                    return pooledObjects;
                 }
             }
 
             // If no inactive object is found, create a new one (expand the pool if needed)
             GameObject newObj = Instantiate(prefab, position, rotation);
-            newObj.SetActive(false);
+            newObj.SetActive(true);
             objectPool.Add(newObj);
             return newObj;
         }

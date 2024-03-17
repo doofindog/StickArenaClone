@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
+[ExecuteInEditMode]
 public class TvController : MonoBehaviour
 {
     public Image image;

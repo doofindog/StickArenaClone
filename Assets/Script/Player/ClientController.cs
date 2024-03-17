@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ClientController : NetController, ITickableEntity, IDamageableEntity
 {
-	private const float POSITION_ERROR_THRESHOLD = 0.1f;
+	private const float POSITION_ERROR_THRESHOLD = 0.2f;
 	
 	private NetInputProcessor _netInputProcessor;
 	private NetStateProcessor _netStateProcessor;

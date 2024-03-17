@@ -10,10 +10,13 @@ public class MainMenuScreen : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private GameObject connectionPanel;
+    [SerializeField] private GameObject hostDisconnectedPopup;
 
     public void Awake()
     {
         NetworkManager.Singleton.OnClientStarted += ChangeToConnectionPanel;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        CustomNetworkEvents.DisconnectedEvent += OnDisconnected;
     }
 
     public void OnEnable()
@@ -52,7 +55,25 @@ public class MainMenuScreen : MonoBehaviour
     {
         animator.Play("usernameError");
     }
-    
+
+    private void OnDisconnected()
+    {
+        menuPanel.SetActive(true);
+        connectionPanel.SetActive(false);
+    }
+
+    private void OnClientDisconnected(ulong clientID)
+    {
+        if (clientID == 0 && NetworkManager.Singleton.LocalClientId != 0)
+        {
+            hostDisconnectedPopup.SetActive(true);
+        }
+    }
+
+    public void CloseHostPopup()
+    {
+        hostDisconnectedPopup.SetActive(false);
+    }
 }
 
 
