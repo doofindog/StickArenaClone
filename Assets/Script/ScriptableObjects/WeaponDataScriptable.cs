@@ -11,7 +11,7 @@ public class WeaponDataScriptable : ScriptableObject
     public float damage;
     public float fireRate;
     public float spread;
-    public float recoil;
+    [Range(-1.0f, 1.0f)]public float[] recoilPattern;
     public int ammoInClip;
     public int maxAmmo;
     public float reloadTime;

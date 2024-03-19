@@ -27,7 +27,7 @@ public class Weapon : NetworkBehaviour
         playerClientID = playerNetObj.OwnerClientId;
     }
 
-    public virtual void Trigger() { }
+    public virtual void Trigger(NetInputPayLoad inputPayLoad) { }
     
     public virtual void ReleaseTrigger()
     {

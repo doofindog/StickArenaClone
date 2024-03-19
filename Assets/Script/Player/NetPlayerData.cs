@@ -5,12 +5,11 @@ using UnityEngine;
 public struct NetInputPayLoad : INetworkSerializable
 {
     public int tick;
+    public int mousePosition;
     public Vector3 direction;
     public float aimAngle;
     public bool dodgePressed;
     public bool attackPressed;
-    public bool reloadPressed;
-    public bool swapPressed;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -18,6 +17,7 @@ public struct NetInputPayLoad : INetworkSerializable
         {
             FastBufferReader reader = serializer.GetFastBufferReader();
             reader.ReadValueSafe(out tick);
+            reader.ReadValueSafe(out mousePosition);
             reader.ReadValueSafe(out direction);
             reader.ReadValueSafe(out aimAngle);
             reader.ReadValueSafe(out dodgePressed);
@@ -27,6 +27,7 @@ public struct NetInputPayLoad : INetworkSerializable
         {
             FastBufferWriter writer = serializer.GetFastBufferWriter();
             writer.WriteValueSafe(tick);
+            writer.WriteValueSafe(mousePosition);
             writer.WriteValueSafe(direction);
             writer.WriteValueSafe(aimAngle);
             writer.WriteValueSafe(dodgePressed);
@@ -43,6 +44,7 @@ public struct NetStatePayLoad : INetworkSerializable
     public float aimAngle;
     public bool dodge;
     public bool canDodge;
+    public bool firedWeapon;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {

@@ -9,38 +9,50 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     private const float BULLET_LIFE = 3.0f;
 
     [SerializeField] private GameObject impactParticle;
-    
+
+    private int _id;
     private bool _isEnabled;
     private bool _hasHitObstacle;
     private float _damage;
     private float _life;
-    private NetworkVariable<float> _speed = new NetworkVariable<float>();
+    private float _speed;
     private NetworkVariable<ulong> _playerNetID = new NetworkVariable<ulong>();
     private Animator _animator;
-
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-        gameObject.SetActive(true);
-        TickManager.Instance.AddEntity(this);
-        _isEnabled = true;
-        _life = 0;
-    }
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
+        
         TickManager.Instance.RemoveEntity(this);
+    }
+
+    public void Awake()
+    {
+        TickManager.Instance.AddEntity(this);
+    }
+
+    public void OnEnable()
+    {
+        _isEnabled = true;
+        _life = 0;
+    }
+
+    public void OnDisable()
+    {
         _isEnabled = false;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        
+        TickManager.Instance.RemoveEntity(this);
     }
 
     public void Initialise(ulong playerID, float damage, float bulletSpeed)
     {
         _playerNetID.Value = playerID;
-        if (IsServer)
-        {
-            _speed.Value = bulletSpeed;
-        }
+        _speed = bulletSpeed;
         _damage = damage;
     }
 
@@ -53,7 +65,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     {
         if(!_isEnabled) return;
         
-        transform.position += transform.right * (_speed.Value * TickManager.Instance.GetMinTickTime());
+        transform.position += transform.right * (_speed * TickManager.Instance.GetMinTickTime());
         _life += TickManager.Instance.GetMinTickTime();
         if (_life > BULLET_LIFE)
         {

@@ -19,7 +19,7 @@ public class NetStateProcessor : NetworkBehaviour
         _lastProcessedState = lastProcessedState;
     }
 
-    [ClientRpc]
+    [ClientRpc(Delivery = RpcDelivery.Unreliable)]
     public void SendStateClientRpc(NetStatePayLoad state)
     {
         _lastProcessedState = state;

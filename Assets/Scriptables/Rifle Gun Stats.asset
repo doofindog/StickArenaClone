@@ -19,6 +19,14 @@ MonoBehaviour:
   damage: 1
   fireRate: 0.15
   spread: 5
+  recoilPattern:
+  - 0
+  - -0.181
+  - -0.064
+  - 0.037
+  - -0.111
+  - -0.228
+  - 0.006
   ammoInClip: 20
   maxAmmo: 100
   reloadTime: 3

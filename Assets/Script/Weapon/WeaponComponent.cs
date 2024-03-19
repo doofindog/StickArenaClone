@@ -25,9 +25,9 @@ public class WeaponComponent : NetworkBehaviour
             TryPickUpWeapon();
         }
 
-        if (dataHandler.attackPressed)
+        if (inputPayLoad.attackPressed)
         {
-            TriggerWeapon();
+            TriggerWeapon(inputPayLoad);
         }
         else
         {
@@ -140,20 +140,18 @@ public class WeaponComponent : NetworkBehaviour
         }
     }
 
-    private void TriggerWeapon()
+    private void TriggerWeapon(NetInputPayLoad inputPayLoad)
     {
-        if (IsClient && IsOwner)
-        {
-            TriggerWeaponServerRpc();
-        }
+        if(_equippedWeapon == null) return;
+            
+        _equippedWeapon.Trigger(inputPayLoad);
     }
 
     private void ReleaseTrigger()
     {
-        if (IsClient && IsOwner)
-        {
-            ReleaseWeaponTriggerServerRpc();
-        }
+        if(_equippedWeapon == null) return;
+        
+        _equippedWeapon.ReleaseTrigger();
     }
 
     private void ReloadWeapon()
@@ -162,14 +160,6 @@ public class WeaponComponent : NetworkBehaviour
         {
             ReloadPressedServerRpc();
         }
-    }
-
-    [ServerRpc]
-    private void TriggerWeaponServerRpc()
-    {
-        if(_equippedWeapon == null) return;
-        
-        _equippedWeapon.Trigger();;
     }
 
     [ServerRpc]

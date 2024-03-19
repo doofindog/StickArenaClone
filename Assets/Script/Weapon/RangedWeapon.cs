@@ -4,18 +4,21 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class RangedWeapon : Weapon, IReloadable
 {
     [Header("Weapon Data")]
-    [SerializeField] protected Transform _barrelTransform;
-    [SerializeField] protected NetworkVariable<int> _ammoInClip;
-    [SerializeField] protected NetworkVariable<int> _totalAmmo;
-    [SerializeField] protected NetworkVariable<FireType> _fireType;
-    [SerializeField] protected NetworkVariable<WeaponState> _weaponState;
+    [SerializeField] protected Transform barrelTransform;
+    [SerializeField] protected int ammoInClip;
+    [SerializeField] protected int totalAmmo;
+    [SerializeField] protected FireType fireType;
+    [SerializeField] protected WeaponState weaponState;
 
+    private NetInputPayLoad _currentPayload;
+    
     protected NetworkAnimator _netAnimator;
 
     public override void OnNetworkSpawn()
@@ -31,17 +34,15 @@ public class RangedWeapon : Weapon, IReloadable
 
     protected override void InitialiseData()
     {
-        if (IsServer)
-        {
-            _ammoInClip.Value = _weaponData.ammoInClip;
-            _totalAmmo.Value = _weaponData.maxAmmo;
-            _fireType.Value = _weaponData.fireType;
-            _weaponState.Value = global::WeaponState.Ready;
-        }
+        ammoInClip = _weaponData.ammoInClip;
+        totalAmmo = _weaponData.maxAmmo;
+        fireType = _weaponData.fireType;
+        weaponState = global::WeaponState.Ready;
+        barrelTransform = transform.Find("Barrel");
 
         if (IsClient)
         {
-            _weaponState.OnValueChanged += OnWeaponStateChanged;
+            //weaponState.OnValueChanged += OnWeaponStateChanged;
         }
     }
 
@@ -56,23 +57,23 @@ public class RangedWeapon : Weapon, IReloadable
     {
         base.HandleOnEquipped(playerNetObj);
         
-        _barrelTransform.gameObject.SetActive(true);
+        barrelTransform.gameObject.SetActive(true);
         _equipedWeaponObj.SetActive(true);
         _unequipedWeaponObj.SetActive(false);
     }
 
-    public override void Trigger()
+    public override void Trigger(NetInputPayLoad inputPayLoad)
     {
-        if(!IsServer) return;
-        if(_totalAmmo.Value == 0 && _ammoInClip.Value == 0) return;
+        if(totalAmmo == 0 && ammoInClip == 0) return;
         
-        if (_ammoInClip.Value <= 0 && _weaponState.Value == global::WeaponState.Ready)
+        if (ammoInClip <= 0 && weaponState == global::WeaponState.Ready)
         {
             Reload();
             return;
         }
 
-        switch (_fireType.Value)
+        _currentPayload = inputPayLoad;
+        switch (fireType)
         {
             case FireType.Single:
             {
@@ -94,10 +95,10 @@ public class RangedWeapon : Weapon, IReloadable
 
     protected virtual void HandleSingleFire()
     {
-        if(_triggerPressed || _weaponState.Value != global::WeaponState.Ready) return;
+        if(_triggerPressed || weaponState != global::WeaponState.Ready) return;
         
         _triggerPressed = true;
-        _weaponState.Value = global::WeaponState.Fired;
+        weaponState = global::WeaponState.Fired;
 
         FireBullet();
         
@@ -106,9 +107,9 @@ public class RangedWeapon : Weapon, IReloadable
 
     protected virtual void HandleBurstFire()
     {
-        if(_weaponState.Value != global::WeaponState.Ready) return;
+        if(weaponState != global::WeaponState.Ready) return;
 
-        _weaponState.Value = global::WeaponState.Fired;
+        weaponState = global::WeaponState.Fired;
         _triggerPressed = true;
         
         StartCoroutine(BurstFire());
@@ -128,54 +129,58 @@ public class RangedWeapon : Weapon, IReloadable
 
     protected virtual void HandleAutoFire()
     {
-        if(_weaponState.Value != global::WeaponState.Ready) return;
+        if(weaponState != global::WeaponState.Ready) return;
         
         FireBullet();
         
         StartCoroutine(ResetFireRate());
     }
-    
+
     protected virtual void FireBullet()
     {
-        _weaponState.Value = global::WeaponState.Fired;
-        _netAnimator.SetTrigger("fire");
-
-        Quaternion bulletRotation = _barrelTransform.rotation * Quaternion.Euler(0, 0, Random.Range(-_weaponData.spread, _weaponData.spread));
+        weaponState = global::WeaponState.Fired;
         
-        //GameObject bulletObj = Instantiate(_weaponData.bulletPrefab, _barrelTransform.position, bulletRotation);
-        NetworkObject bulletNetObj = NetworkObjectPool.Singleton.GetNetworkObject(_weaponData.bulletPrefab, _barrelTransform.position, bulletRotation);
-        bulletNetObj.Spawn();
+        int index = _currentPayload.tick % _weaponData.recoilPattern.Length;
+        float rotation = _weaponData.recoilPattern[index] * _weaponData.spread;
+        Quaternion bulletRotation = barrelTransform.rotation * Quaternion.Euler(0, 0, rotation);
         
+        NetworkObject bulletNetObj = NetworkObjectPool.Singleton.GetNetworkObject(_weaponData.bulletPrefab, barrelTransform.position, bulletRotation);
         Bullet bullet = bulletNetObj.GetComponent<Bullet>();
         bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
         
-        _ammoInClip.Value -= 1;
+        ammoInClip -= 1;
+        
+        if (playerClientID == NetworkManager.Singleton.LocalClientId)
+        {
+            GameEvents.SendWeaponFired();
+        }
     }
+    
 
     public void Reload()
     {
-        if(_weaponState.Value != global::WeaponState.Ready) return;
+        if(weaponState != global::WeaponState.Ready) return;
         
         StartCoroutine(PreformReload());
     }
     
     private IEnumerator PreformReload()
     {
-        _weaponState.Value = global::WeaponState.Reloading;
+        weaponState = global::WeaponState.Reloading;
         
         yield return new WaitForSeconds(_weaponData.reloadTime);
 
-        int ammoToGive = Mathf.Min(_weaponData.ammoInClip - _ammoInClip.Value, _totalAmmo.Value);
-        _ammoInClip.Value += ammoToGive;
-        _totalAmmo.Value -= ammoToGive;
-        _totalAmmo.Value = Mathf.Max(_totalAmmo.Value, 0);
+        int ammoToGive = Mathf.Min(_weaponData.ammoInClip - ammoInClip, totalAmmo);
+        ammoInClip += ammoToGive;
+        totalAmmo -= ammoToGive;
+        totalAmmo = Mathf.Max(totalAmmo, 0);
         
         SetWeaponAsReady();
     }
     
     protected IEnumerator ResetFireRate()
     {
-        _weaponState.Value = global::WeaponState.ResettingFireRate;
+        weaponState = global::WeaponState.ResettingFireRate;
         
         yield return new WaitForSeconds(_weaponData.fireRate);
         
@@ -184,7 +189,7 @@ public class RangedWeapon : Weapon, IReloadable
     
     private void SetWeaponAsReady()
     {
-        _weaponState.Value = global::WeaponState.Ready;
+        weaponState = global::WeaponState.Ready;
     }
 
     private void OnWeaponStateChanged(WeaponState oldState, WeaponState newState)
@@ -194,7 +199,7 @@ public class RangedWeapon : Weapon, IReloadable
             case global::WeaponState.ResettingFireRate:
                 if (weaponOwner.IsOwner)
                 {
-                    GameEvents.SendWeaponFired();
+                    
                 }
                 break;
         }

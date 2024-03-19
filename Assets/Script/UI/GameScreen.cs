@@ -31,7 +31,6 @@ public class GameScreen : MonoBehaviour
 
     private void DisplayPreGameScreen()
     {
-        Debug.Log("Called");
         prePanel.gameObject.SetActive(true);
     }
 

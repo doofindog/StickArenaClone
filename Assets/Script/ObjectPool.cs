@@ -43,6 +43,7 @@ public class ObjectPool : Singleton<ObjectPool>
                 {
                     pooledObjects.transform.position = position;
                     pooledObjects.transform.rotation = rotation;
+                    pooledObjects.SetActive(true);
                     return pooledObjects;
                 }
             }

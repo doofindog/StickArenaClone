@@ -5,19 +5,50 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 236894465, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 236894465, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 236894466, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -1194770107, guid: 2647940287e144190a5f04d4c9ad03af,
+      objectReference: {fileID: 345482940, guid: 3cb7c802665c547fb89eb816fda2f6ab,
         type: 3}
+    - target: {fileID: 236894466, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
+      propertyPath: m_SortingLayer
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 236894466, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 236894466, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
+      propertyPath: m_SortingLayerID
+      value: -1566632795
+      objectReference: {fileID: 0}
     - target: {fileID: 846166504, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: -1300108248, guid: 2647940287e144190a5f04d4c9ad03af,
         type: 3}
+    - target: {fileID: 846166504, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
+      propertyPath: m_SortingLayer
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 846166504, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 846166504, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
+      propertyPath: m_SortingLayerID
+      value: -1566632795
+      objectReference: {fileID: 0}
     - target: {fileID: 1547899551, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.457
@@ -39,12 +70,12 @@ PrefabInstance:
     - target: {fileID: 11347924877574636, guid: 29bf7527f826d419e9eefe3c78630a6c,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.9
+      value: 2.33
       objectReference: {fileID: 0}
     - target: {fileID: 11347924877574636, guid: 29bf7527f826d419e9eefe3c78630a6c,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.41
+      value: -1.6399999
       objectReference: {fileID: 0}
     - target: {fileID: 11347924877574636, guid: 29bf7527f826d419e9eefe3c78630a6c,
         type: 3}
@@ -129,7 +160,17 @@ PrefabInstance:
     - target: {fileID: 5542066320697602884, guid: 29bf7527f826d419e9eefe3c78630a6c,
         type: 3}
       propertyPath: TransitionStateInfoList.Array.size
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5542066320697602884, guid: 29bf7527f826d419e9eefe3c78630a6c,
+        type: 3}
+      propertyPath: TransitionStateInfoList.Array.data[0].DestinationState
+      value: -806667953
+      objectReference: {fileID: 0}
+    - target: {fileID: 5542066320697602884, guid: 29bf7527f826d419e9eefe3c78630a6c,
+        type: 3}
+      propertyPath: TransitionStateInfoList.Array.data[0].OriginatingState
+      value: 2124531219
       objectReference: {fileID: 0}
     - target: {fileID: 6540378889356829695, guid: 29bf7527f826d419e9eefe3c78630a6c,
         type: 3}
@@ -146,9 +187,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 9100000, guid: 520b2a70b4fc2467cbe5378b73161466, type: 2}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 29bf7527f826d419e9eefe3c78630a6c, type: 3}

@@ -10,10 +10,10 @@ public class Shotgun : RangedWeapon
 
     protected override void HandleSingleFire()
     {
-        if(_triggerPressed || _weaponState.Value != global::WeaponState.Ready) return;
+        if(_triggerPressed || weaponState != global::WeaponState.Ready) return;
         
         _triggerPressed = true;
-        _weaponState.Value = global::WeaponState.Fired;
+        weaponState = global::WeaponState.Fired;
 
         for (int i = 0; i < FIRE_COUNT; i++)
         {
