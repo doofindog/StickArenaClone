@@ -9,6 +9,7 @@ public class GameScreen : MonoBehaviour
     [SerializeField] private PreGameUI prePanel;
     [SerializeField] private DeathPanel deathPanel;
     [SerializeField] private GameoverScreen gameOverScreen;
+    [SerializeField] private scoreUI scoreUI;
     [SerializeField] private GameObject playerHealth;
     
     public void Awake()
@@ -22,6 +23,7 @@ public class GameScreen : MonoBehaviour
     private void DisplayGameUI()
     {
         playerHealth.SetActive(true);
+        scoreUI.gameObject.SetActive(true);
     }
 
     private void DisplayDeathScreen()

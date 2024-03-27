@@ -14,7 +14,7 @@ public class ArenaPitfallState : NetworkBehaviour, IArenaState
 
     public void OnEnterState()
     {
-        
+
     }
 
     public void OnUpdateState()
@@ -26,4 +26,5 @@ public class ArenaPitfallState : NetworkBehaviour, IArenaState
     {
         throw new System.NotImplementedException();
     }
+
 }
