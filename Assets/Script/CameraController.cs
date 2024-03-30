@@ -1,115 +1,70 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Cinemachine;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
+using UnityEngine.Experimental.Rendering.Universal;
 
-public class CameraController : MonoBehaviour, ITickableEntity
+public enum ECameraState
 {
-    [SerializeField] private Transform _follow;
-    [SerializeField] private Vector3 _cameraOffset;
-    [SerializeField] private float _interpolationSpeed;
+    MENU,
+    GAME,
+    OVER,
+}
 
+public class CameraController : Singleton<CameraController>
+{
+    public PixelPerfectCamera _pixelPerfectCamera;
+    [SerializeField] private CameraState _currentState;
+    private Dictionary<ECameraState,CameraState> _states = new Dictionary<ECameraState,CameraState>();
 
-    [Header("Shake")] 
-    [SerializeField] private float positionShakeIntensity;
-    [SerializeField] private float rotationShakeIntensity;
-    [SerializeField] private float shakeDuration;
-    private float _shakeTimer;
-    private bool _performShake;
-    private Vector3 _originalPosition;
-    private Quaternion _originalRotation;
-
+    public float ppc;
+    public Vector3 scrollOffset;
+    
     public void Awake()
     {
-        PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
-        PlayerEvents.PlayerDiedEvent += PerformShake;
-        GameEvents.WeaponFiredEvent += PerformShake;
+        _states.Add(ECameraState.MENU, gameObject.GetComponent<MenuCameraState>());
+        _states.Add(ECameraState.GAME, gameObject.GetComponent<GameCameraState>());
+
+        _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
     }
 
     public void Start()
     {
-        _originalPosition = transform.position;
-        _originalRotation = transform.rotation;
+        ChangeState(ECameraState.MENU);
     }
-
-    private void HandlePlayerConnected(GameObject obj)
-    {
-        enabled = true;
-        NetworkSpawnManager spawnManager = NetworkManager.Singleton.SpawnManager;
-        ulong playerId = NetworkManager.Singleton.LocalClientId;
-        if (spawnManager.GetPlayerNetworkObject(playerId) != null)
-        {
-            _follow = spawnManager.GetPlayerNetworkObject(playerId).gameObject.transform;
-        }
-        else
-        {
-            Debug.Log("No player Object found");
-        }
-        
-        TickManager.Instance.AddEntity(this);
-    }
-
-    public void UpdateTick(int tick)
-    {
-        if(_follow == null || enabled == false) return;
-
-        Vector3 followPosition = _follow.position + _cameraOffset;
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition,
-            _interpolationSpeed * TickManager.Instance.GetMinTickTime());
-
-        _originalPosition = smoothedPosition;
-        transform.position = smoothedPosition;
-    }
-
+    
     public void Update()
     {
-        if (_performShake)
+        if (_currentState != null)
         {
-            Shake();
-        }
-        else
-        {
-            _originalPosition = transform.position;
-            _originalRotation = transform.rotation;
+            _currentState.UpdateState();
         }
     }
 
-    private void PerformShake()
+    public void ChangeState(ECameraState state)
     {
-        _performShake = true;
-    }
-
-    private void Shake()
-    {
-        if (_shakeTimer < shakeDuration )
-        {
-            // Calculate Perlin noise values for smooth randomness
-            float perlinX = Mathf.PerlinNoise(Time.time * 10f, 0f) * 2 - 1;
-            float perlinY = Mathf.PerlinNoise(0f, Time.time * 10f) * 2 - 1;
-            float perlinRotZ = Mathf.PerlinNoise(0f, Time.time * 10f) * 2 - 1;
-
-            // Calculate the shake offset for position and rotation using Perlin noise and intensity
-            Vector3 positionShakeOffset = new Vector3(perlinX, perlinY, 0f) * positionShakeIntensity;
-            Vector3 rotationShakeOffset = new Vector3(0f, 0f, perlinRotZ) * rotationShakeIntensity;
-
-            // Apply the shake offset to the camera position and rotation
-            transform.position = _originalPosition + positionShakeOffset + _cameraOffset;
-            transform.rotation = _originalRotation * Quaternion.Euler(rotationShakeOffset);
-
-            // Increment the elapsed time
-            _shakeTimer += Time.deltaTime;
+        if (_currentState != null) {
+            _currentState.Exit();
         }
-        else
-        {
-            // Reset the camera position and rotation after the shake duration
-            transform.position = _originalPosition;
-            transform.rotation = _originalRotation;
-            _shakeTimer = 0;
-            _performShake = false;
+        
+        _currentState = _states[state];
+
+        if (_currentState != null) {
+            _currentState.Enter();
         }
     }
     
+    
+    public void LateUpdate()
+    {
+        Vector3 oldPos = transform.position;
+
+        int i_x = Mathf.FloorToInt(transform.position.x * (float)ppc);
+        int i_y = Mathf.FloorToInt(transform.position.y * (float)ppc);
+        int i_z = Mathf.FloorToInt(transform.position.z * (float)ppc);
+
+        Vector3 p = new Vector3((float)i_x / (float)ppc, (float)i_y / (float)ppc, (float)i_z / (float)ppc);
+
+        scrollOffset = oldPos - p;
+
+        transform.position = p;
+    }
 }
