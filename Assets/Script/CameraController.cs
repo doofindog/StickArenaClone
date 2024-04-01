@@ -11,17 +11,18 @@ public enum ECameraState
 
 public class CameraController : Singleton<CameraController>
 {
-    public PixelPerfectCamera _pixelPerfectCamera;
+    
     [SerializeField] private CameraState _currentState;
     private Dictionary<ECameraState,CameraState> _states = new Dictionary<ECameraState,CameraState>();
 
     public float ppc;
     public Vector3 scrollOffset;
+    public PixelPerfectCamera _pixelPerfectCamera;
     
     public void Awake()
     {
         _states.Add(ECameraState.MENU, gameObject.GetComponent<MenuCameraState>());
-        _states.Add(ECameraState.GAME, gameObject.GetComponent<GameCameraState>());
+        _states.Add(ECameraState.GAME, gameObject.GetComponent<FollowCameraState>());
 
         _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
     }

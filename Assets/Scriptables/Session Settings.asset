@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startGameTime: 3
   prepGameTime: 2
-  playerRespawnTime: 0
+  playerRespawnTime: 3
   pitSize: {x: 0, y: 0}
   scoreUpdateTime: 1.5
   winThreshold: 10

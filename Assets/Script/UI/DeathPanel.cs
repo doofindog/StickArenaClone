@@ -18,7 +18,7 @@ public class DeathPanel : MonoBehaviour
 
     public void OnEnable()
     {
-        gameObject.SetActive(true);
+        respawnButton.gameObject.SetActive(false);
         counterText.gameObject.SetActive(true);
         StartCoroutine(StartRespawnCounter());
     }

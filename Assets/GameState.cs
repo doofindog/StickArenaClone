@@ -3,10 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class GameState : BaseGameState
 {
-    [SerializeField] private TvController tvController;
+    [SerializeField] private TvController _tvController;
+    [SerializeField] private Volume _postProcessVolume;
+    [SerializeField] private AudioClip gameMusic;
 
     public void Awake()
     {
@@ -24,6 +28,21 @@ public class GameState : BaseGameState
         if (IsServer)
         {
             StartCoroutine(StartGame());
+        }
+
+        if (_postProcessVolume != null)
+        {
+            _postProcessVolume.profile.TryGet(out ChromaticAberration chromaticAberration);
+            _postProcessVolume.profile.TryGet(out LensDistortion lensDistortion);
+            _postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
+            _postProcessVolume.profile.TryGet(out Bloom bloom);
+
+            chromaticAberration.intensity.value = 0.235f;
+            lensDistortion.intensity.value = -0.6f;
+            lensDistortion.xMultiplier.value = 0.0f;
+            lensDistortion.yMultiplier.value = 0.0f;
+            paniniProjection.distance.value = 0.027f;
+            paniniProjection.cropToFit.value = 0.632f;
         }
     }
     
@@ -60,6 +79,7 @@ public class GameState : BaseGameState
         while (timeScale > 0f)
         {
             timeScale -= TickManager.Instance.GetMinTickTime();
+            AudioManager.Instance.GetSource().pitch -= TickManager.Instance.GetMinTickTime();
             Time.timeScale = timeScale;
 
             yield return new WaitForSeconds(TickManager.Instance.GetMinTickTime());
@@ -74,12 +94,18 @@ public class GameState : BaseGameState
     [ClientRpc]
     private void  PreparingGameClientRPC()
     {
-        tvController.TurnOn(GameEvents.SendPreparingArenaEvent);
+        _tvController.TurnOn(GameEvents.SendPreparingArenaEvent);
     }
     
     [ClientRpc]
     private void StartGameClientRPC()
     {
         GameEvents.SendStartGameEvent();
+        
+        if (gameMusic != null)
+        {
+            AudioManager.Instance.Play(gameMusic);
+        }
+        
     }
 }

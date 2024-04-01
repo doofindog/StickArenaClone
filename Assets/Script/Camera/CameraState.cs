@@ -8,12 +8,10 @@ public class CameraState : MonoBehaviour
     {
         
     }
-
     public virtual void UpdateState()
     {
 
     }
-
     public virtual void Exit()
     {
 

@@ -3,9 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering.Universal;
 using UnityEngine.Serialization;
 
-public class GameCameraState : CameraState, ITickableEntity
+public class FollowCameraState : CameraState, ITickableEntity
 {
     [SerializeField] private Transform _follow;
     [SerializeField] private Vector3 _cameraOffset;

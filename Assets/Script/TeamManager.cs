@@ -109,4 +109,9 @@ public class TeamManager : NetworkBehaviour
 
         return null;
     }
+
+    public List<Team> GetAllTeams()
+    {
+        return _teams;
+    }
 }

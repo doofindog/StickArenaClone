@@ -18,6 +18,7 @@ public class MenuCameraState : CameraState
         CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
         CustomNetworkEvents.DisconnectedEvent += HandleNetworkStopped;
         PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
+        GameEvents.PreparingArenaEvent += EnableUpscaling;
         
         UpdateNextLocation();
     }
@@ -87,5 +88,15 @@ public class MenuCameraState : CameraState
         
         _followTransform.position = followPosition;
         _direction = _followTransform.position - transform.position;
-    }  
+    }
+
+
+    private void EnableUpscaling()
+    {
+        if (CameraController.Instance._pixelPerfectCamera != null)
+        {
+            CameraController.Instance._pixelPerfectCamera.gridSnapping =
+                UnityEngine.Experimental.Rendering.Universal.PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
+        }
+    }
 }
