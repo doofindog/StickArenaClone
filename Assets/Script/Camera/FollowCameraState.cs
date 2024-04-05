@@ -31,7 +31,6 @@ public class FollowCameraState : CameraState, ITickableEntity
         ulong playerId = NetworkManager.Singleton.LocalClientId;
         if (spawnManager.GetPlayerNetworkObject(playerId) != null)
         {
-            Debug.Log("Called");
             _follow = spawnManager.GetPlayerNetworkObject(playerId).gameObject.transform;
         }
         else

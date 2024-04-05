@@ -25,17 +25,13 @@ public class GameState : BaseGameState
         }
         
         UIManager.Instance.ReplaceScreen(Screens.Game);
-        if (IsServer)
-        {
-            StartCoroutine(StartGame());
-        }
+        ScoreManager.Instance.Reset();
 
         if (_postProcessVolume != null)
         {
             _postProcessVolume.profile.TryGet(out ChromaticAberration chromaticAberration);
             _postProcessVolume.profile.TryGet(out LensDistortion lensDistortion);
             _postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
-            _postProcessVolume.profile.TryGet(out Bloom bloom);
 
             chromaticAberration.intensity.value = 0.235f;
             lensDistortion.intensity.value = -0.6f;
@@ -44,6 +40,17 @@ public class GameState : BaseGameState
             paniniProjection.distance.value = 0.027f;
             paniniProjection.cropToFit.value = 0.632f;
         }
+        
+        if (IsServer)
+        {
+            StartCoroutine(StartGame());
+        }
+    }
+    
+    public override void OnExit()
+    {
+        StopAllCoroutines();
+        _tvController.TurnOff();
     }
     
     private IEnumerator StartGame()
@@ -87,8 +94,13 @@ public class GameState : BaseGameState
             if (timeScale <= 0.2f)
             {
                 GameEvents.SendGameOver(teamType);
+                break;
             }
         }
+        
+        Time.timeScale = 1;
+        AudioManager.Instance.Stop();
+        GameStateController.Instance.SwitchState(EGameStates.OVER);
     }
     
     [ClientRpc]
@@ -106,6 +118,5 @@ public class GameState : BaseGameState
         {
             AudioManager.Instance.Play(gameMusic);
         }
-        
     }
 }

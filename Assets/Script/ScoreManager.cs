@@ -1,19 +1,34 @@
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class ScoreManager : Singleton<ScoreManager>
+public class ScoreManager : NetworkBehaviour
 {
+    public static ScoreManager Instance;
+    
     [SerializeField] private List<ulong> _crownedPlayerIDs = new List<ulong>();
     [SerializeField] private float _updateTimer;
-
+    [SerializeField] private TeamType _winningTeam;
+    private bool canUpdate;
+        
     public void Awake()
     {
         GameEvents.CrownAcquiredEvent += UpdateCrownedPlayer;
+        
+        if (Instance == null)
+        {
+            Instance = this;
+        }
     }
     
     public void Update()
     {
+        if (!IsServer || canUpdate == false)
+        {
+            return;
+        }
+
         if (_updateTimer >= GameManager.Instance.GetSessionSettings().scoreUpdateTime)
         {
             UpdateScore();
@@ -33,6 +48,8 @@ public class ScoreManager : Singleton<ScoreManager>
             UpdateScoreToTeamClientRPC(team.teamType, 1);
             if (team.score >= GameManager.Instance.GetSessionSettings().winThreshold)
             {
+                canUpdate = false;
+                _winningTeam = team.teamType;
                 SendTeamWonClientRPC(team.teamType);
             }
         }
@@ -41,6 +58,8 @@ public class ScoreManager : Singleton<ScoreManager>
     [ClientRpc]
     private void SendTeamWonClientRPC(TeamType teamType)
     {
+        canUpdate = false;
+        _winningTeam = teamType;
         GameEvents.SendTeamWonEvent(teamType);
     }
     
@@ -73,5 +92,16 @@ public class ScoreManager : Singleton<ScoreManager>
         }
 
         return highestScoreTeam.teamType;
+    }
+
+    public TeamType GetWinningTeam()
+    {
+        return _winningTeam;
+    }
+
+    public void Reset()
+    {
+        _crownedPlayerIDs.Clear();
+        canUpdate = true;
     }
 }

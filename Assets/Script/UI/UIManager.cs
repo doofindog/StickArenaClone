@@ -16,7 +16,7 @@ public class UIManager : Singleton<UIManager>
 {
     [SerializeField] private GameObject[] screens;
 
-    public void ReplaceScreen(Screens screenEnum)
+    public GameObject ReplaceScreen(Screens screenEnum)
     {
         foreach (GameObject screen in screens)
         {
@@ -26,6 +26,14 @@ public class UIManager : Singleton<UIManager>
         if (screens != null && screens.Length > 0 && (int)screenEnum < screens.Length)
         {
             screens[(int)screenEnum].SetActive(true);
+            return screens[(int)screenEnum];
         }
+
+        return null;
+    }
+
+    public T GetScreen<T>(Screens screenEnum)
+    {
+        return screens[(int)screenEnum].GetComponent<T>();
     }
 }

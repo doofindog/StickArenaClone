@@ -143,7 +143,11 @@ public class ConnectionManager : NetworkBehaviour
 
     private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest approvalRequest, NetworkManager.ConnectionApprovalResponse approvalResponse)
     {
-        if (playersConnected.Value >= maxConnections) return;
+        if (playersConnected.Value >= maxConnections)
+        {
+            Debugger.Log("[CONNECTION] Max Connections Reached");
+            return;
+        }
         
         string payloadJson = System.Text.Encoding.ASCII.GetString(approvalRequest.Payload);
         ConnectionPayload connectionPayload = JsonUtility.FromJson<ConnectionPayload>(payloadJson);
@@ -157,7 +161,7 @@ public class ConnectionManager : NetworkBehaviour
         
         approvalResponse.Approved = true;
         
-        Debug.Log("[CONNECTION] user : " + playerSessionData.userName + " Connection Approved");
+        Debugger.Log("[CONNECTION] user : " + playerSessionData.userName + " Connection Approved");
     }
 
     public Dictionary<ulong, PlayerSessionData> GetPlayerSessionDataDict()
@@ -174,6 +178,7 @@ public class ConnectionManager : NetworkBehaviour
     private void ClearData()
     {
         _playerSessionDataCollection.Clear();
+        playersConnected = new NetworkVariable<int>();
     }
     
     public static void TryJoin(string username)
@@ -200,6 +205,7 @@ public class ConnectionManager : NetworkBehaviour
     {
         Instance.ClearData();
         NetworkManager.Singleton.Shutdown();
+        TeamManager.Instance.Reset();
         CustomNetworkEvents.SendDisconnectedEvent();
     }
 }

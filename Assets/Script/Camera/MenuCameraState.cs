@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering.Universal;
 using UnityEngine.Serialization;
 
 public class MenuCameraState : CameraState
@@ -15,6 +16,9 @@ public class MenuCameraState : CameraState
     
     public override void Enter()
     {
+        CameraController.Instance._pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.None;
+        _networkStarted = false;
+        
         CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
         CustomNetworkEvents.DisconnectedEvent += HandleNetworkStopped;
         PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;

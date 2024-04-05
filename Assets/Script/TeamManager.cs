@@ -11,6 +11,7 @@ public enum TeamType
     Red,
     Green,
     Yellow,
+    Default,
 }
 
 [System.Serializable]
@@ -32,6 +33,13 @@ public class Team
 
     public void AddPlayer(PlayerSessionData player)
     {
+        if (player == null)
+        {
+            Debug.Log("Player Session Data is null ");
+            return;
+        }
+        
+        
         player.teamType = teamType;
         players.Add(player);
     }
@@ -113,5 +121,16 @@ public class TeamManager : NetworkBehaviour
     public List<Team> GetAllTeams()
     {
         return _teams;
+    }
+
+    public void Reset()
+    {
+        if(_teams == null) return;
+
+        foreach (Team team in _teams)
+        {
+            team.score = 0;
+            team.players.Clear();
+        }
     }
 }

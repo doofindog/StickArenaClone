@@ -10,7 +10,8 @@ public class TvController : MonoBehaviour
     public float height;
     public float width;
     public Animator animator;
-    public Action onTurnOnComplete;
+    private Action _onTurnOnComplete;
+    private Action _onTurnOffComplete;
 
 
     public void Awake()
@@ -18,20 +19,21 @@ public class TvController : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    public void TurnOf()
+    public void TurnOff(Action onTurnOffComplete = null)
     {
+        this._onTurnOffComplete = onTurnOffComplete;
         animator.Play("TurnOff");
     }
 
-    public void TurnOn(Action onTurnOnComplete)
+    public void TurnOn(Action onTurnOnComplete = null)
     {
-        this.onTurnOnComplete = onTurnOnComplete;
+        this._onTurnOnComplete = onTurnOnComplete;
         animator.Play("TurnOn");
     }
 
     public void OnAnimComplete()
     {
-        onTurnOnComplete?.Invoke();
+        _onTurnOnComplete?.Invoke();
     }
 
     public void Update()

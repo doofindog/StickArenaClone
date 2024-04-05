@@ -17,4 +17,4 @@ MonoBehaviour:
   playerRespawnTime: 3
   pitSize: {x: 0, y: 0}
   scoreUpdateTime: 1.5
-  winThreshold: 10
+  winThreshold: 2
