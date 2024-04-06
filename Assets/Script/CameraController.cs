@@ -58,14 +58,14 @@ public class CameraController : Singleton<CameraController>
     {
         Vector3 oldPos = transform.position;
 
-        int i_x = Mathf.FloorToInt(transform.position.x * (float)ppc);
-        int i_y = Mathf.FloorToInt(transform.position.y * (float)ppc);
-        int i_z = Mathf.FloorToInt(transform.position.z * (float)ppc);
+        int x = Mathf.FloorToInt(transform.position.x * (float)ppc);
+        int y = Mathf.FloorToInt(transform.position.y * (float)ppc);
+        int z = Mathf.FloorToInt(transform.position.z * (float)ppc);
 
-        Vector3 p = new Vector3((float)i_x / (float)ppc, (float)i_y / (float)ppc, (float)i_z / (float)ppc);
+        Vector3 pixelPosition = new Vector3((float)x / (float)ppc, (float)y / (float)ppc, (float)z / (float)ppc);
 
-        scrollOffset = oldPos - p;
+        scrollOffset = oldPos - pixelPosition;
 
-        transform.position = p;
+        transform.position = pixelPosition;
     }
 }

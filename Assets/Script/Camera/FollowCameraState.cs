@@ -107,11 +107,11 @@ public class FollowCameraState : CameraState, ITickableEntity
     {
         if(_follow == null) return;
 
-        Vector3 followPosition = _follow.position + _cameraOffset;
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition,
+        Vector3 followPosition = _follow.position + _cameraOffset + CameraController.Instance.scrollOffset;
+        Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition, 
             _interpolationSpeed * TickManager.Instance.GetMinTickTime());
 
         _originalPosition = smoothedPosition;
-        transform.position = smoothedPosition + CameraController.Instance.scrollOffset;
+        transform.position = smoothedPosition;
     }
 }

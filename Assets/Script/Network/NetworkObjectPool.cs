@@ -206,6 +206,7 @@ public class NetworkObjectPool : NetworkBehaviour
         {
             // Unregister Netcode Spawn handlers
             NetworkManager.Singleton.PrefabHandler.RemoveHandler(prefab);
+            Destroy(prefab);
         }
 
         pooledObjects.Clear();

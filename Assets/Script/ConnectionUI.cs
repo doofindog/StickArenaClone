@@ -18,12 +18,14 @@ public class ConnectionUI : MonoBehaviour
     
     private void Awake()
     {
-        ConnectionManager.Instance.playersConnected.OnValueChanged += UpdatePanel;
+        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
+        connectionManager.playersConnected.OnValueChanged += UpdatePanel;
     }
 
     public void Update()
     {
-        List<PlayerSessionData> playerCollection = ConnectionManager.Instance.GetPlayerSessionDataDict().Values.ToList();
+        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
+        List<PlayerSessionData> playerCollection = connectionManager.GetPlayerSessionDataDict().Values.ToList();
         foreach (Transform children in connectionLayoutPanel.transform)
         {
                 
@@ -39,9 +41,10 @@ public class ConnectionUI : MonoBehaviour
 
     private void UpdatePanel(int value, int newValue)
     {
-        headingText.text = WAITING_PLAYERS_TEXT + " " + $"{ConnectionManager.Instance.playersConnected.Value}/{ConnectionManager.Instance.MaxPlayers}";
+        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
+        headingText.text = WAITING_PLAYERS_TEXT + " " + $"{connectionManager.playersConnected.Value}/{connectionManager.MaxPlayers}";
             
-        if (newValue >= ConnectionManager.Instance.MaxPlayers)
+        if (newValue >= connectionManager.MaxPlayers)
         {
             headingText.text = LOADING_GAME_TEXT;
         }
@@ -49,7 +52,7 @@ public class ConnectionUI : MonoBehaviour
 
     public void Disconnected()
     {
-        ConnectionManager.TryDisconnect();
+        GameManager.Instance.TryDisconnect();
         menuPanel.SetActive(true);
         gameObject.SetActive(false);
     }

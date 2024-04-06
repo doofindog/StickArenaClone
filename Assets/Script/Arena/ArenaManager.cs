@@ -13,8 +13,8 @@ public class ArenaManager : NetworkBehaviour
     
     private IArenaState _currentState;
     private Dictionary<Vector2, GameObject> _dynamicTiles = new Dictionary<Vector2, GameObject>();
-    
-    public void Awake()
+
+    public void Init()
     {
         IArenaState[] components = GetComponents<IArenaState>();
         foreach (IArenaState state in components)
@@ -41,6 +41,8 @@ public class ArenaManager : NetworkBehaviour
 
     private void GenerateTile()
     {
+        GameObject dynamicTiles = new GameObject("Dynamic Tiles");
+        dynamicTiles.transform.position = Vector3.zero;
         Vector2 startPosition = new Vector2(tileSize.x, tileSize.y) * -0.5f;
         
         for (int y = 0; y < tileSize.y; y++)
@@ -49,6 +51,7 @@ public class ArenaManager : NetworkBehaviour
             {
                 Vector2 tilePosition = new Vector2(startPosition.x + x, startPosition.y + y);
                 GameObject ground = Instantiate(tilePrefab, tilePosition + offsetPosition, Quaternion.identity);
+                ground.transform.SetParent(dynamicTiles.transform);
                 _dynamicTiles.Add(new Vector2(x, y), ground);
             }
         }

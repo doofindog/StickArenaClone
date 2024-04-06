@@ -32,7 +32,7 @@ public class MainMenuScreen : MonoBehaviour
             PlayNoUserNameAnim();
             return;
         }
-        ConnectionManager.TryStartHost(usernameField.text);
+        GameManager.Instance.TryStartHost(usernameField.text);
     }
 
     public void OnJoinPressed()
@@ -42,7 +42,8 @@ public class MainMenuScreen : MonoBehaviour
             PlayNoUserNameAnim();
             return;
         }
-        ConnectionManager.TryJoin(usernameField.text);
+        
+        GameManager.Instance.TryJoin(usernameField.text);
     }
 
     private void ChangeToConnectionPanel()

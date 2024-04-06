@@ -67,7 +67,7 @@ public class MenuState : BaseGameState
 
     private void LoadToGame()
     {
-        GameManager.Instance.ChangeState(EGameStates.GAME);
+        GameManager.Instance.SwitchState(EGameStates.GAME);
     }
 
     public override void OnExit()

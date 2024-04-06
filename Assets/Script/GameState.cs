@@ -21,7 +21,7 @@ public class GameState : BaseGameState
     {
         if (NetworkManager.Singleton == null)
         {
-            GameManager.Instance.ChangeState(EGameStates.MENU);
+            GameManager.Instance.SwitchState(EGameStates.MENU);
         }
         
         UIManager.Instance.ReplaceScreen(Screens.Game);
@@ -33,11 +33,9 @@ public class GameState : BaseGameState
             _postProcessVolume.profile.TryGet(out LensDistortion lensDistortion);
             _postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
 
-            chromaticAberration.intensity.value = 0.235f;
-            lensDistortion.intensity.value = -0.6f;
-            lensDistortion.xMultiplier.value = 0.0f;
-            lensDistortion.yMultiplier.value = 0.0f;
-            paniniProjection.distance.value = 0.027f;
+            chromaticAberration.active = false;
+            lensDistortion.active = false;
+            paniniProjection.distance.value = 0.01f;
             paniniProjection.cropToFit.value = 0.632f;
         }
         
@@ -100,7 +98,7 @@ public class GameState : BaseGameState
         
         Time.timeScale = 1;
         AudioManager.Instance.Stop();
-        GameStateController.Instance.SwitchState(EGameStates.OVER);
+        GameManager.Instance.SwitchState(EGameStates.OVER);
     }
     
     [ClientRpc]

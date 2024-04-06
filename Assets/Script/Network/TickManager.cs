@@ -10,11 +10,21 @@ public class TickManager : Singleton<TickManager>
 {
     [SerializeField] private float serverTickRate;
 
-    [SerializeField] private bool _enable;
-    [SerializeField] private int _tick;
-    [SerializeField] private float _timer;
+    private bool _enable;
+    private int _tick;
+    private float _timer;
     private float _minTimeBetweenTicks; //how many seconds between each tick
     private List<ITickableEntity> _tickableEntities = new List<ITickableEntity>();
+    
+    
+    public void Init()
+    {
+        NetworkManager.Singleton.OnClientStarted += Init;
+        NetworkManager.Singleton.OnServerStarted += Init;
+        
+        _minTimeBetweenTicks = 1f / serverTickRate;
+        _enable = _minTimeBetweenTicks != 0;
+    }
 
     public void AddEntity(ITickableEntity tickableEntity)
     {
@@ -26,21 +36,6 @@ public class TickManager : Singleton<TickManager>
         _tickableEntities.Remove(tickableEntity);
     }
 
-    protected override void Awake()
-    {
-        base.Awake();
-        
-        NetworkManager.Singleton.OnClientStarted += Init;
-        NetworkManager.Singleton.OnServerStarted += Init;
-    }
-
-    private void Init()
-    {
-        if(_enable) return;
-        
-        _minTimeBetweenTicks = 1f / serverTickRate;
-        _enable = _minTimeBetweenTicks != 0;
-    }
 
     public void Update()
     {

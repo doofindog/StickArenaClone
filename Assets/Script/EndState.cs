@@ -33,7 +33,7 @@ public class EndState : BaseGameState
     private IEnumerator ExitGame()
     {
         yield return new WaitForSeconds(5);
-        ConnectionManager.TryDisconnect();
-        GameStateController.Instance.SwitchState(EGameStates.MENU);
+        GameManager.Instance.TryDisconnect();
+        GameManager.Instance.SwitchState(EGameStates.MENU);
     }
 }

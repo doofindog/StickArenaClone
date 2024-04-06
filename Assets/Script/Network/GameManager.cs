@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -12,19 +10,21 @@ public class GameManager : NetworkBehaviour
     
     public NetworkVariable<float> prepTimer = new NetworkVariable<float>();
     public NetworkVariable<float> startGameTimer = new NetworkVariable<float>();
+
+    [Header("Managers")]
+    public ConnectionManager connectionManager;
+    public TickManager tickManager;
+    public TeamManager teamManager;
+    public ArenaManager arenaManger;
+    public ScoreManager scoreManager;
     
-    private Dictionary<ulong, NetworkObject> _clientObjects = new Dictionary<ulong, NetworkObject>();
-    
-    [SerializeField] private GameStateController stateController;
     [SerializeField] private SessionSettings sessionSettings;
     [SerializeField] private List<SpawnData> spawnLocations;
-    [SerializeField] private List<NetworkObject> crownedPlayers= new List<NetworkObject>();
-
-
-    public void ChangeState(EGameStates state)
-    {
-        stateController.SwitchState(state);
-    }
+    
+    private BaseGameState _currentState;
+    private EGameStates _currentStateType;
+    private Dictionary<EGameStates, BaseGameState> _gameStates = new Dictionary<EGameStates, BaseGameState>();
+    private Dictionary<ulong, NetworkObject> _clientObjects = new Dictionary<ulong, NetworkObject>();
     
     public void Awake()
     {
@@ -36,11 +36,52 @@ public class GameManager : NetworkBehaviour
         {
             Instance = this;
         }
+        
     }
-
+    
     public void Start()
     {
-        stateController.SwitchState(EGameStates.MENU);
+        Initialise();
+    }
+    
+
+    private void Initialise()
+    {
+        Cursor.visible = false;
+        
+        _gameStates.Add(EGameStates.MENU, GetComponent<MenuState>());
+        _gameStates.Add(EGameStates.GAME, GetComponent<GameState>());
+        _gameStates.Add(EGameStates.OVER, GetComponent<EndState>());
+        
+        connectionManager.Init();
+        tickManager.Init();
+        teamManager.Init();
+        arenaManger.Init();
+        
+        SwitchState(EGameStates.MENU);
+    }
+
+    public void SwitchState(EGameStates state)
+    {
+        if (_currentState != null)
+        {
+            _currentState.OnExit();
+        }
+
+        _currentStateType = state;
+        _currentState = GetGameState(state);
+        _currentState.OnEnter();
+    }
+    
+    public EGameStates GetState()
+    {
+        return _currentStateType;
+    }
+
+    private BaseGameState GetGameState(EGameStates state)
+    {
+        _gameStates.TryGetValue(state, out BaseGameState gameState);
+        return gameState;
     }
 
     public void AddPlayer(ulong clientId, NetworkObject networkObject)
@@ -148,5 +189,40 @@ public class GameManager : NetworkBehaviour
     public void RequestSpawnPlayerServerRPC(ulong clientID)
     {
         RespawnPlayer(clientID);
+    }
+    
+    public void TryJoin(string username)
+    {
+        ConnectionPayload connectionPayload = new ConnectionPayload() { userName = username };
+        string payloadJson = JsonUtility.ToJson(connectionPayload);
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
+        NetworkManager.Singleton.StartClient();
+        
+        CustomNetworkEvents.SendNetworkStartedEvent();
+    }
+
+    public void TryStartHost(string username)
+    {
+        ConnectionPayload connectionPayload = new ConnectionPayload() { userName = username };
+        string payloadJson = JsonUtility.ToJson(connectionPayload);
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
+        NetworkManager.Singleton.StartHost();
+        
+        CustomNetworkEvents.SendNetworkStartedEvent();
+    }
+    
+    public void TryDisconnect()
+    {
+        connectionManager.ClearData();
+        NetworkManager.Singleton.Shutdown();
+        TeamManager.Instance.Reset();
+
+        if (IsServer)
+        {
+            prepTimer.Value = 0;
+            startGameTimer.Value = 0;
+        }
+
+        CustomNetworkEvents.SendDisconnectedEvent();
     }
 }

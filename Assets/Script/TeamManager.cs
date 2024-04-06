@@ -65,6 +65,11 @@ public class TeamManager : NetworkBehaviour
         
         CreateTeams();
     }
+    
+    public void Init()
+    {
+        CreateTeams();
+    }
 
     private void CreateTeams()
     {
@@ -85,7 +90,8 @@ public class TeamManager : NetworkBehaviour
 
     public void AddPlayerToTeam(ulong clientID)
     {
-        PlayerSessionData playerData = ConnectionManager.Instance.GetPlayerSessionData(clientID);
+        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
+        PlayerSessionData playerData = connectionManager.GetPlayerSessionData(clientID);
         AddPlayerToTeam(playerData);
     }
 
@@ -94,14 +100,16 @@ public class TeamManager : NetworkBehaviour
     {
         if(NetworkManager.Singleton.IsHost) return;
 
-        PlayerSessionData playerData = ConnectionManager.Instance.GetPlayerSessionData(clientID);
+        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
+        PlayerSessionData playerData = connectionManager.GetPlayerSessionData(clientID);
         Team team = GetTeamFromType(type);
         team.AddPlayer(playerData);
     }
     
     public Team GetTeamFromID(ulong clientID)
     {
-        TeamType teamType = ConnectionManager.Instance.GetPlayerSessionData(clientID).teamType;
+        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
+        TeamType teamType = connectionManager.GetPlayerSessionData(clientID).teamType;
         return GetTeamFromType(teamType);
     }
 
