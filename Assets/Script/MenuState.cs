@@ -31,6 +31,10 @@ public class MenuState : BaseGameState
             _postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
             _postProcessVolume.profile.TryGet(out Bloom bloom);
 
+            lensDistortion.active = true;
+            paniniProjection.active = true;
+            chromaticAberration.active = true;
+
             chromaticAberration.intensity.value = 0.637f;
             lensDistortion.intensity.value = 0.278f;
             lensDistortion.xMultiplier.value = 0.85f;

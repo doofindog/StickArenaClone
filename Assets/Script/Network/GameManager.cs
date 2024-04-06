@@ -47,7 +47,7 @@ public class GameManager : NetworkBehaviour
 
     private void Initialise()
     {
-        Cursor.visible = false;
+        //Cursor.visible = false;
         
         _gameStates.Add(EGameStates.MENU, GetComponent<MenuState>());
         _gameStates.Add(EGameStates.GAME, GetComponent<GameState>());

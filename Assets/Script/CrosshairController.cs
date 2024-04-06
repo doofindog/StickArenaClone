@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,24 +12,33 @@ using UnityEngine.UI;
 public class CrosshairController : MonoBehaviour
 {
     [SerializeField] private RectTransform crosshairRect;
-    
+    [SerializeField] private Canvas _canvas;
+
     public void Update()
     {
         Vector2 mousePosition = Input.mousePosition;
 
-        int cameraRefX = CameraController.Instance._pixelPerfectCamera.refResolutionX;
-        int cameraRefY = CameraController.Instance._pixelPerfectCamera.refResolutionY;
+        float cameraRefX = _canvas.GetComponent<RectTransform>().sizeDelta.x;
+        float cameraRefY = _canvas.GetComponent<RectTransform>().sizeDelta.y;
 
         int screenResX = Screen.width;
         int screenResY = Screen.height;
 
-        float newPositionX = ConvertRange(screenResX, screenResY, cameraRefX, cameraRefY, mousePosition.x);
-        float newPositionY = ConvertRange(screenResX, screenResY, cameraRefX, cameraRefY, mousePosition.y);
+        float pixelOffset = math.abs(Screen.height - _canvas.worldCamera.pixelHeight) * 0.5f;
+
+        float newPositionX = ConvertRange(0, screenResX, 0, cameraRefX, mousePosition.x );
+        float newPositionY = ConvertRange(0 + pixelOffset, screenResY - pixelOffset, 0, cameraRefY, mousePosition.y );
 
         crosshairRect.anchoredPosition = new Vector2(newPositionX, newPositionY);
-        
-        Debugger.Log("[CROSSHAIR] mousePosition : " + mousePosition);
-        Debugger.Log("[CROSSHAIR] CrosshairPosition : " + crosshairRect.anchoredPosition);
+
+        string logs = $"mousePosition : {mousePosition} , CrosshairPosition : {crosshairRect.anchoredPosition} ," +
+                      $"screen Res : ({screenResX}, {screenResY}) ," +
+                      $"Pixel Offset : ({pixelOffset})" +
+                      $"camera Ref Res : ({cameraRefX},{cameraRefY}) ," +
+                      $"current screen res : {Screen.currentResolution} ," +
+                      $"world Camera : ({_canvas.worldCamera.pixelWidth}, {_canvas.worldCamera.pixelHeight})";
+
+        Debugger.Log("[CROSSHAIR] : " + logs);
     }
     
     
@@ -40,6 +50,6 @@ public class CrosshairController : MonoBehaviour
 
     private void OnApplicationFocus(bool hasFocus)
     {
-        Cursor.visible = false;
+        //Cursor.visible = false;
     }
 }
