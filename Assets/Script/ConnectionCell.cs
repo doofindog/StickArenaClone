@@ -8,8 +8,8 @@ public class ConnectionCell : MonoBehaviour
 {
     public TMP_Text usernameText;
 
-    public void UpdateCell(PlayerSessionData sessionData)
+    public void UpdateCell(PlayerData data)
     {
-        usernameText.text = sessionData.userName;
+        usernameText.text = data.userName;
     }
 }

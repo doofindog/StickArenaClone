@@ -1,7 +1,7 @@
 using Unity.Netcode;
 
 [System.Serializable]
-public class PlayerSessionData: INetworkSerializable
+public class PlayerData: INetworkSerializable
 {
     public ulong clientID;
     public string userName;

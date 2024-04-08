@@ -25,14 +25,14 @@ public class ConnectionUI : MonoBehaviour
     public void Update()
     {
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        List<PlayerSessionData> playerCollection = connectionManager.GetPlayerSessionDataDict().Values.ToList();
+        List<PlayerData> playerCollection = connectionManager.GetPlayerSessionDataDict().Values.ToList();
         foreach (Transform children in connectionLayoutPanel.transform)
         {
                 
             Destroy(children.gameObject);
         }
             
-        foreach (PlayerSessionData data in playerCollection)
+        foreach (PlayerData data in playerCollection)
         {
             ConnectionCell cell = Instantiate(cellPrefab, connectionLayoutPanel.transform).GetComponent<ConnectionCell>();
             cell.UpdateCell(data);
@@ -53,6 +53,7 @@ public class ConnectionUI : MonoBehaviour
     public void Disconnected()
     {
         GameManager.Instance.TryDisconnect();
+        
         menuPanel.SetActive(true);
         gameObject.SetActive(false);
     }

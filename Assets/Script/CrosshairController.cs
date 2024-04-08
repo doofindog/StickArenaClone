@@ -1,13 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Mathematics;
-using UnityEditor.Build;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 
 public class CrosshairController : MonoBehaviour
 {
@@ -37,8 +29,6 @@ public class CrosshairController : MonoBehaviour
                       $"camera Ref Res : ({cameraRefX},{cameraRefY}) ," +
                       $"current screen res : {Screen.currentResolution} ," +
                       $"world Camera : ({_canvas.worldCamera.pixelWidth}, {_canvas.worldCamera.pixelHeight})";
-
-        Debugger.Log("[CROSSHAIR] : " + logs);
     }
     
     
@@ -50,6 +40,6 @@ public class CrosshairController : MonoBehaviour
 
     private void OnApplicationFocus(bool hasFocus)
     {
-        //Cursor.visible = false;
+        Cursor.visible = false;
     }
 }

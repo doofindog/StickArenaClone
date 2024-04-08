@@ -1,7 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Unity.Netcode;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
 using UnityEngine;
 
 public class ConnectionManager : NetworkBehaviour
@@ -19,14 +23,18 @@ public class ConnectionManager : NetworkBehaviour
     
     
     private int _maxConnections = 1;
-    private Dictionary<ulong, PlayerSessionData> _playerSessionDataCollection = new Dictionary<ulong, PlayerSessionData>();
+    private SessionData _sessionData;
+    private PlayerData _clientData;
+    private Dictionary<ulong, PlayerData> _playerDataCollection = new Dictionary<ulong, PlayerData>();
 
 
-    public void Init()
+    public async Task Init()
     {
         Debugger.Log("[CONNECTION] Initialising Connection Manager");
         
         DontDestroyOnLoad(this.gameObject);
+
+        await UnityServices.InitializeAsync();
         
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
@@ -54,7 +62,7 @@ public class ConnectionManager : NetworkBehaviour
     {
         Debugger.Log("[CONNECTION] Client has Connected");
         
-        PlayerSessionData[] sessionDatas = _playerSessionDataCollection.Values.ToArray();
+        PlayerData[] sessionDatas = _playerDataCollection.Values.ToArray();
         if (sessionDatas.Length > 0)
         {
             UpdatedPlayerCollectionsClientRPC(sessionDatas);
@@ -62,7 +70,7 @@ public class ConnectionManager : NetworkBehaviour
 
         TeamManager.Instance.AddPlayerToTeam(clientID);
 
-        if (_playerSessionDataCollection.TryGetValue(clientID, out PlayerSessionData sessionData))
+        if (_playerDataCollection.TryGetValue(clientID, out PlayerData sessionData))
         {
             sessionData.isConnected = true;
             playersConnected.Value ++;
@@ -90,14 +98,14 @@ public class ConnectionManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            if (!_playerSessionDataCollection.ContainsKey(clientID))
+            if (!_playerDataCollection.ContainsKey(clientID))
             {
                 return;
             }
             
-            _playerSessionDataCollection.Remove(clientID);
+            _playerDataCollection.Remove(clientID);
             playersConnected.Value--;
-            PlayerSessionData[] sessionDatas = _playerSessionDataCollection.Values.ToArray();
+            PlayerData[] sessionDatas = _playerDataCollection.Values.ToArray();
             UpdatedPlayerCollectionsClientRPC(sessionDatas);
         }
         
@@ -109,23 +117,23 @@ public class ConnectionManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void UpdatedPlayerCollectionsClientRPC(PlayerSessionData[] playerSessionDataArray)
+    private void UpdatedPlayerCollectionsClientRPC(PlayerData[] playerSessionDataArray)
     {
         if (NetworkManager.Singleton.IsHost || playerSessionDataArray == null || playerSessionDataArray.Length == 0) return;
-        _playerSessionDataCollection.Clear();
-        foreach (PlayerSessionData data in playerSessionDataArray)
+        _playerDataCollection.Clear();
+        foreach (PlayerData data in playerSessionDataArray)
         {
             ulong clientID = data.clientID;
-            _playerSessionDataCollection.TryAdd(clientID, data);
+            _playerDataCollection.TryAdd(clientID, data);
         }
     }
 
     [ClientRpc]
-    private void UpdatePlayerDataClientRPC(ulong clientID, PlayerSessionData sessionData)
+    private void UpdatePlayerDataClientRPC(ulong clientID, PlayerData data)
     {
-        if (_playerSessionDataCollection.ContainsKey(clientID))
+        if (_playerDataCollection.ContainsKey(clientID))
         {
-            _playerSessionDataCollection[clientID] = sessionData;
+            _playerDataCollection[clientID] = data;
         }
     }
 
@@ -139,33 +147,49 @@ public class ConnectionManager : NetworkBehaviour
         
         string payloadJson = System.Text.Encoding.ASCII.GetString(approvalRequest.Payload);
         ConnectionPayload connectionPayload = JsonUtility.FromJson<ConnectionPayload>(payloadJson);
-        PlayerSessionData playerSessionData = new PlayerSessionData
+        PlayerData playerData = new PlayerData
         {
             clientID = approvalRequest.ClientNetworkId,
             userName = connectionPayload.userName
         };
         
-        _playerSessionDataCollection.Add(playerSessionData.clientID, playerSessionData);
+        _playerDataCollection.Add(playerData.clientID, playerData);
         
         approvalResponse.Approved = true;
         
-        Debugger.Log("[CONNECTION] user : " + playerSessionData.userName + " Connection Approved");
+        Debugger.Log("[CONNECTION] user : " + playerData.userName + " Connection Approved");
     }
 
-    public Dictionary<ulong, PlayerSessionData> GetPlayerSessionDataDict()
+    public Dictionary<ulong, PlayerData> GetPlayerSessionDataDict()
     {
-        return _playerSessionDataCollection;
+        return _playerDataCollection;
     }
 
-    public PlayerSessionData GetPlayerSessionData(ulong clientID)
+    public PlayerData GetPlayerSessionData(ulong clientID)
     {
-        _playerSessionDataCollection.TryGetValue(clientID, out PlayerSessionData sessionData);
+        _playerDataCollection.TryGetValue(clientID, out PlayerData sessionData);
         return sessionData;
     }
 
     public void ClearData()
     {
-        _playerSessionDataCollection.Clear();
+        _playerDataCollection.Clear();
         playersConnected = new NetworkVariable<int>();
+    }
+    
+    public async Task<PlayerData> TrySignInPlayer(string playerUserName)
+    {
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+#if UNITY_EDITOR
+            //AuthenticationService.Instance.ClearSessionToken(); 
+#endif
+            AuthenticationService.Instance.SwitchProfile(playerUserName);
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+        
+        Debugger.Log("[Authentication] Player ID " + AuthenticationService.Instance.PlayerId);
+        return new PlayerData()
+        { };
     }
 }

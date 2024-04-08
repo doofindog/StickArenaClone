@@ -21,17 +21,17 @@ public class Team
     public TeamType teamType;
     public Color color;
     public int score;
-    public List<PlayerSessionData> players;
+    public List<PlayerData> players;
 
     public Team(TeamType teamType, Color color)
     {
         name = teamType.ToString();
         this.teamType = teamType;
         this.color = color;
-        players = new List<PlayerSessionData>();
+        players = new List<PlayerData>();
     }
 
-    public void AddPlayer(PlayerSessionData player)
+    public void AddPlayer(PlayerData player)
     {
         if (player == null)
         {
@@ -80,7 +80,7 @@ public class TeamManager : NetworkBehaviour
         _teams.Add(new Team(TeamType.Green, Color.green));
     }
 
-    public void AddPlayerToTeam(PlayerSessionData playerData)
+    public void AddPlayerToTeam(PlayerData playerData)
     {
         _teams.Sort((team1, team2)=> team1.players.Count.CompareTo(team2.players.Count));
         _teams[0].AddPlayer(playerData);
@@ -91,7 +91,7 @@ public class TeamManager : NetworkBehaviour
     public void AddPlayerToTeam(ulong clientID)
     {
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerSessionData playerData = connectionManager.GetPlayerSessionData(clientID);
+        PlayerData playerData = connectionManager.GetPlayerSessionData(clientID);
         AddPlayerToTeam(playerData);
     }
 
@@ -101,7 +101,7 @@ public class TeamManager : NetworkBehaviour
         if(NetworkManager.Singleton.IsHost) return;
 
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerSessionData playerData = connectionManager.GetPlayerSessionData(clientID);
+        PlayerData playerData = connectionManager.GetPlayerSessionData(clientID);
         Team team = GetTeamFromType(type);
         team.AddPlayer(playerData);
     }

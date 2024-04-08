@@ -6,10 +6,12 @@ using UnityEngine.Serialization;
 
 public class MainMenuScreen : MonoBehaviour
 {
+    [SerializeField] private TMP_InputField joinCode;
     [SerializeField] private TMP_InputField usernameField;
     [SerializeField] private Animator animator;
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private GameObject connectionPanel;
+    [SerializeField] private GameObject joinPanel;
     [SerializeField] private GameObject hostDisconnectedPopup;
 
     public void Awake()
@@ -43,13 +45,21 @@ public class MainMenuScreen : MonoBehaviour
             return;
         }
         
-        GameManager.Instance.TryJoin(usernameField.text);
+        //GameManager.Instance.TryJoin(usernameField.text);
+        menuPanel.SetActive(false);
+        joinPanel.SetActive(true);
+    }
+
+    public void OnJoinWithCodePressed()
+    {
+        GameManager.Instance.TryJoin(usernameField.text, joinCode.text);
     }
 
     private void ChangeToConnectionPanel()
     {
         connectionPanel.SetActive(true);
         menuPanel.SetActive(false);
+        joinPanel.SetActive(false);
     }
 
     private void PlayNoUserNameAnim()
@@ -74,6 +84,13 @@ public class MainMenuScreen : MonoBehaviour
     public void CloseHostPopup()
     {
         hostDisconnectedPopup.SetActive(false);
+    }
+
+    public void BackToMenu()
+    {
+        joinPanel.SetActive(false);
+        connectionPanel.SetActive(false);
+        menuPanel.SetActive(true);
     }
 }
 

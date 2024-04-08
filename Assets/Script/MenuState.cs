@@ -35,7 +35,7 @@ public class MenuState : BaseGameState
             paniniProjection.active = true;
             chromaticAberration.active = true;
 
-            chromaticAberration.intensity.value = 0.637f;
+            chromaticAberration.intensity.value = 0.4f;
             lensDistortion.intensity.value = 0.278f;
             lensDistortion.xMultiplier.value = 0.85f;
             lensDistortion.yMultiplier.value = 0.85f;

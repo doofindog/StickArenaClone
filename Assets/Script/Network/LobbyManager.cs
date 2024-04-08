@@ -56,7 +56,6 @@ public class LobbyManager : Singleton<LobbyManager>
             UpdateLobby();
             _lobbyUpdateTimer = _lobbyUpdateRate;
         }
-        
     }
 
     private async void CreateLobby()
