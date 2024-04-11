@@ -143,8 +143,8 @@ public class RangedWeapon : Weapon, IReloadable
         int index = _currentPayload.tick % _weaponData.recoilPattern.Length;
         float rotation = _weaponData.recoilPattern[index] * _weaponData.spread;
         Quaternion bulletRotation = barrelTransform.rotation * Quaternion.Euler(0, 0, rotation);
-        
-        NetworkObject bulletNetObj = NetworkObjectPool.Singleton.GetNetworkObject(_weaponData.bulletPrefab, barrelTransform.position, bulletRotation);
+
+        GameObject bulletNetObj = ObjectPool.Instance.GetPooledObject(_weaponData.bulletPrefab, barrelTransform.position, bulletRotation);
         Bullet bullet = bulletNetObj.GetComponent<Bullet>();
         bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
         

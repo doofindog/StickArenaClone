@@ -8,8 +8,9 @@ public class Crown : NetworkBehaviour, ITickableEntity
 
     private NetworkVariable<bool> _isAcquired = new NetworkVariable<bool>();
     private Transform _playerCrownHolder;
+    
 
-    public void Awake()
+    public void Start()
     {
         _isAcquired.Value = false;
 
@@ -17,10 +18,7 @@ public class Crown : NetworkBehaviour, ITickableEntity
         {
             Destroy(GetComponent<Collider2D>());
         }
-    }
-
-    public void Start()
-    {
+        
         TickManager.Instance.AddEntity(this);
     }
 

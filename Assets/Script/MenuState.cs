@@ -43,8 +43,6 @@ public class MenuState : BaseGameState
             bloom.intensity.value = 4.65f;
         }
         
-        
-        
         StartCoroutine(ShowScreen());
     }
 
@@ -66,6 +64,7 @@ public class MenuState : BaseGameState
     {
         UIManager.Instance.ReplaceScreen(Screens.Menu);
         AudioManager.Instance.Play(menuMusic);
+        
         GameEvents.SendSplashCompleted();
     }
 

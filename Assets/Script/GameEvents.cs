@@ -17,10 +17,10 @@ public class GameEvents : MonoBehaviour
         PreparingArenaEvent?.Invoke();
     }
     
-    public static Action StartGameEvent;
+    public static Action OnGameStartEvent;
     public static void SendStartGameEvent()
     {
-        StartGameEvent?.Invoke();
+        OnGameStartEvent?.Invoke();
     }
     
     public static Action<NetworkObject,NetworkObject> PlayerDiedEvent;
@@ -53,9 +53,9 @@ public class GameEvents : MonoBehaviour
         TeamWonEvent?.Invoke(teamType);
     }
 
-    public static Action<TeamType> GameOverEvent;
-    public static void SendGameOver(TeamType teamType)
+    public static Action OnGameOverEvent;
+    public static void SendGameOver()
     {
-        GameOverEvent?.Invoke(teamType);
+        OnGameOverEvent?.Invoke();
     }
 }

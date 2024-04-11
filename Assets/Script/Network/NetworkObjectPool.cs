@@ -176,7 +176,6 @@ public class NetworkObjectPool : NetworkBehaviour
         // Here we must reverse the logic in ReturnNetworkObject.
         var go = networkObject.gameObject;
         go.SetActive(true);
-
         go.transform.position = position;
         go.transform.rotation = rotation;
 
@@ -206,9 +205,21 @@ public class NetworkObjectPool : NetworkBehaviour
         {
             // Unregister Netcode Spawn handlers
             NetworkManager.Singleton.PrefabHandler.RemoveHandler(prefab);
-
         }
+        
+        foreach (GameObject key in pooledObjects.Keys) 
+        {
+            foreach (NetworkObject obj in pooledObjects[key])
+            {
+                if (!IsServer)
+                {
+                    obj.Despawn();
+                }
 
+                Destroy(obj.gameObject);
+            }
+        }
+        
         pooledObjects.Clear();
     }
 }

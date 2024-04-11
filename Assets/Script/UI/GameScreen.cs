@@ -15,7 +15,7 @@ public class GameScreen : MonoBehaviour
     {
         PlayerEvents.PlayerDiedEvent += DisplayDeathScreen;
         GameEvents.PreparingArenaEvent += DisplayPreGameScreen;
-        GameEvents.StartGameEvent += DisplayGameUI;
+        GameEvents.OnGameStartEvent += DisplayGameUI;
     }
 
     private void DisplayGameUI()

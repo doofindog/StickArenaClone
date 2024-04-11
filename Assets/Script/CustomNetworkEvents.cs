@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
-public static class CustomNetworkEvents
+public class CustomNetworkEvents : MonoBehaviour
 {
     public static Action AllPlayersConnectedEvent;
 
@@ -24,6 +21,7 @@ public static class CustomNetworkEvents
 
     public static void SendNetworkStartedEvent()
     {
+        Debugger.Log("[Events] Called");
         NetworkStartedEvent?.Invoke();
     }
 }

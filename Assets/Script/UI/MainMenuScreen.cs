@@ -13,12 +13,17 @@ public class MainMenuScreen : MonoBehaviour
     [SerializeField] private GameObject connectionPanel;
     [SerializeField] private GameObject joinPanel;
     [SerializeField] private GameObject hostDisconnectedPopup;
+    [FormerlySerializedAs("SettingsPopUp")] [SerializeField] private GameObject settingsPopUp;
 
     public void Awake()
     {
-        NetworkManager.Singleton.OnClientStarted += ChangeToConnectionPanel;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        CustomNetworkEvents.NetworkStartedEvent += ChangeToConnectionPanel;
         CustomNetworkEvents.DisconnectedEvent += OnDisconnected;
+    }
+
+    public void Start()
+    {
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
     }
 
     public void OnEnable()
@@ -34,6 +39,7 @@ public class MainMenuScreen : MonoBehaviour
             PlayNoUserNameAnim();
             return;
         }
+        
         GameManager.Instance.TryStartHost(usernameField.text);
     }
 
@@ -45,7 +51,6 @@ public class MainMenuScreen : MonoBehaviour
             return;
         }
         
-        //GameManager.Instance.TryJoin(usernameField.text);
         menuPanel.SetActive(false);
         joinPanel.SetActive(true);
     }
@@ -57,6 +62,7 @@ public class MainMenuScreen : MonoBehaviour
 
     private void ChangeToConnectionPanel()
     {
+        Debugger.Log("[UI] Changing to Connection Panel");
         connectionPanel.SetActive(true);
         menuPanel.SetActive(false);
         joinPanel.SetActive(false);
@@ -91,6 +97,12 @@ public class MainMenuScreen : MonoBehaviour
         joinPanel.SetActive(false);
         connectionPanel.SetActive(false);
         menuPanel.SetActive(true);
+    }
+
+    public void ToggleOption()
+    {
+        menuPanel.SetActive(!menuPanel.activeInHierarchy);
+        settingsPopUp.SetActive(!settingsPopUp.activeInHierarchy);
     }
 }
 

@@ -16,7 +16,7 @@ public class NetController : NetworkBehaviour
     
     public virtual void Awake()
     {
-        GameEvents.GameOverEvent += StopControls;
+        GameEvents.OnGameOverEvent += StopControls;
         
         DataHandler = GetComponent<CharacterDataHandler>();
         PlayerInputHandler = GetComponent<PlayerInputHandler>();
@@ -155,7 +155,7 @@ public class NetController : NetworkBehaviour
         return _crownPlaceholder;
     }
 
-    private void StopControls(TeamType teamType)
+    private void StopControls()
     {
         IsEnabled = false;
     }

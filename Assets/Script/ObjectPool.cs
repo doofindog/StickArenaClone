@@ -7,11 +7,11 @@ public class ObjectPool : Singleton<ObjectPool>
     [SerializeField] private List<PoolObjConfig> pools;
 
     private Dictionary<GameObject, List<GameObject>> _objectPoolDictionary = new Dictionary<GameObject, List<GameObject>>();
-    
-    
-    void Start()
+
+    protected override void Awake()
     {
-        InitializeObjectPools();
+        GameEvents.OnGameStartEvent += InitializeObjectPools;
+        GameEvents.OnGameOverEvent += ClearPool;
     }
 
     void InitializeObjectPools()
@@ -62,6 +62,19 @@ public class ObjectPool : Singleton<ObjectPool>
     public void ReturnToPool(GameObject obj)
     {
         obj.SetActive(false);
+    }
+
+    public void ClearPool()
+    {
+        foreach (GameObject key in _objectPoolDictionary.Keys) 
+        {
+            foreach (GameObject obj in _objectPoolDictionary[key])
+            {
+                Destroy(obj.gameObject);
+            }
+        }
+        
+        _objectPoolDictionary.Clear();
     }
 }
 

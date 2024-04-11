@@ -75,10 +75,10 @@ public class GameState : BaseGameState
     
     private void StopGame(TeamType teamType)
     {
-        StartCoroutine(SlowDownGame(teamType));
+        StartCoroutine(SlowDownGame());
     }
 
-    private IEnumerator SlowDownGame(TeamType teamType)
+    private IEnumerator SlowDownGame()
     {
         float timeScale = Time.timeScale;
         while (timeScale > 0f)
@@ -91,7 +91,7 @@ public class GameState : BaseGameState
 
             if (timeScale <= 0.2f)
             {
-                GameEvents.SendGameOver(teamType);
+                GameEvents.SendGameOver();
                 break;
             }
         }
