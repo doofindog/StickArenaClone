@@ -12,7 +12,8 @@ public class WeaponComponent : NetworkBehaviour
 
     [SerializeField] private GameObject _arm;
     [SerializeField] private GameObject _hand;
-    
+
+    private Weapon _defaultWeapon;
     private Weapon _equippedWeapon;
     private Weapon _nearByWeapon;
     
@@ -27,7 +28,10 @@ public class WeaponComponent : NetworkBehaviour
 
         if (inputPayLoad.attackPressed)
         {
-            TriggerWeapon(inputPayLoad);
+            TriggerWeapon(new Weapon.Params()
+            {
+                tick = inputPayLoad.tick
+            });
         }
         else
         {
@@ -46,12 +50,21 @@ public class WeaponComponent : NetworkBehaviour
     {
         if(!IsServer && _nearByWeapon == null) return;
         
-        EquipWeaponServerRpc();
+        SendEquipWeaponServerRpc();
     }
     
     [ServerRpc]
-    private void EquipWeaponServerRpc(ServerRpcParams serverRpcParams = default)
+    private void SendEquipWeaponServerRpc(ServerRpcParams serverRpcParams = default)
     {
+        EquipWeapon();
+    }
+
+    public void EquipWeapon(Weapon weapon = null)
+    {
+        if (weapon != null)
+        {
+            _nearByWeapon = weapon;
+        }
         if(_nearByWeapon == null) return;
 
         if (_equippedWeapon != null)
@@ -78,6 +91,11 @@ public class WeaponComponent : NetworkBehaviour
         
         _nearByWeapon = null;
         EquipWeaponClientRpc(_equippedWeapon.GetComponent<NetworkObject>());
+
+        if (_defaultWeapon == null)
+        {
+            _defaultWeapon = _equippedWeapon;
+        }
     }
 
     private void DestroyWeapon(Weapon weapon)
@@ -90,7 +108,7 @@ public class WeaponComponent : NetworkBehaviour
 
     public void DropEquippedWeapon()
     {
-        if (_equippedWeapon == null)
+        if (_equippedWeapon == null || _defaultWeapon == _equippedWeapon)
         {
             return;
         }
@@ -140,14 +158,18 @@ public class WeaponComponent : NetworkBehaviour
         }
     }
 
-    private void TriggerWeapon(NetInputPayLoad inputPayLoad)
+    public void TriggerWeapon(Weapon.Params weaponParams)
     {
-        if(_equippedWeapon == null) return;
+        if (_equippedWeapon == null)
+        {
+            Debugger.Log("[WEAPON] Weapon Not Equiped");
+            return;
+        }
             
-        _equippedWeapon.Trigger(inputPayLoad);
+        _equippedWeapon.Trigger(weaponParams);
     }
 
-    private void ReleaseTrigger()
+    public void ReleaseTrigger()
     {
         if(_equippedWeapon == null) return;
         

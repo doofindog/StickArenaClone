@@ -17,7 +17,7 @@ public class RangedWeapon : Weapon, IReloadable
     [SerializeField] protected FireType fireType;
     [SerializeField] protected WeaponState weaponState;
 
-    private NetInputPayLoad _currentPayload;
+    private Weapon.Params _weaponParams;
     
     protected NetworkAnimator _netAnimator;
 
@@ -39,11 +39,6 @@ public class RangedWeapon : Weapon, IReloadable
         fireType = _weaponData.fireType;
         weaponState = global::WeaponState.Ready;
         barrelTransform = transform.Find("Barrel");
-
-        if (IsClient)
-        {
-            //weaponState.OnValueChanged += OnWeaponStateChanged;
-        }
     }
 
     public void Start()
@@ -62,9 +57,13 @@ public class RangedWeapon : Weapon, IReloadable
         _unequipedWeaponObj.SetActive(false);
     }
 
-    public override void Trigger(NetInputPayLoad inputPayLoad)
+    public override void Trigger(Weapon.Params inputPayLoad)
     {
-        if(totalAmmo == 0 && ammoInClip == 0) return;
+        if (totalAmmo == 0 && ammoInClip == 0)
+        {
+            Debugger.Log("[WEAPON] out of ammo and clips");
+            return;
+        }
         
         if (ammoInClip <= 0 && weaponState == global::WeaponState.Ready)
         {
@@ -72,7 +71,8 @@ public class RangedWeapon : Weapon, IReloadable
             return;
         }
 
-        _currentPayload = inputPayLoad;
+        _weaponParams = inputPayLoad;
+
         switch (fireType)
         {
             case FireType.Single:
@@ -140,7 +140,9 @@ public class RangedWeapon : Weapon, IReloadable
     {
         weaponState = global::WeaponState.Fired;
         
-        int index = _currentPayload.tick % _weaponData.recoilPattern.Length;
+        Debugger.Log("[weapon] fire bullet called");
+        
+        int index = _weaponParams.tick % _weaponData.recoilPattern.Length;
         float rotation = _weaponData.recoilPattern[index] * _weaponData.spread;
         Quaternion bulletRotation = barrelTransform.rotation * Quaternion.Euler(0, 0, rotation);
 
@@ -154,6 +156,8 @@ public class RangedWeapon : Weapon, IReloadable
         {
             GameEvents.SendWeaponFired();
         }
+        
+        _animator.Play("Fire");
     }
     
 

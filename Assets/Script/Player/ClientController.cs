@@ -67,7 +67,8 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 				position = transform.position,
 				aimAngle = inputPayLoad.aimAngle,
 				dodge = inputPayLoad.dodgePressed,
-				canDodge = DataHandler.canDodge
+				canDodge = DataHandler.canDodge,
+				firedWeapon = inputPayLoad.attackPressed
 			});
 		}
 	}
@@ -103,6 +104,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 					position = transform.position,
 					aimAngle = inputPayLoad.aimAngle,
 					dodge = inputPayLoad.dodgePressed,
+					firedWeapon = inputPayLoad.attackPressed
 				};
 				
 				_netStateProcessor.UpdateStateAtToTick(tickToProcess, netStatePayLoad);
@@ -122,11 +124,23 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		transform.position = latestServerState.position;
 
 		WeaponComponent.Aim(latestServerState.aimAngle);
-		
+		Debugger.Log("[WEAPON] Weapon Fired State : " + latestServerState.firedWeapon);
+		if (latestServerState.firedWeapon)
+		{
+			WeaponComponent.TriggerWeapon(new Weapon.Params()
+			{
+				tick = latestServerState.tick
+			});
+		}
+		else
+		{
+			WeaponComponent.ReleaseTrigger();
+		}
+
 		Flip(latestServerState.aimAngle);
 	}
 	
-	public override void TakeDamage(float damage, NetworkObject source)
+	public override void TakeDamage(HitResponseData hitResponseData)
 	{
 		if (IsOwner)
 		{
@@ -147,6 +161,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		DataHandler.state = CharacterDataHandler.State.Dead;
 		IsEnabled = false;
 		
+		GameEvents.SendPlayerKilledEvent(OwnerClientId);
 		if (IsLocalPlayer)
 		{
 			PlayerEvents.SendPlayerDied();

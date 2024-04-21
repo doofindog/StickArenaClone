@@ -66,4 +66,9 @@ public class TickManager : Singleton<TickManager>
     {
         return _minTimeBetweenTicks;
     }
+
+    public float GetTickRate()
+    {
+        return serverTickRate;
+    }
 }

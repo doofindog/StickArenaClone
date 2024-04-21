@@ -44,6 +44,7 @@ public class DeathPanel : MonoBehaviour
     {
         respawnButton.gameObject.SetActive(false);
         gameObject.SetActive(false);
-        GameManager.Instance.RequestSpawnPlayerServerRPC(Unity.Netcode.NetworkManager.Singleton.LocalClientId);
+        SpawnManager spawnManager = GameManager.Instance.spawnManager;
+        spawnManager.RequestSpawnPlayerServerRPC(Unity.Netcode.NetworkManager.Singleton.LocalClientId);
     }
 }

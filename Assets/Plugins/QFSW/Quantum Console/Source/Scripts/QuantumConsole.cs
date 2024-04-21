@@ -175,6 +175,15 @@ namespace QFSW.QC
 
         private readonly Type _voidTaskType = typeof(Task<>).MakeGenericType(Type.GetType("System.Threading.Tasks.VoidTaskResult"));
 
+        public void Start()
+        {
+#if UNITY_EDITOR
+            gameObject.SetActive(false);
+#elif !UNITY_EDITOR
+            gameObject.SetActive(true);
+#endif
+        }
+
         /// <summary>Applies a theme to the Quantum Console.</summary>
         /// <param name="theme">The desired theme to apply.</param>
         public void ApplyTheme(QuantumTheme theme, bool forceRefresh = false)

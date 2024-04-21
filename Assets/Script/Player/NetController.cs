@@ -32,7 +32,7 @@ public class NetController : NetworkBehaviour
         Team team = TeamManager.Instance.GetTeamFromID(clientID);
         _spriteRenderer.material.SetColor("_newColour", team.color);
         
-        GameManager.Instance.AddPlayer(clientID, netObj);
+        ConnectionManager.Instance.AddPlayer(clientID, netObj);
     }
     
     public virtual void Start()
@@ -116,7 +116,7 @@ public class NetController : NetworkBehaviour
             Animator.PlayIdle(true);
         }
     }
-    public virtual void TakeDamage(float damage,NetworkObject source)
+    public virtual void TakeDamage(HitResponseData hitResponseData)
     {
         
     }
@@ -129,8 +129,8 @@ public class NetController : NetworkBehaviour
     public virtual void OnRespawn()
     {
         IsEnabled = true;
-        Animator.PlayIdle(false);
         gameObject.SetActive(true);
+        Animator.PlayIdle(false);
         DataHandler.Refresh();
         GetComponent<Collider2D>().enabled = true;
     }

@@ -23,10 +23,10 @@ public class GameEvents : MonoBehaviour
         OnGameStartEvent?.Invoke();
     }
     
-    public static Action<NetworkObject,NetworkObject> PlayerDiedEvent;
-    public static void SendPlayerKilledEvent(NetworkObject player, NetworkObject source)
+    public static Action<ulong> PlayerDiedEvent;
+    public static void SendPlayerKilledEvent(ulong clientID)
     {
-        PlayerDiedEvent?.Invoke(player, source);
+        PlayerDiedEvent?.Invoke(clientID);
     }
     
     public static Action<ulong, NetworkObject> PlayerSpawnedEvent;

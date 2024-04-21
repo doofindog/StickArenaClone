@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sherbert.Framework.Generic;
 using Unity.Netcode;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
@@ -18,18 +19,24 @@ public class ConnectionManager : NetworkBehaviour
         ConnectionFailed,
     }
     
+    public static ConnectionManager Instance { get; private set; }
+    
     public NetworkVariable<int> playersConnected = new NetworkVariable<int>();
     public int MaxPlayers => _maxConnections;
-    
     
     private int _maxConnections = 1;
     private SessionData _sessionData;
     private PlayerData _clientData;
-    private Dictionary<ulong, PlayerData> _playerDataCollection = new Dictionary<ulong, PlayerData>();
+    [SerializeField] private SerializableDictionary<ulong, PlayerData> _playerDataCollection = new SerializableDictionary<ulong, PlayerData>();
 
 
     public async Task Init()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        
         Debugger.Log("[CONNECTION] Initialising Connection Manager");
 
         await UnityServices.InitializeAsync();
@@ -158,12 +165,12 @@ public class ConnectionManager : NetworkBehaviour
         Debugger.Log("[CONNECTION] user : " + playerData.userName + " Connection Approved");
     }
 
-    public Dictionary<ulong, PlayerData> GetPlayerSessionDataDict()
+    public SerializableDictionary<ulong, PlayerData> GetPlayerSessionDataDict()
     {
         return _playerDataCollection;
     }
 
-    public PlayerData GetPlayerSessionData(ulong clientID)
+    public PlayerData GetPlayerData(ulong clientID)
     {
         _playerDataCollection.TryGetValue(clientID, out PlayerData sessionData);
         return sessionData;
@@ -189,5 +196,32 @@ public class ConnectionManager : NetworkBehaviour
         Debugger.Log("[Authentication] Player ID " + AuthenticationService.Instance.PlayerId);
         return new PlayerData()
         { };
+    }
+    
+    public void AddPlayer(ulong clientId, NetworkObject networkObject)
+    {
+        if (_playerDataCollection == null)
+        {
+            return;
+        }
+
+        PlayerData playerData = _playerDataCollection[clientId];
+        playerData.networkObject = networkObject;
+    }
+
+    public NetworkObject GetPlayerNetObject(ulong clientId)
+    {
+        if (_playerDataCollection == null || !_playerDataCollection.ContainsKey(clientId))
+        {
+            return null;
+        }
+        
+        PlayerData playerData = _playerDataCollection[clientId];
+        return playerData.networkObject;
+    }
+
+    public List<PlayerData> GetAllPlayerData()
+    {
+        return _playerDataCollection.Values.ToList();
     }
 }

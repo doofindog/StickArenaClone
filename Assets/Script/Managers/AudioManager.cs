@@ -3,7 +3,8 @@ using UnityEngine;
 public enum AudioChannel
 {
     MUSIC,
-    SFX
+    SFX,
+    CROWD,
 }
 
 public class AudioManager : Singleton<AudioManager>
@@ -14,7 +15,7 @@ public class AudioManager : Singleton<AudioManager>
 
     public void PlayOneShot(AudioClip clip)
     {
-        musicSource.PlayOneShot(clip);
+        sfxSource.PlayOneShot(clip);
     }
     
     public void Play(AudioClip clip, float volume = 0.0f, float delay = 0.0f)

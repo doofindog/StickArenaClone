@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class CharacterAnimator : NetworkAnimator
 {
+    [SerializeField] private Animator anim;
+    
     private const string DEATH_KEY = "death";
     private const string DAMAGE_KEY = "damage";
     private const string DROWN_KEY = "drown";
@@ -48,7 +50,7 @@ public class CharacterAnimator : NetworkAnimator
             return;
         }
         
-        Animator.SetTrigger(Damage);
+        anim.SetTrigger(Damage);
     }
 
     public void PlayDeathAnimation(bool isSync)

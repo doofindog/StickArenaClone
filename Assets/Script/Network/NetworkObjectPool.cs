@@ -122,8 +122,8 @@ public class NetworkObjectPool : NetworkBehaviour
         var networkObject = prefab.GetComponent<NetworkObject>();
 
         Assert.IsNotNull(networkObject, $"{nameof(prefab)} must have {nameof(networkObject)} component.");
-        Assert.IsFalse(prefabs.Contains(prefab), $"Prefab {prefab.name} is already registered in the pool.");
-
+        //Assert.IsFalse(prefabs.Contains(prefab), $"Prefab {prefab.name} is already registered in the pool.");
+        
         RegisterPrefabInternal(prefab, prewarmCount);
     }
 
@@ -142,7 +142,7 @@ public class NetworkObjectPool : NetworkBehaviour
             ReturnNetworkObject(go.GetComponent<NetworkObject>(), prefab);
         }
 
-        // Register Netcode Spawn handlers
+        // Register NetCode Spawn handlers
         NetworkManager.Singleton.PrefabHandler.AddHandler(prefab, new PooledPrefabInstanceHandler(prefab, this));
     }
 
@@ -161,6 +161,9 @@ public class NetworkObjectPool : NetworkBehaviour
     /// <returns></returns>
     private NetworkObject GetNetworkObjectInternal(GameObject prefab, Vector3 position, Quaternion rotation)
     {
+        AddPrefab(prefab);
+
+        
         var queue = pooledObjects[prefab];
 
         NetworkObject networkObject;

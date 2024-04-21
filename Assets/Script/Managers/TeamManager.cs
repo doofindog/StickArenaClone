@@ -90,7 +90,7 @@ public class TeamManager : NetworkBehaviour
     public void AddPlayerToTeam(ulong clientID)
     {
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerData playerData = connectionManager.GetPlayerSessionData(clientID);
+        PlayerData playerData = connectionManager.GetPlayerData(clientID);
         AddPlayerToTeam(playerData);
     }
 
@@ -100,7 +100,7 @@ public class TeamManager : NetworkBehaviour
         if(NetworkManager.Singleton.IsHost) return;
 
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerData playerData = connectionManager.GetPlayerSessionData(clientID);
+        PlayerData playerData = connectionManager.GetPlayerData(clientID);
         Team team = GetTeamFromType(type);
         team.AddPlayer(playerData);
     }
@@ -108,7 +108,7 @@ public class TeamManager : NetworkBehaviour
     public Team GetTeamFromID(ulong clientID)
     {
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        TeamType teamType = connectionManager.GetPlayerSessionData(clientID).teamType;
+        TeamType teamType = connectionManager.GetPlayerData(clientID).teamType;
         return GetTeamFromType(teamType);
     }
 

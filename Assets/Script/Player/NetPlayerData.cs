@@ -56,6 +56,7 @@ public struct NetStatePayLoad : INetworkSerializable
             reader.ReadValueSafe(out aimAngle);
             reader.ReadValueSafe(out dodge);
             reader.ReadValueSafe(out canDodge);
+            reader.ReadValueSafe(out firedWeapon);
         }
         else
         {
@@ -65,6 +66,7 @@ public struct NetStatePayLoad : INetworkSerializable
             writer.WriteValueSafe(aimAngle);
             writer.WriteValueSafe(dodge);
             writer.WriteValueSafe(canDodge);
+            writer.WriteValueSafe(firedWeapon);
         }
     }
 }

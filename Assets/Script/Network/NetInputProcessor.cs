@@ -29,19 +29,19 @@ public class NetInputProcessor : NetworkBehaviour
 
     public void ProcessInputs()
     {
-        bool containedInput = _inputsQueue.Count > 0;
-        while (_inputsQueue.Count > 0)
+        if (_inputsQueue.Count > 0)
         {
-            NetInputPayLoad inputPayLoad = _inputsQueue.Dequeue();
+            while (_inputsQueue.Count > 0)
+            {
+                NetInputPayLoad inputPayLoad = _inputsQueue.Dequeue();
             
-            processedInputEvent?.Invoke(inputPayLoad);
-        }
-
-        if (containedInput)
-        {
+                processedInputEvent?.Invoke(inputPayLoad);
+            }
+            
             processCompletedEvent?.Invoke();
+            
+            return;
         }
-        
     }
 
     public NetInputPayLoad GetPayloadAtTick(int tick)

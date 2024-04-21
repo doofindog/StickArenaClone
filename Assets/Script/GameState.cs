@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -8,6 +9,7 @@ using UnityEngine.Rendering.Universal;
 
 public class GameState : BaseGameState
 {
+    [SerializeField] private GameObject defaultWeapon;
     [SerializeField] private TvController _tvController;
     [SerializeField] private Volume _postProcessVolume;
     [SerializeField] private AudioClip gameMusic;
@@ -68,8 +70,17 @@ public class GameState : BaseGameState
             yield return new WaitForSeconds(1);
             GameManager.Instance.startGameTimer.Value--;
         }
-        
-        GameManager.Instance.SpawnAllPlayers();
+
+        SpawnManager.Instance.SpawnAllPlayers();
+        List<NetworkClient> clients = NetworkManager.ConnectedClientsList.ToList();
+        foreach (NetworkClient client in clients)
+        {
+            NetworkObject weaponNetObj = SpawnManager.Instance.SpawnObject(defaultWeapon, SpawnManager.SpawnType.NETWORK).GetComponent<NetworkObject>();
+            weaponNetObj.Spawn();
+            WeaponComponent weaponComponent = client.PlayerObject.GetComponent<WeaponComponent>();
+            weaponComponent.EquipWeapon(weaponNetObj.GetComponent<Weapon>());
+        }
+
         StartGameClientRPC();
     }
     

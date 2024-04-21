@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using UnityEngine;
 
 [System.Serializable]
 public class PlayerData: INetworkSerializable
@@ -8,6 +9,7 @@ public class PlayerData: INetworkSerializable
     public bool isJoinSession;
     public bool isConnected;
     public TeamType teamType;
+    public NetworkObject networkObject;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -29,5 +31,11 @@ public class PlayerData: INetworkSerializable
             writer.WriteValueSafe(isConnected);
             writer.WriteValueSafe(teamType);
         }
+    }
+
+
+    public void SetNetworkObject(NetworkObject obj)
+    {
+        networkObject = obj;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -34,6 +35,7 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     public void UpdateTick(int tick)
     {
         _netInputProcessor.ProcessInputs();
+        _netStateProcessor.AddState(_netStateProcessor.GetLastProcessedState());
     }
 
     private void HandleInputProcessed(NetInputPayLoad inputPayLoad)
@@ -48,10 +50,10 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
             tick = inputPayLoad.tick,
             position = transform.position,
             aimAngle = inputPayLoad.aimAngle,
-            dodge = inputPayLoad.dodgePressed
+            dodge = inputPayLoad.dodgePressed,
+            firedWeapon =  inputPayLoad.attackPressed
         };
         
-        _netStateProcessor.AddState(statePayLoad);
         _netStateProcessor.UpdateLastProcessedState(statePayLoad);
     }
 
@@ -60,15 +62,29 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         _netStateProcessor.SendStateClientRpc(_netStateProcessor.GetLastProcessedState());
     }
 
-    public override void TakeDamage(float damage, NetworkObject source)
+    public override void TakeDamage(HitResponseData hitResponseData)
     {
-        float currentHealth = DataHandler.ReduceHealth(damage);
+        ulong ping = NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(hitResponseData.sourceID);
+        float rewindTime = Time.realtimeSinceStartup * 1000 - ping;
+        int rewindTick = Convert.ToInt32((rewindTime * (TickManager.Instance.GetTick() % 1024)) / (Time.realtimeSinceStartup * 1000));
+        
+        NetStatePayLoad hitState = _netStateProcessor.GetStateAtTick(rewindTick);
+
+        Debugger.Log("[SERVER] ping : "+ ping +", rewardTime :" + rewindTime + ", rewardTick : " + rewindTick + ", current tick : " + (TickManager.Instance.GetTick() % 1024));
+        if (!(Vector3.Distance(hitState.position, hitResponseData.hitPosition) < 0.5f)) 
+        {
+            Debugger.Log("[SERVER] [Base Character] Position Offset too far to register damage");
+            return;
+        }
+        
+        float currentHealth = DataHandler.ReduceHealth(hitResponseData.damage);
         if (currentHealth <= 0)
         {
             ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
-            GameManager.Instance.DespawnPlayer(clientID);
+            SpawnManager spawnManager = GameManager.Instance.spawnManager;
+            spawnManager.DespawnPlayer(clientID);
 
-            GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
+            //GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
             
             Animator.PlayDeathAnimation(true);
         }
@@ -89,6 +105,7 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     public override void Drown()
     {
         Animator.PlayDrownAnimation(true);
-        GameManager.Instance.DespawnPlayer(NetworkObject.OwnerClientId);
+        SpawnManager spawnManager = GameManager.Instance.spawnManager;
+        spawnManager.DespawnPlayer(NetworkObject.OwnerClientId);
     }
 }

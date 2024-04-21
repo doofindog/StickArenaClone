@@ -6,8 +6,14 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Serialization;
 
+
 public class Weapon : NetworkBehaviour
 {
+    public class Params
+    {
+        public int tick;
+    }
+    
     [SerializeField] protected WeaponDataScriptable _weaponData;
     
     protected ulong playerClientID;
@@ -27,7 +33,7 @@ public class Weapon : NetworkBehaviour
         playerClientID = playerNetObj.OwnerClientId;
     }
 
-    public virtual void Trigger(NetInputPayLoad inputPayLoad) { }
+    public virtual void Trigger(Params inputPayLoad) { }
     
     public virtual void ReleaseTrigger()
     {
