@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(menuName = "Stick Man Arena/Create Weapon Data")]
 public class WeaponDataScriptable : ScriptableObject
@@ -19,6 +20,7 @@ public class WeaponDataScriptable : ScriptableObject
     public float bulletSpeed;
     public int burstBulletCount;
     public float burstFireRate;
+    [FormerlySerializedAs("fireSound")] public AudioClip fireAudio;
 }
 
 public enum FireType

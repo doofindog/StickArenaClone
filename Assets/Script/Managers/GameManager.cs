@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CrazyGames;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -42,18 +43,18 @@ public class GameManager : NetworkBehaviour
         {
             Instance = this;
         }
-        
     }
     
     public async void Start()
     {
+        CrazySDK.Init(() => { });
         await Initialise();
     }
     
 
     private async Task Initialise()
     {
-        //Cursor.visible = false;
+        //Cursor.visible = f
         
         _gameStates.Add(EGameStates.MENU, GetComponent<MenuState>());
         _gameStates.Add(EGameStates.GAME, GetComponent<GameState>());
@@ -109,7 +110,7 @@ public class GameManager : NetworkBehaviour
         ConnectionPayload connectionPayload = new ConnectionPayload() { userName = username };
         string payloadJson = JsonUtility.ToJson(connectionPayload);
         NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
-        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(joinAllocation, "dtls"));
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(joinAllocation, "wss"));
         NetworkManager.Singleton.StartClient();
         
         CustomNetworkEvents.SendNetworkStartedEvent();
@@ -138,7 +139,7 @@ public class GameManager : NetworkBehaviour
         ConnectionPayload connectionPayload = new ConnectionPayload() { userName = username };
         string payloadJson = JsonUtility.ToJson(connectionPayload);
         NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
-        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(allocation, "dtls"));
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(allocation, "wss"));
         string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
         Debug.Log("[CONNECTION] join Code : " + joinCode);
         NetworkManager.Singleton.StartHost();

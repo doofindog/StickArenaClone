@@ -11,10 +11,10 @@ public class SessionSettings : ScriptableObject
     public float prepGameTime;
     public float playerRespawnTime;
 
-    [Header("Dynamic Tiles")]
-    public Vector2 pitSize;
-
-
+    [Header("Arena")] 
+    public int maxCoinSpawns;
+    public float spawnSpawnRate;
+    
     [Header("Score")] 
     public float scoreUpdateTime;
     public int winThreshold;

@@ -31,14 +31,16 @@ public class GameState : BaseGameState
 
         if (_postProcessVolume != null)
         {
-            _postProcessVolume.profile.TryGet(out ChromaticAberration chromaticAberration);
+            //_postProcessVolume.profile.TryGet(out ChromaticAberration chromaticAberration);
             _postProcessVolume.profile.TryGet(out LensDistortion lensDistortion);
             _postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
+            _postProcessVolume.profile.TryGet(out Bloom bloom);
 
-            chromaticAberration.active = false;
+            //chromaticAberration.active = false;
             lensDistortion.active = false;
             paniniProjection.distance.value = 0.01f;
             paniniProjection.cropToFit.value = 0.632f;
+            if (bloom != null) bloom.intensity.value = 2.0f;
         }
         
         if (IsServer)
@@ -122,6 +124,7 @@ public class GameState : BaseGameState
     private void StartGameClientRPC()
     {
         GameEvents.SendStartGameEvent();
+        ArenaManager.Instance.ChangeState(ArenaManager.States.Idle);
         
         if (gameMusic != null)
         {

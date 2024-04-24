@@ -5,14 +5,34 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
-public class ArenaManager : NetworkBehaviour
+public class ArenaManager : NetworkBehaviour, ITickableEntity
 {
+    public enum States
+    {
+        Idle,
+        Escapist,
+    }
+    
+    public static ArenaManager Instance { get; private set; }
+    
     [SerializeField] private GameObject tilePrefab;
+    [SerializeField] private GameObject robotPrefab;
     [SerializeField] private Vector2 tileSize;
     [SerializeField] private Vector2 offsetPosition;
     
     private IArenaState _currentState;
     private Dictionary<Vector2, GameObject> _dynamicTiles = new Dictionary<Vector2, GameObject>();
+    private Dictionary<States, IArenaState> _arenaStates = new Dictionary<States, IArenaState>();
+
+    public void Awake()
+    {
+        if (Instance == null) Instance = this;
+    }
+
+    public void Start()
+    {
+        TickManager.Instance.AddEntity(this);
+    }
 
     public void Init()
     {
@@ -22,22 +42,17 @@ public class ArenaManager : NetworkBehaviour
             state.Init(this);
         }
         
-        ChangeState(GetComponent<ArenaNormalState>());
+        _arenaStates.Add(States.Idle, GetComponent<ArenaNormalState>());
+        
         GenerateTile();
     }
 
-    private void ChangeState(IArenaState state)
+    public void ChangeState(States arenaState)
     {
         _currentState?.OnExitState();
-        _currentState = state;
+        _currentState = _arenaStates[arenaState];
         _currentState?.OnEnterState();
     }
-
-    public void Update()
-    {
-        _currentState?.OnUpdateState();
-    }
-    
 
     private void GenerateTile()
     {
@@ -66,5 +81,10 @@ public class ArenaManager : NetworkBehaviour
     {
         _dynamicTiles.TryGetValue(new Vector2(x, y), out GameObject tile);
         return tile != null ? tile.GetComponent<DynamicTiles>() : null;
+    }
+
+    public void UpdateTick(int tick)
+    {
+        _currentState?.OnUpdateState();
     }
 }

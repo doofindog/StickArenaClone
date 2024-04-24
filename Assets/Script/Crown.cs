@@ -51,7 +51,6 @@ public class Crown : NetworkBehaviour, ITickableEntity
     [ClientRpc]
     private void PlacedCrownClientRpc(ulong clientID)
     {
-
         ConnectionManager manager = GameManager.Instance.connectionManager;
         NetworkObject playerNetObj = manager.GetPlayerNetObject(clientID);
         _playerCrownHolder = playerNetObj.GetComponent<NetController>().GetCrownPlaceholder();

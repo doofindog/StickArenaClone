@@ -16,9 +16,9 @@ public class FollowCameraState : CameraState, ITickableEntity
     [SerializeField] private float _positionShakeIntensity;
     [SerializeField] private float _rotationShakeIntensity;
     [SerializeField] private float _shakeDuration;
-    private float _shakeTimer;
+    [SerializeField] private float _shakeTimer;
     private bool _performShake;
-    private Vector3 _originalPosition;
+    [SerializeField] private Vector3 _originalPosition;
     private Quaternion _originalRotation;
     
 
@@ -78,9 +78,9 @@ public class FollowCameraState : CameraState, ITickableEntity
         if (_shakeTimer < _shakeDuration )
         {
             // Calculate Perlin noise values for smooth randomness
-            float perlinX = Mathf.PerlinNoise(Time.time * 10f, 0f) * 2 - 1;
-            float perlinY = Mathf.PerlinNoise(0f, Time.time * 10f) * 2 - 1;
-            float perlinRotZ = Mathf.PerlinNoise(0f, Time.time * 10f) * 2 - 1;
+            float perlinX = Mathf.PerlinNoise(Time.time * 5f, 0f) * 2 - 1;
+            float perlinY = Mathf.PerlinNoise(0f, Time.time * 5f) * 2 - 1;
+            float perlinRotZ = Mathf.PerlinNoise(0f, Time.time * 5f) * 2 - 1;
 
             // Calculate the shake offset for position and rotation using Perlin noise and intensity
             Vector3 positionShakeOffset = new Vector3(perlinX, perlinY, 0f) * _positionShakeIntensity;

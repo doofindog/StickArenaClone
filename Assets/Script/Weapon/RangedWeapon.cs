@@ -16,6 +16,7 @@ public class RangedWeapon : Weapon, IReloadable
     [SerializeField] protected int totalAmmo;
     [SerializeField] protected FireType fireType;
     [SerializeField] protected WeaponState weaponState;
+    [SerializeField] protected AudioClip fireAudio;
 
     private Weapon.Params _weaponParams;
     
@@ -38,6 +39,7 @@ public class RangedWeapon : Weapon, IReloadable
         totalAmmo = _weaponData.maxAmmo;
         fireType = _weaponData.fireType;
         weaponState = global::WeaponState.Ready;
+        fireAudio = _weaponData.fireAudio;
         barrelTransform = transform.Find("Barrel");
     }
 
@@ -158,6 +160,8 @@ public class RangedWeapon : Weapon, IReloadable
         }
         
         _animator.Play("Fire");
+        //AudioManager.Instance.PlayOneShot(fireAudio);
+        GetComponent<AudioSource>().PlayOneShot(fireAudio);
     }
     
 

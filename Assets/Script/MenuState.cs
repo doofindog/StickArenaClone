@@ -26,16 +26,16 @@ public class MenuState : BaseGameState
         
         if (_postProcessVolume != null)
         {
-            _postProcessVolume.profile.TryGet(out ChromaticAberration chromaticAberration);
+            //_postProcessVolume.profile.TryGet(out ChromaticAberration chromaticAberration);
             _postProcessVolume.profile.TryGet(out LensDistortion lensDistortion);
             _postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
             _postProcessVolume.profile.TryGet(out Bloom bloom);
 
             lensDistortion.active = true;
             paniniProjection.active = true;
-            chromaticAberration.active = true;
+            //chromaticAberration.active = true;
 
-            chromaticAberration.intensity.value = 0.4f;
+            //chromaticAberration.intensity.value = 0.4f;
             lensDistortion.intensity.value = 0.278f;
             lensDistortion.xMultiplier.value = 0.85f;
             lensDistortion.yMultiplier.value = 0.85f;

@@ -24,9 +24,10 @@ MonoBehaviour:
   - 0.05
   - -0.021
   ammoInClip: 10
-  maxAmmo: 45
+  maxAmmo: 999999
   reloadTime: 1.5
-  fireType: 0
+  fireType: 2
   bulletSpeed: 15
   burstBulletCount: 3
   burstFireRate: 0.075
+  fireAudio: {fileID: 8300000, guid: 040af3b026d70b14b98cd3d703dd7e20, type: 3}

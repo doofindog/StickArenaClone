@@ -14,7 +14,7 @@ public class ArenaNormalState : NetworkBehaviour, IArenaState
     
     public void OnEnterState()
     {
-        ResetAllTiles();
+
     }
 
     public void OnUpdateState()
@@ -26,12 +26,10 @@ public class ArenaNormalState : NetworkBehaviour, IArenaState
     {
         
     }
+    
 
-    private void ResetAllTiles()
+    private void SpawnCoinRobots()
     {
-        foreach (GameObject tile in _arenaManager.GetAllDynamicTiles())
-        {
-            tile.GetComponent<DynamicTiles>().Reset();
-        }
+        
     }
 }
