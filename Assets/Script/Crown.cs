@@ -2,10 +2,10 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Crown : NetworkBehaviour, ITickableEntity
+public class Crown : NetworkBehaviour, ITickableEntity, IPickable
 {
     [SerializeField] private float _followSpeed;
-
+    [SerializeField] private GameObject _pickUpParticle;
     private NetworkVariable<bool> _isAcquired = new NetworkVariable<bool>();
     private Transform _playerCrownHolder;
     
@@ -28,39 +28,15 @@ public class Crown : NetworkBehaviour, ITickableEntity
         TickManager.Instance.RemoveEntity(this);
     }
 
-    public void OnTriggerEnter2D(Collider2D other)
-    {
-        if(!IsServer) return;
-        
-        if (other.CompareTag("Player") && !_isAcquired.Value)
-        {
-            PlaceCrown(other.gameObject);
-        }
-    }
-
-    private void PlaceCrown(GameObject player)
-    {
-        _isAcquired.Value = true;
-        NetworkObject playerNetObj = player.GetComponent<NetworkObject>();
-        
-        PlacedCrownClientRpc(playerNetObj.OwnerClientId);
-        
-        GameEvents.SendCrownAcquired(playerNetObj.OwnerClientId);
-    }
-
     [ClientRpc]
     private void PlacedCrownClientRpc(ulong clientID)
     {
         ConnectionManager manager = GameManager.Instance.connectionManager;
         NetworkObject playerNetObj = manager.GetPlayerNetObject(clientID);
-        _playerCrownHolder = playerNetObj.GetComponent<NetController>().GetCrownPlaceholder();
+        NetController netController = playerNetObj.GetComponent<NetController>();
+        _playerCrownHolder = netController.GetCrownPlaceholder();
+        netController.AddCrown(this);
         gameObject.GetComponent<Collider2D>().enabled = false;
-    }
-
-
-    private void DropCrown(GameObject player)
-    {
-        _isAcquired.Value = false;
     }
 
     public void UpdateTick(int tick)
@@ -69,5 +45,31 @@ public class Crown : NetworkBehaviour, ITickableEntity
         {
             transform.position = Vector3.Lerp(transform.position, _playerCrownHolder.position, _followSpeed);
         }
+    }
+
+    public void OnPickUp(ulong clientID)
+    {
+        SpawnManager.Instance.SpawnObject
+        (
+            prefab: _pickUpParticle,
+            spawnType: SpawnManager.SpawnType.MONO,
+            position: transform.position,
+            rotation: transform.rotation
+        );
+        
+        OnPickUpServerRPC(clientID);
+    }
+
+    [ServerRpc]
+    public void OnPickUpServerRPC(ulong clientID)
+    {
+        ScoreManager.Instance.AddScore(clientID);
+        NetworkObject.Despawn(false);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        gameObject.SetActive(false);
+        base.OnNetworkDespawn();
     }
 }

@@ -13,7 +13,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     private int _id;
     private bool _isEnabled;
     private bool _hasHitObstacle;
-    private float _damage;
+    private int _damage;
     private float _life;
     private float _speed;
     private NetworkVariable<ulong> _playerNetID = new NetworkVariable<ulong>();
@@ -49,7 +49,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
         TickManager.Instance.RemoveEntity(this);
     }
 
-    public void Initialise(ulong playerID, float damage, float bulletSpeed)
+    public void Initialise(ulong playerID, int damage, float bulletSpeed)
     {
         _playerNetID.Value = playerID;
         _speed = bulletSpeed;

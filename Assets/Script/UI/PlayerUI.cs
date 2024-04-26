@@ -1,25 +1,66 @@
 using System;
+using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerUI : MonoBehaviour
 {
     [Header("health Bar")] 
-    [SerializeField] private Image healthBar;
+    [SerializeField] private GameObject healthPrefab;
+    [SerializeField] private GameObject healthHolder;
+    
 
     public void OnEnable()
     {
-        PlayerEvents.DamageTakenEvent += DecreaseBar;
+        PlayerEvents.PlayerSpawnedEvent += OnPlayerSpawned;
+        PlayerEvents.DamageTakenEvent += UpdateHealth;
     }
 
     public void OnDisable()
     {
-        PlayerEvents.DamageTakenEvent -= DecreaseBar;
+        PlayerEvents.PlayerSpawnedEvent -= OnPlayerSpawned;
+        PlayerEvents.DamageTakenEvent -= UpdateHealth;
     }
 
-    private void DecreaseBar(CharacterDataHandler playerData,float damageTaken)
+    private void OnPlayerSpawned(GameObject playerObj)
     {
-        float fillRation = playerData.health.Value / playerData.maxHealth.Value;
-        healthBar.fillAmount = fillRation;
+        UpdateHealth(playerObj.GetComponent<CharacterDataHandler>());
+    }
+
+    private void UpdateHealth(CharacterDataHandler playerData)
+    {
+        
+        DisableAllHearts();
+        
+        for(int i = 1; i <= playerData.health.Value; i++)
+        {
+            if (i > healthHolder.transform.childCount)
+            {
+               AddHeart();
+            }
+            
+            GameObject heart = healthHolder.transform.GetChild(i-1).gameObject;
+            heart.gameObject.SetActive(true);
+            heart.GetComponent<Animator>().Play("TakeDamage");
+        }
+    }
+
+    private void AddHeart()
+    {
+        Instantiate(healthPrefab, healthHolder.transform);
+    }
+
+    private void DisableAllHearts()
+    {
+        foreach (Transform heart in transform)
+        {
+            if (heart.transform == healthHolder.transform)
+            {
+                continue;
+            }
+            
+            heart.gameObject.SetActive(false);
+        }
     }
 }

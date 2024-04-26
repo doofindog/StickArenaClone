@@ -9,7 +9,7 @@ public class WeaponDataScriptable : ScriptableObject
     public string weaponName;
     public WeaponType weaponType;
     public GameObject bulletPrefab;
-    public float damage;
+    public int damage;
     public float fireRate;
     public float spread;
     [Range(-1.0f, 1.0f)]public float[] recoilPattern;

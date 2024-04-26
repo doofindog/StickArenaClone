@@ -19,4 +19,4 @@ MonoBehaviour:
   maxCoinSpawns: 0
   spawnSpawnRate: 0
   scoreUpdateTime: 1.5
-  winThreshold: 2
+  winThreshold: 15

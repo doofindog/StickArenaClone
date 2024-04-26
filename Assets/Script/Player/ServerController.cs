@@ -64,18 +64,21 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
 
     public override void TakeDamage(HitResponseData hitResponseData)
     {
-        ulong ping = NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(hitResponseData.sourceID);
-        float rewindTime = Time.realtimeSinceStartup * 1000 - ping;
-        int rewindTick = Convert.ToInt32((rewindTime * (TickManager.Instance.GetTick() % 1024)) / (Time.realtimeSinceStartup * 1000));
+        // Server Side Rewind
+        // ulong ping = NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(hitResponseData.sourceID);
+        // float rewindTime = Time.realtimeSinceStartup * 1000 - ping;
+        // int rewindTick = Convert.ToInt32((rewindTime * (TickManager.Instance.GetTick() % 1024)) / (Time.realtimeSinceStartup * 1000));
+        //
+        // NetStatePayLoad hitState = _netStateProcessor.GetStateAtTick(rewindTick);
+        //
+        // Debugger.Log("[SERVER] ping : "+ ping +", rewardTime :" + rewindTime + ", rewardTick : " + rewindTick + ", current tick : " + (TickManager.Instance.GetTick() % 1024));
+        // if (!(Vector3.Distance(hitState.position, hitResponseData.hitPosition) < 0.5f)) 
+        // {
+        //     Debugger.Log("[SERVER] [Base Character] Position Offset too far to register damage");
+        //     return;
+        // }
+        //
         
-        NetStatePayLoad hitState = _netStateProcessor.GetStateAtTick(rewindTick);
-
-        Debugger.Log("[SERVER] ping : "+ ping +", rewardTime :" + rewindTime + ", rewardTick : " + rewindTick + ", current tick : " + (TickManager.Instance.GetTick() % 1024));
-        if (!(Vector3.Distance(hitState.position, hitResponseData.hitPosition) < 0.5f)) 
-        {
-            Debugger.Log("[SERVER] [Base Character] Position Offset too far to register damage");
-            return;
-        }
         
         float currentHealth = DataHandler.ReduceHealth(hitResponseData.damage);
         if (currentHealth <= 0)

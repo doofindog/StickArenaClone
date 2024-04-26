@@ -15,14 +15,12 @@ public class MenuCameraState : CameraState
     private bool _networkStarted;
     
     public override void Enter()
-    {
-        CameraController.Instance._pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.None;
+    {   
         _networkStarted = false;
         
         CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
         CustomNetworkEvents.DisconnectedEvent += HandleNetworkStopped;
         PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
-        GameEvents.PreparingArenaEvent += EnableUpscaling;
         
         UpdateNextLocation();
     }
@@ -40,8 +38,7 @@ public class MenuCameraState : CameraState
             else
             {
                 _direction = _followTransform.position - transform.position;
-                transform.position += (_direction.normalized * (Time.deltaTime * _cameraSpeed)) + 
-                                      CameraController.Instance.scrollOffset;
+                transform.position += (_direction.normalized * (Time.deltaTime * _cameraSpeed));
             }
         }
         else
@@ -93,14 +90,5 @@ public class MenuCameraState : CameraState
         _followTransform.position = followPosition;
         _direction = _followTransform.position - transform.position;
     }
-
-
-    private void EnableUpscaling()
-    {
-        if (CameraController.Instance._pixelPerfectCamera != null)
-        {
-            CameraController.Instance._pixelPerfectCamera.gridSnapping =
-                UnityEngine.Experimental.Rendering.Universal.PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
-        }
-    }
+    
 }

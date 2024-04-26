@@ -17,9 +17,9 @@ public class PlayerEvents
         PlayerDiedEvent?.Invoke();
     }
     
-    public static Action<CharacterDataHandler, float> DamageTakenEvent;
-    public static void SendPlayerDamageTake(CharacterDataHandler playerData, float damageTaken)
+    public static Action<CharacterDataHandler> DamageTakenEvent;
+    public static void SendPlayerDamageTake(CharacterDataHandler playerData)
     {
-        DamageTakenEvent?.Invoke(playerData, damageTaken);
+        DamageTakenEvent?.Invoke(playerData);
     }
 }

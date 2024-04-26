@@ -21,38 +21,22 @@ public class ScoreManager : NetworkBehaviour
             Instance = this;
         }
     }
-    
-    public void Update()
+
+    public void AddScore(ulong playerID)
     {
-        if (!IsServer || canUpdate == false)
+        Team team = TeamManager.Instance.GetTeamFromID(playerID);
+        if (team == null)
         {
             return;
         }
-
-        if (_updateTimer >= GameManager.Instance.GetSessionSettings().scoreUpdateTime)
-        {
-            UpdateScore();
-            _updateTimer = 0;
-        }
-
-        _updateTimer += Time.deltaTime;
-    }
-
-    private void UpdateScore()
-    {
-        foreach (var playerID in _crownedPlayerIDs)
-        {
-            Team team = TeamManager.Instance.GetTeamFromID(playerID);
-            if(team == null) continue;
             
-            UpdateScoreToTeamClientRPC(team.teamType, 1);
-            if (team.score >= GameManager.Instance.GetSessionSettings().winThreshold)
-            {
-                canUpdate = false;
-                _winningTeam = team.teamType;
-                SendTeamWonClientRPC(team.teamType);
-            }
-        }
+        UpdateScoreToTeamClientRPC(team.teamType, 1);
+        
+        if (team.score < GameManager.Instance.GetSessionSettings().winThreshold) { return; }
+        canUpdate = false;
+        _winningTeam = team.teamType;
+        
+        SendTeamWonClientRPC(team.teamType);
     }
 
     [ClientRpc]

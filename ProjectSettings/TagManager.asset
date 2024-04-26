@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Weapon
+  - Item
   layers:
   - Default
   - TransparentFX
@@ -14,8 +15,8 @@ TagManager:
   - UI
   - Players
   - Bullet
-  - 
-  - 
+  - TV
+  - Toxin
   - 
   - 
   - 
@@ -45,8 +46,20 @@ TagManager:
   - name: StartScreenProps
     uniqueID: 4259685749
     locked: 0
+  - name: Toxin
+    uniqueID: 3586766391
+    locked: 0
+  - name: Ground
+    uniqueID: 3822136651
+    locked: 0
+  - name: Walls
+    uniqueID: 4006957949
+    locked: 0
   - name: Props
     uniqueID: 2728334501
+    locked: 0
+  - name: Particles
+    uniqueID: 305204345
     locked: 0
   - name: Player
     uniqueID: 2002075529

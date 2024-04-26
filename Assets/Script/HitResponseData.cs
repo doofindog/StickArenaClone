@@ -4,7 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public class HitResponseData : INetworkSerializable
 {
-    public float damage;
+    public int damage;
     public ulong sourceID;
     public ulong hitId;
     public Vector3 hitPosition;

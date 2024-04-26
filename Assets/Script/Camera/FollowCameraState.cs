@@ -53,7 +53,7 @@ public class FollowCameraState : CameraState, ITickableEntity
         }
         else
         {
-            _originalPosition = transform.position + CameraController.Instance.scrollOffset;
+            _originalPosition = transform.position;
             _originalRotation = transform.rotation;
         }
     }
@@ -78,16 +78,16 @@ public class FollowCameraState : CameraState, ITickableEntity
         if (_shakeTimer < _shakeDuration )
         {
             // Calculate Perlin noise values for smooth randomness
-            float perlinX = Mathf.PerlinNoise(Time.time * 5f, 0f) * 2 - 1;
-            float perlinY = Mathf.PerlinNoise(0f, Time.time * 5f) * 2 - 1;
-            float perlinRotZ = Mathf.PerlinNoise(0f, Time.time * 5f) * 2 - 1;
+            float perlinX = Mathf.PerlinNoise(Time.time * 10f, 0f) * 2 - 1;
+            float perlinY = Mathf.PerlinNoise(0f, Time.time * 10f) * 2 - 1;
+            float perlinRotZ = Mathf.PerlinNoise(0f, Time.time * 10f) * 2 - 1;
 
             // Calculate the shake offset for position and rotation using Perlin noise and intensity
             Vector3 positionShakeOffset = new Vector3(perlinX, perlinY, 0f) * _positionShakeIntensity;
             Vector3 rotationShakeOffset = new Vector3(0f, 0f, perlinRotZ) * _rotationShakeIntensity;
 
             // Apply the shake offset to the camera position and rotation
-            transform.position = _originalPosition + positionShakeOffset + _cameraOffset + CameraController.Instance.scrollOffset;
+            transform.position = _originalPosition + positionShakeOffset + _cameraOffset;
             transform.rotation = _originalRotation * Quaternion.Euler(rotationShakeOffset);
 
             // Increment the elapsed time
@@ -96,7 +96,7 @@ public class FollowCameraState : CameraState, ITickableEntity
         else
         {
             // Reset the camera position and rotation after the shake duration
-            transform.position = _originalPosition + CameraController.Instance.scrollOffset;
+            transform.position = _originalPosition;
             transform.rotation = _originalRotation;
             _shakeTimer = 0;
             _performShake = false;
@@ -107,7 +107,7 @@ public class FollowCameraState : CameraState, ITickableEntity
     {
         if(_follow == null) return;
 
-        Vector3 followPosition = _follow.position + _cameraOffset + CameraController.Instance.scrollOffset;
+        Vector3 followPosition = _follow.position + _cameraOffset;
         Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition, 
             _interpolationSpeed * TickManager.Instance.GetMinTickTime());
 

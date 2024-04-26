@@ -34,8 +34,8 @@ public class CharacterDataHandler : NetworkBehaviour
     public bool swapPressed;
     
     [Header("Health")] 
-    public NetworkVariable<float> health = new NetworkVariable<float>();
-    public NetworkVariable<float> maxHealth = new NetworkVariable<float>();
+    public NetworkVariable<int> health = new NetworkVariable<int>();
+    public NetworkVariable<int> maxHealth = new NetworkVariable<int>();
     
     public State state;
     
@@ -57,7 +57,7 @@ public class CharacterDataHandler : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
-                PlayerEvents.SendPlayerDamageTake(this, MathF.Abs(value - newValue));
+                PlayerEvents.SendPlayerDamageTake(this);
             }
         };
     }
@@ -86,7 +86,7 @@ public class CharacterDataHandler : NetworkBehaviour
         };
     }
     
-    public float ReduceHealth(float reduceBy)
+    public float ReduceHealth(int reduceBy)
     {
         health.Value -= reduceBy;
 

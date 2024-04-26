@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Pixel Arena/Create Player Stats Data")]
 public class BasePixelManDataScriptable : ScriptableObject
 {
-    public float maxHealth;
+    public int maxHealth;
     public float speed;
     public float dodgeSpeed;
     public float dodgeDuration;

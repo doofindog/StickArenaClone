@@ -16,6 +16,19 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		_netInputProcessor = GetComponent<NetInputProcessor>();
 		_netStateProcessor = GetComponent<NetStateProcessor>();
 	}
+	
+	public override void OnNetworkSpawn()
+	{
+		if ((IsServer && !IsHost) || (IsHost && !IsOwner))
+		{
+			Destroy(this);
+		}
+		
+		TickManager.Instance.AddEntity(this);
+		
+		NetworkObject networkObject = GetComponent<NetworkObject>();
+		GameEvents.SendPlayerSpawned(networkObject.OwnerClientId, networkObject);
+	}
 
 	public override void Start()
 	{
@@ -25,24 +38,14 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		{
 			PlayerInputHandler.Init(this);
 		}
-	}
-
-	public override void OnNetworkSpawn()
-	{
-		if ((IsServer && !IsHost) || (IsHost && !IsOwner))
-		{
-			Destroy(this);
-		}
 		
-		TickManager.Instance.AddEntity(this);
 		if (IsOwner)
 		{
 			PlayerEvents.SendPlayerSpawned(gameObject);
 		}
-
-		NetworkObject networkObject = GetComponent<NetworkObject>();
-		GameEvents.SendPlayerSpawned(networkObject.OwnerClientId, networkObject);
 	}
+
+
 
 	public void UpdateTick(int tick)
 	{

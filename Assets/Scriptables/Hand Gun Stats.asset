@@ -26,7 +26,7 @@ MonoBehaviour:
   ammoInClip: 10
   maxAmmo: 999999
   reloadTime: 1.5
-  fireType: 2
+  fireType: 0
   bulletSpeed: 15
   burstBulletCount: 3
   burstFireRate: 0.075
