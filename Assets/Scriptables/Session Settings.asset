@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfa4d990813ff42079777a21ded18b97, type: 3}
   m_Name: Session Settings
   m_EditorClassIdentifier: 
-  maxConnections: 1
+  maxConnections: 2
   startGameTime: 3
   prepGameTime: 2
   playerRespawnTime: 3

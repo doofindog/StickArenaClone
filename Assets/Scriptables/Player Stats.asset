@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f0a589e940134cd48fc8236f153b7ac, type: 3}
   m_Name: Player Stats
   m_EditorClassIdentifier: 
-  maxHealth: 1
+  maxHealth: 3
   speed: 3
   dodgeSpeed: 10
   dodgeDuration: 0.2

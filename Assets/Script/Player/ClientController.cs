@@ -124,10 +124,9 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 	protected virtual void SimulateMovement()
 	{
 		NetStatePayLoad latestServerState = _netStateProcessor.GetLastProcessedState();
-		transform.position = latestServerState.position;
+		transform.position = Vector3.Lerp(transform.position, latestServerState.position, 0.5f);
 
 		WeaponComponent.Aim(latestServerState.aimAngle);
-		Debugger.Log("[WEAPON] Weapon Fired State : " + latestServerState.firedWeapon);
 		if (latestServerState.firedWeapon)
 		{
 			WeaponComponent.TriggerWeapon(new Weapon.Params()

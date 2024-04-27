@@ -80,17 +80,16 @@ public class Bullet : NetworkBehaviour, ITickableEntity
             bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value;
             if (canTakeDamage)
             {
-                Debugger.Log("[BULLET] Damage : " + _damage + ", _bulletOwnerID : " + _playerNetID.Value );
-                HitResponseData responseData = new HitResponseData()
-                {
-                    damage = _damage,
-                    sourceID = _playerNetID.Value,
-                    hitId = NetworkManager.LocalClient.ClientId,
-                    hitPosition =  other.transform.position
-                };
-                
                 if (other.TryGetComponent(out HitDetector hitDetector))
                 {
+                    HitResponseData responseData = new HitResponseData()
+                    {
+                        damage = _damage,
+                        sourceID = _playerNetID.Value,
+                        hitId = NetworkManager.LocalClient.ClientId,
+                        hitPosition =  other.transform.position
+                    };
+                    
                     hitDetector.Hit(responseData);
                 }
             }

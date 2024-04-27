@@ -6,6 +6,7 @@ public class Crown : NetworkBehaviour, ITickableEntity, IPickable
 {
     [SerializeField] private float _followSpeed;
     [SerializeField] private GameObject _pickUpParticle;
+    private float timer;
     private NetworkVariable<bool> _isAcquired = new NetworkVariable<bool>();
     private Transform _playerCrownHolder;
     
@@ -26,6 +27,16 @@ public class Crown : NetworkBehaviour, ITickableEntity, IPickable
     public override void OnDestroy()
     {
         TickManager.Instance.RemoveEntity(this);
+    }
+
+    public void Update()
+    {
+        timer += Time.deltaTime; 
+        if (timer > 0.5f && GetComponent<SpriteRenderer>().enabled == false)
+        {
+            GetComponent<SpriteRenderer>().enabled = true;
+            GetComponent<Collider2D>().enabled = false;
+        }
     }
 
     [ClientRpc]
@@ -58,9 +69,11 @@ public class Crown : NetworkBehaviour, ITickableEntity, IPickable
         );
         
         OnPickUpServerRPC(clientID);
+        GetComponent<SpriteRenderer>().enabled = false;
+        GetComponent<Collider2D>().enabled = false;
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void OnPickUpServerRPC(ulong clientID)
     {
         ScoreManager.Instance.AddScore(clientID);
@@ -71,5 +84,11 @@ public class Crown : NetworkBehaviour, ITickableEntity, IPickable
     {
         gameObject.SetActive(false);
         base.OnNetworkDespawn();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        GetComponent<SpriteRenderer>().enabled = true;
+        GetComponent<Collider2D>().enabled = true;
     }
 }

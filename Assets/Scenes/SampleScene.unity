@@ -2570,6 +2570,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crown
       objectReference: {fileID: 0}
+    - target: {fileID: 5569162338281056926, guid: ad5a16121828040f784129da941fefce,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5569162338281056927, guid: ad5a16121828040f784129da941fefce,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -23166,7 +23171,12 @@ PrefabInstance:
     - target: {fileID: 7723531697288480343, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
       propertyPath: NetworkConfig.TickRate
-      value: 128
+      value: 66
+      objectReference: {fileID: 0}
+    - target: {fileID: 7723531697288480343, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
+        type: 3}
+      propertyPath: NetworkConfig.EnsureNetworkVariableLengthSafety
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7723531697288480343, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
@@ -28586,7 +28596,7 @@ PrefabInstance:
     - target: {fileID: 496930797000948775, guid: c32bf0d398e294541af03f86fe1e27a8,
         type: 3}
       propertyPath: serverTickRate
-      value: 128
+      value: 68
       objectReference: {fileID: 0}
     - target: {fileID: 1342283871440592640, guid: c32bf0d398e294541af03f86fe1e27a8,
         type: 3}

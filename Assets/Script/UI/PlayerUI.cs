@@ -30,7 +30,6 @@ public class PlayerUI : MonoBehaviour
 
     private void UpdateHealth(CharacterDataHandler playerData)
     {
-        
         DisableAllHearts();
         
         for(int i = 1; i <= playerData.health.Value; i++)
@@ -53,13 +52,8 @@ public class PlayerUI : MonoBehaviour
 
     private void DisableAllHearts()
     {
-        foreach (Transform heart in transform)
+        foreach (Transform heart in healthHolder.transform)
         {
-            if (heart.transform == healthHolder.transform)
-            {
-                continue;
-            }
-            
             heart.gameObject.SetActive(false);
         }
     }
