@@ -21,9 +21,18 @@ public class TickManager : Singleton<TickManager>
     {
         NetworkManager.Singleton.OnClientStarted += Init;
         NetworkManager.Singleton.OnServerStarted += Init;
+
+        NetworkManager.Singleton.OnClientStarted += OnNetworkStopped;
+        NetworkManager.Singleton.OnServerStarted += OnNetworkStopped;
         
         _minTimeBetweenTicks = 1f / serverTickRate;
         _enable = _minTimeBetweenTicks != 0;
+    }
+    
+    private void OnNetworkStopped()
+    {
+        NetworkManager.Singleton.OnClientStarted -= Init;
+        NetworkManager.Singleton.OnServerStarted -= Init;
     }
 
     public void AddEntity(ITickableEntity tickableEntity)

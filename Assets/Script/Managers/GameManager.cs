@@ -141,10 +141,9 @@ public class GameManager : NetworkBehaviour
         NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(allocation, "wss"));
         string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-        Debug.Log("[CONNECTION] join Code : " + joinCode);
+        SessionData sessionData = connectionManager.GetSessionData();
+        sessionData.joinCode = joinCode;
         NetworkManager.Singleton.StartHost();
-        
-        
     }
     
     public void TryDisconnect()

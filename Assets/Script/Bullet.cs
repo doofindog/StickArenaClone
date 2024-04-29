@@ -84,6 +84,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
                 {
                     HitResponseData responseData = new HitResponseData()
                     {
+                        hitTime = NetworkManager.Singleton.ServerTime.Time,
                         damage = _damage,
                         sourceID = _playerNetID.Value,
                         hitId = NetworkManager.LocalClient.ClientId,

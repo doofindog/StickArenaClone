@@ -1,9 +1,11 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [System.Serializable]
 public class HitResponseData : INetworkSerializable
 {
+    [FormerlySerializedAs("serverTime")] public double hitTime;
     public int damage;
     public ulong sourceID;
     public ulong hitId;
@@ -14,6 +16,7 @@ public class HitResponseData : INetworkSerializable
         if (serializer.IsReader)
         {
             FastBufferReader reader =serializer.GetFastBufferReader();
+            reader.ReadValueSafe(out hitTime);
             reader.ReadValueSafe(out damage);
             reader.ReadValueSafe(out sourceID);
             reader.ReadValueSafe(out hitId);
@@ -22,6 +25,7 @@ public class HitResponseData : INetworkSerializable
         else
         {
             FastBufferWriter writer = serializer.GetFastBufferWriter();
+            writer.WriteValueSafe(hitTime);
             writer.WriteValueSafe(damage);
             writer.WriteValueSafe(sourceID);
             writer.WriteValueSafe(hitId);

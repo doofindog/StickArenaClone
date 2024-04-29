@@ -51,8 +51,8 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         
             NetStatePayLoad rewindState = _netStateProcessor.GetStateAtTick(rewindTick);
         
-            Debugger.Log("[SERVER] ping : "+ ping +", rewardTime :" + rewindTime + ", rewardTick : " + rewindTick + ", current tick : " + (TickManager.Instance.GetTick() % 1024));
-            if (!(Vector3.Distance(rewindState.position, hitResponseData.hitPosition) < 0.5f)) 
+            Debug.Log($"Hit Time {hitResponseData.hitTime}, Server Time : {NetworkManager.ServerTime.Time}");
+            if (!(Vector3.Distance(rewindState.position, hitResponseData.hitPosition) < 0.8f)) 
             {
                 Debugger.Log($"[SERVER] [Base Character] {rewindState.position} , {hitResponseData.hitPosition} Position Offset too far to register damage");
                 return;
@@ -124,5 +124,10 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         Animator.PlayDrownAnimation(true);
         SpawnManager spawnManager = GameManager.Instance.spawnManager;
         spawnManager.DespawnPlayer(NetworkObject.OwnerClientId);
+    }
+
+    public void AddHealth()
+    {
+        DataHandler.health.Value++;
     }
 }

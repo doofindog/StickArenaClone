@@ -11,7 +11,6 @@ public class NetController : NetworkBehaviour
     protected PlayerInputHandler PlayerInputHandler;
     protected WeaponComponent WeaponComponent;
     protected CharacterAnimator Animator;
-    protected List<Crown> _crowns = new List<Crown>();
 
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private CharacterAnimator _animator;
@@ -163,10 +162,5 @@ public class NetController : NetworkBehaviour
     private void StopControls()
     {
         IsEnabled = false;
-    }
-
-    public void AddCrown(Crown crown)
-    {
-        _crowns?.Add(crown);
     }
 }
