@@ -78,6 +78,7 @@ public class CharacterDataHandler : NetworkBehaviour
     {
         return new NetInputPayLoad()
         {
+            time = NetworkManager.Singleton.ServerTime.TimeAsFloat,
             tick = TickManager.Instance.GetTick(),
             direction = direction,
             aimAngle =  aimAngle,

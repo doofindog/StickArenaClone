@@ -12,12 +12,14 @@ public class NetController : NetworkBehaviour
     protected WeaponComponent WeaponComponent;
     protected CharacterAnimator Animator;
 
+    [SerializeField] protected bool interpolate;
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private CharacterAnimator _animator;
     [SerializeField] private Transform _crownPlaceholder;
 
 
     
+    protected Vector3 newPosition;
     public virtual void Awake()
     {
         GameEvents.OnGameOverEvent += StopControls;
@@ -42,6 +44,7 @@ public class NetController : NetworkBehaviour
     public virtual void Start()
     {
         DataHandler.Init();
+        newPosition = transform.position;
     }
     
     protected virtual void ProcessMovement(NetInputPayLoad inputPayLoad)
@@ -67,9 +70,17 @@ public class NetController : NetworkBehaviour
         }
         
         DataHandler.state = direction == Vector3.zero ? CharacterDataHandler.State.Idle : CharacterDataHandler.State.Move;
-        
         TickManager tickManager = TickManager.Instance;
-        transform.position += direction * (tickManager.GetMinTickTime() * DataHandler.speed.Value);
+        if (interpolate) { newPosition += direction * (tickManager.GetMinTickTime() * DataHandler.speed.Value); }
+        else { transform.position += direction * (tickManager.GetMinTickTime() * DataHandler.speed.Value); }
+    }
+
+    public void Update()
+    {
+        if (interpolate)
+        {
+            transform.position = Vector3.Lerp(transform.position, newPosition, .25f);
+        }
     }
 
     protected virtual void Flip(float aimAngle)

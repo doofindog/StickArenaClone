@@ -24,6 +24,8 @@ public class SpawnManager : NetworkBehaviour
     [SerializeField] private ObjectPool _monoObjectPool;
     [SerializeField] private NetworkObjectPool _networkObjectPool;
 
+    private Dictionary<int, GameObject> bulletsFired = new  Dictionary<int, GameObject>();
+
     public void Awake()
     {
         if (Instance == null)

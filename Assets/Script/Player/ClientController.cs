@@ -66,6 +66,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 
 			_netStateProcessor.AddState(new NetStatePayLoad()
 			{
+				time = NetworkManager.Singleton.ServerTime.TimeAsFloat,
 				tick = inputPayLoad.tick,
 				position = transform.position,
 				aimAngle = inputPayLoad.aimAngle,

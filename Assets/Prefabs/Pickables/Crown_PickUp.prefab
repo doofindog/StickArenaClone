@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4154668766638796872}
   - component: {fileID: 8434603883417673702}
   m_Layer: 0
-  m_Name: Crown
+  m_Name: Crown_PickUp
   m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

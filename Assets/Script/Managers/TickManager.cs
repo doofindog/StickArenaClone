@@ -11,12 +11,12 @@ public class TickManager : Singleton<TickManager>
     [SerializeField] private float serverTickRate;
 
     private bool _enable;
-    private int _tick;
+    [SerializeField] private int _tick;
     private float _timer;
-    private float _minTimeBetweenTicks; //how many seconds between each tick
+    [SerializeField] private float _minTimeBetweenTicks; //how many seconds between each tick
     private List<ITickableEntity> _tickableEntities = new List<ITickableEntity>();
-    
-    
+
+
     public void Init()
     {
         NetworkManager.Singleton.OnClientStarted += Init;

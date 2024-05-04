@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
 using Unity.Mathematics;
 using Unity.Netcode;
+using UnityEditor;
 using UnityEngine;
 
 public class ServerController : NetController, ITickableEntity, IDamageableEntity
@@ -11,6 +12,10 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     private NetInputProcessor _netInputProcessor;
     private NetStateProcessor _netStateProcessor;
     private Queue<HitResponseData> _damageProcessor;
+    
+    
+
+    private Vector3 gizmoPosition;
 
     public override void Awake()
     {
@@ -41,36 +46,6 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     {
         _netInputProcessor.ProcessInputs();
         _netStateProcessor.AddState(_netStateProcessor.GetLastProcessedState());
-        
-        while (_damageProcessor.Count > 0)
-        {
-            HitResponseData hitResponseData = _damageProcessor.Dequeue();
-            ulong ping = NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(hitResponseData.sourceID);
-            float rewindTime = Time.realtimeSinceStartup * 1000 - ping;
-            int rewindTick = Convert.ToInt32((rewindTime * (TickManager.Instance.GetTick() % 1024)) / (Time.realtimeSinceStartup * 1000));
-        
-            NetStatePayLoad rewindState = _netStateProcessor.GetStateAtTick(rewindTick);
-        
-            Debug.Log($"Hit Time {hitResponseData.hitTime}, Server Time : {NetworkManager.ServerTime.Time}");
-            if (!(Vector3.Distance(rewindState.position, hitResponseData.hitPosition) < 0.8f)) 
-            {
-                Debugger.Log($"[SERVER] [Base Character] {rewindState.position} , {hitResponseData.hitPosition} Position Offset too far to register damage");
-                return;
-            }
-        
-            float currentHealth = DataHandler.ReduceHealth(hitResponseData.damage);
-            if (currentHealth <= 0)
-            {
-                ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
-                SpawnManager spawnManager = GameManager.Instance.spawnManager;
-                spawnManager.DespawnPlayer(clientID);
-
-                //GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
-            
-                Animator.PlayDeathAnimation(true);
-                _damageProcessor.Clear();
-            }
-        }
     }
 
     private void HandleInputProcessed(NetInputPayLoad inputPayLoad)
@@ -82,8 +57,9 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
 
         NetStatePayLoad statePayLoad = new NetStatePayLoad()
         {
+            time = NetworkManager.ServerTime.TimeAsFloat,
             tick = inputPayLoad.tick,
-            position = transform.position,
+            position = interpolate ? newPosition : transform.position,
             aimAngle = inputPayLoad.aimAngle,
             dodge = inputPayLoad.dodgePressed,
             firedWeapon =  inputPayLoad.attackPressed
@@ -100,10 +76,113 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     public override void TakeDamage(HitResponseData hitResponseData)
     {
         // Server Side Rewind
+        bool failedCheck = GetComponent<CharacterDataHandler>().health.Value <= 0 ||
+                           hitResponseData == null ||
+                           _netStateProcessor.frameHistory.First == null ||
+                           _netStateProcessor.frameHistory.Last == null;
+            
+        if(failedCheck) return;
 
-        if (!(GetComponent<CharacterDataHandler>().health.Value <= 0))
+        //Frame history of the hit character
+        LinkedList<NetStatePayLoad> history = _netStateProcessor.frameHistory;
+        float oldestHistoryTime = history.Last.Value.time;
+        float newestHistoryTime = history.Last.Value.time;
+        if (oldestHistoryTime > hitResponseData.hitTime)
         {
-            _damageProcessor.Enqueue(hitResponseData);
+            //Too Far Back
+            return;
+        }
+
+        bool scheduleRewind = true;
+        NetStatePayLoad frameToCheck = new NetStatePayLoad();
+        if (newestHistoryTime <= hitResponseData.hitTime)
+        {
+            frameToCheck = history.First.Value;
+            scheduleRewind = false;
+        }
+
+        LinkedListNode<NetStatePayLoad> younger = history.First;
+        LinkedListNode<NetStatePayLoad> older = history.Last;
+
+        while (older.Value.time > hitResponseData.hitTime)
+        {
+            if(older.Previous == null) break;
+            older = older.Previous;
+
+            if (older.Value.time > hitResponseData.hitTime)
+            {
+                younger = older;
+            }
+        }
+            
+        //Confirm Hit After Getting Frame to check and Interpolation
+
+        if (scheduleRewind)
+        {
+            float distance = younger.Value.time - older.Value.time;
+            float interpFraction = Mathf.Clamp01((hitResponseData.hitTime - older.Value.time) / distance);
+            frameToCheck.position = Vector3.Lerp(older.Value.position, younger.Value.position, interpFraction);
+            frameToCheck.time = hitResponseData.hitTime;
+        }
+
+        
+         if (ConfirmHit(frameToCheck, hitResponseData)) //PredictPath
+         {
+             float currentHealth = DataHandler.ReduceHealth(hitResponseData.damage);
+             if (currentHealth <= 0)
+             {
+                 ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
+                 SpawnManager spawnManager = GameManager.Instance.spawnManager;
+                 spawnManager.DespawnPlayer(clientID);
+        
+                 //GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
+             
+                 Animator.PlayDeathAnimation(true);
+                 _damageProcessor.Clear();
+             }
+         }
+
+
+        //StartCoroutine(ConfirmHitCoroutine(frameToCheck, hitResponseData));
+    }
+
+
+    private bool ConfirmHit(NetStatePayLoad frameToCheck, HitResponseData hitData)
+    {
+        Vector3 simPosition = hitData.traceStart;
+        Quaternion simRotation = hitData.projectileRotation;
+        float simTimer = 0.0f;
+        float maxSimTime = 5.0f;
+        float frequency = 15.0f;
+        float subStep = maxSimTime / Mathf.CeilToInt(frequency * maxSimTime);
+        while (simTimer <= maxSimTime)
+        {
+            simTimer += subStep;
+            simPosition += hitData.projectileDirection.normalized * hitData.hitVelocity;
+            gizmoPosition = simPosition;
+            Collider2D col = Physics2D.OverlapBox(simPosition, Vector2.one, Quaternion.Angle(Quaternion.identity, simRotation));
+            if (col != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private IEnumerator ConfirmHitCoroutine(NetStatePayLoad frameToCheck, HitResponseData hitData)
+    {
+        Vector3 simPosition = hitData.traceStart;
+        float simTimer = 0.0f;
+        float maxSimTime = 5.0f;
+        float frequency = 15.0f;
+        float subStep = maxSimTime / Mathf.CeilToInt(frequency * maxSimTime);
+        while (simTimer <= maxSimTime)
+        {
+            simTimer += subStep;
+            simPosition += hitData.projectileDirection.normalized * hitData.hitVelocity;
+            gizmoPosition = simPosition;
+            yield return new WaitForSeconds(0);
         }
     }
 
@@ -129,5 +208,10 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     public void AddHealth()
     {
         DataHandler.health.Value++;
+    }
+    
+    public void OnDrawGizmos()
+    {
+        Gizmos.DrawWireSphere(gizmoPosition, .25f);
     }
 }

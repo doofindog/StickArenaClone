@@ -4,6 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public struct NetInputPayLoad : INetworkSerializable
 {
+    public float time;
     public int tick;
     public int mousePosition;
     public Vector3 direction;
@@ -16,6 +17,7 @@ public struct NetInputPayLoad : INetworkSerializable
         if (serializer.IsReader)
         {
             FastBufferReader reader = serializer.GetFastBufferReader();
+            reader.ReadValueSafe(out time);
             reader.ReadValueSafe(out tick);
             reader.ReadValueSafe(out mousePosition);
             reader.ReadValueSafe(out direction);
@@ -26,6 +28,7 @@ public struct NetInputPayLoad : INetworkSerializable
         else
         {
             FastBufferWriter writer = serializer.GetFastBufferWriter();
+            writer.WriteValueSafe(time);
             writer.WriteValueSafe(tick);
             writer.WriteValueSafe(mousePosition);
             writer.WriteValueSafe(direction);
@@ -39,6 +42,7 @@ public struct NetInputPayLoad : INetworkSerializable
 [System.Serializable]
 public struct NetStatePayLoad : INetworkSerializable
 {
+    public float time;
     public int tick;
     public Vector3 position;
     public float aimAngle;
@@ -51,6 +55,7 @@ public struct NetStatePayLoad : INetworkSerializable
         if (serializer.IsReader)
         {
             FastBufferReader reader = serializer.GetFastBufferReader();
+            reader.ReadValueSafe(out time);
             reader.ReadValueSafe(out tick);
             reader.ReadValueSafe(out position);
             reader.ReadValueSafe(out aimAngle);
@@ -61,6 +66,7 @@ public struct NetStatePayLoad : INetworkSerializable
         else
         {
             FastBufferWriter writer = serializer.GetFastBufferWriter();
+            writer.WriteValueSafe(time);
             writer.WriteValueSafe(tick);
             writer.WriteValueSafe(position);
             writer.WriteValueSafe(aimAngle);

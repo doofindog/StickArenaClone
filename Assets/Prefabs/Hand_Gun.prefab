@@ -235,6 +235,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1180716372060969434}
   - {fileID: 1547899551}
   - {fileID: 846166503}
   - {fileID: 236894465}
@@ -253,7 +254,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 4113929636
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 167582056
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -345,6 +346,7 @@ MonoBehaviour:
   _equipedWeaponObj: {fileID: 846166502}
   _unequipedWeaponObj: {fileID: 236894464}
   weaponOwner: {fileID: 0}
+  muzzleFlare: {fileID: 6798015421172795509}
   barrelTransform: {fileID: 0}
   ammoInClip: 0
   totalAmmo: 0
@@ -489,3 +491,89 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1001 &1347743924953551907
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 11347924877574636}
+    m_Modifications:
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.093
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.0069999695
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6044426086131594983, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+        type: 3}
+      propertyPath: m_Name
+      value: Muzzle Flare
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ebea9b0e39583f441bb270aa3c39a4d3, type: 3}
+--- !u!4 &1180716372060969434 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 204520971344973305, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1347743924953551907}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6798015421172795509 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5540345597697842262, guid: ebea9b0e39583f441bb270aa3c39a4d3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1347743924953551907}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88052e9d1cafb9941b7bd51bd84e7ed0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

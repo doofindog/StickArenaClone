@@ -49,7 +49,7 @@ public class Item : NetworkBehaviour , IPickable
         itemCollider.enabled = false;
     }
     
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void OnPickUpServerRPC(ulong clientID)
     {
         Effect[] effects = GetComponents<Effect>();

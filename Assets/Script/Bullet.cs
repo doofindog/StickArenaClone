@@ -16,6 +16,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     private int _damage;
     private float _life;
     private float _speed;
+    private Vector3 _startPosition;
     private NetworkVariable<ulong> _playerNetID = new NetworkVariable<ulong>();
     private Animator _animator;
 
@@ -54,6 +55,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
         _playerNetID.Value = playerID;
         _speed = bulletSpeed;
         _damage = damage;
+        _startPosition = transform.position;
     }
 
     public void Start()
@@ -84,13 +86,18 @@ public class Bullet : NetworkBehaviour, ITickableEntity
                 {
                     HitResponseData responseData = new HitResponseData()
                     {
-                        hitTime = NetworkManager.Singleton.ServerTime.Time,
+                        hitTime = NetworkManager.Singleton.ServerTime.TimeAsFloat,
                         damage = _damage,
                         sourceID = _playerNetID.Value,
                         hitId = NetworkManager.LocalClient.ClientId,
-                        hitPosition =  other.transform.position
+                        hitPosition =  other.transform.position,
+                        traceStart = _startPosition,
+                        projectileRotation = transform.rotation,
+                        hitVelocity = _speed * TickManager.Instance.GetMinTickTime(),
+                        projectileDirection = (transform.position + transform.right) - transform.position
                     };
                     
+
                     hitDetector.Hit(responseData);
                 }
             }
@@ -101,7 +108,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
         HandleImpact();
     }
 
-    public void HandleImpact()
+    private void HandleImpact()
     {
         _isEnabled = false;
         if (IsServer)

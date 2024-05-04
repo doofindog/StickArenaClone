@@ -10,7 +10,8 @@ using Random = UnityEngine.Random;
 
 public class RangedWeapon : Weapon, IReloadable
 {
-    [Header("Weapon Data")]
+    [Header("Weapon Data")] 
+    [SerializeField] protected MuzzleFlare muzzleFlare;
     [SerializeField] protected Transform barrelTransform;
     [SerializeField] protected int ammoInClip;
     [SerializeField] protected int totalAmmo;
@@ -140,6 +141,11 @@ public class RangedWeapon : Weapon, IReloadable
 
     protected virtual void FireBullet()
     {
+        if (muzzleFlare != null)
+        {
+            muzzleFlare.Play();
+        }
+        
         weaponState = global::WeaponState.Fired;
         
         Debugger.Log("[weapon] fire bullet called");
@@ -147,11 +153,11 @@ public class RangedWeapon : Weapon, IReloadable
         int index = _weaponParams.tick % _weaponData.recoilPattern.Length;
         float rotation = _weaponData.recoilPattern[index] * _weaponData.spread;
         Quaternion bulletRotation = barrelTransform.rotation * Quaternion.Euler(0, 0, rotation);
-
+        
         GameObject bulletNetObj = ObjectPool.Instance.GetPooledObject(_weaponData.bulletPrefab, barrelTransform.position, bulletRotation);
         Bullet bullet = bulletNetObj.GetComponent<Bullet>();
         bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
-        
+
         ammoInClip -= 1;
         
         if (playerClientID == NetworkManager.Singleton.LocalClientId)
@@ -160,7 +166,7 @@ public class RangedWeapon : Weapon, IReloadable
         }
         
         _animator.Play("Fire");
-        //AudioManager.Instance.PlayOneShot(fireAudio);
+        
         GetComponent<AudioSource>().PlayOneShot(fireAudio);
     }
     
