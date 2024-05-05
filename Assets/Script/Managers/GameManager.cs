@@ -78,6 +78,8 @@ public class GameManager : NetworkBehaviour
         _currentStateType = state;
         _currentState = GetGameState(state);
         _currentState.OnEnter();
+
+        GameEvents.SendGameStateChange(state);
     }
     
     public EGameStates GetState()

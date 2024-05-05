@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.Universal;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
 
 public class FollowCameraState : CameraState, ITickableEntity
@@ -20,6 +21,7 @@ public class FollowCameraState : CameraState, ITickableEntity
     private bool _performShake;
     [SerializeField] private Vector3 _originalPosition;
     private Quaternion _originalRotation;
+    [SerializeField] private PixelPerfectCamera _pixelPerfectCamera;
     
 
     public override void Enter()
@@ -43,6 +45,11 @@ public class FollowCameraState : CameraState, ITickableEntity
         
         _originalPosition = transform.position;
         _originalRotation = transform.rotation;
+
+        // var cameraData = GetComponent<Camera>().GetUniversalAdditionalCameraData();
+        // cameraData.cameraStack.RemoveAt(0);
+        // _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
+        // _pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
     }
 
     public override void UpdateState()

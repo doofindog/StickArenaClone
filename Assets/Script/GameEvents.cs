@@ -58,4 +58,11 @@ public class GameEvents : MonoBehaviour
     {
         OnGameOverEvent?.Invoke();
     }
+
+    public static Action<EGameStates> OnGameStateChange;
+
+    public static void SendGameStateChange(EGameStates gameState)
+    {
+        OnGameStateChange?.Invoke(gameState);
+    }
 }

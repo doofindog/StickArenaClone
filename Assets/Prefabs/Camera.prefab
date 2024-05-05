@@ -16,7 +16,6 @@ GameObject:
   - component: {fileID: 7314809498314850566}
   - component: {fileID: 392556327117631205}
   - component: {fileID: 6832708438307045230}
-  - component: {fileID: 1777237426}
   - component: {fileID: 1777237436}
   m_Layer: 0
   m_Name: Camera
@@ -32,13 +31,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7314809498314850573}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.86, y: -1.3, z: -23.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &7314809498314850561
 Camera:
@@ -54,9 +53,17 @@ Camera:
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
   m_SensorSize: {x: 36, y: 24}
   m_LensShift: {x: 0, y: 0}
-  m_FocalLength: 50
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -67,11 +74,11 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 3.46875
-  m_Depth: 0
+  orthographic size: 3.375
+  m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 247
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -107,7 +114,8 @@ MonoBehaviour:
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
-  m_Cameras: []
+  m_Cameras:
+  - {fileID: 0}
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
@@ -121,9 +129,20 @@ MonoBehaviour:
   m_Dithering: 0
   m_ClearDepth: 1
   m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
 --- !u!114 &7314809498314850572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138,10 +157,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
   m_AssetsPPU: 32
-  m_RefResolutionX: 320
-  m_RefResolutionY: 180
+  m_RefResolutionX: 384
+  m_RefResolutionY: 216
   m_CropFrame: 0
-  m_GridSnapping: 2
+  m_GridSnapping: 1
+  m_FilterMode: 0
   m_UpscaleRT: 0
   m_PixelSnapping: 0
   m_CropFrameX: 0
@@ -159,8 +179,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0909f8722e9324cbd8bce5e80e285f29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ppc: 32
-  scrollOffset: {x: 0, y: 0, z: 0}
+  _currentState: {fileID: 0}
 --- !u!114 &392556327117631205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -173,13 +192,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7c6e910aa2474844be88385969eff33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _cameraSpeed: 0
-  _networkStartPosition: {x: 0, y: 0, z: 0}
+  _cameraSpeed: 2.5
+  _networkStartPosition: {x: 0, y: 0, z: -10}
   _locations:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  _followTransform: {fileID: 0}
 --- !u!114 &6832708438307045230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -193,71 +211,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _follow: {fileID: 0}
-  _cameraOffset: {x: 0, y: 0, z: 0}
-  _interpolationSpeed: 0
-  _positionShakeIntensity: 0
-  _rotationShakeIntensity: 0
-  _shakeDuration: 0
---- !u!114 &1777237426
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7314809498314850573}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  volumeTrigger: {fileID: 7314809498314850560}
-  volumeLayer:
-    serializedVersion: 2
-    m_Bits: 384
-  stopNaNPropagation: 1
-  finalBlitToCameraTarget: 0
-  antialiasingMode: 0
-  temporalAntialiasing:
-    jitterSpread: 0.75
-    sharpness: 0.25
-    stationaryBlending: 0.95
-    motionBlending: 0.85
-  subpixelMorphologicalAntialiasing:
-    quality: 2
-  fastApproximateAntialiasing:
-    fastMode: 0
-    keepAlpha: 0
-  fog:
-    enabled: 1
-    excludeSkybox: 1
-  debugLayer:
-    lightMeter:
-      width: 512
-      height: 256
-      showCurves: 1
-    histogram:
-      width: 512
-      height: 256
-      channel: 3
-    waveform:
-      exposure: 0.12
-      height: 256
-    vectorscope:
-      size: 256
-      exposure: 0.12
-    overlaySettings:
-      linearDepth: 0
-      motionColorIntensity: 4
-      motionGridSize: 64
-      colorBlindnessType: 0
-      colorBlindnessStrength: 1
-  m_Resources: {fileID: 11400000, guid: d82512f9c8e5d4a4d938b575d47f88d4, type: 2}
-  m_ShowToolkit: 0
-  m_ShowCustomSorter: 0
-  breakBeforeColorGrading: 0
-  m_BeforeTransparentBundles: []
-  m_BeforeStackBundles: []
-  m_AfterStackBundles: []
+  _cameraOffset: {x: 0, y: 0, z: -10}
+  _interpolationSpeed: 3.2
+  _positionShakeIntensity: 0.15
+  _rotationShakeIntensity: 0.35
+  _shakeDuration: 0.06
+  _shakeTimer: 0
+  _originalPosition: {x: 0, y: 0, z: 0}
 --- !u!114 &1777237436
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -6,31 +7,64 @@ using UnityEngine;
 public class Item : NetworkBehaviour , IPickable
 {
     [SerializeField] protected GameObject pickUpParticle;
-    [SerializeField] protected bool autoSpawn;
+
+    private float _timer;
+    private bool canCollect;
+    private Vector2 _endPosition;
+    [SerializeField] private SpriteRenderer _spriteRenderer;
+    [SerializeField] private Collider2D _itemCollider;
+    [SerializeField] private Rigidbody2D _rb;
+    private Action _onItemCollected;
     
-    protected SpriteRenderer spriteRenderer;
-    protected Collider2D itemCollider;
-    protected float timer;
-    
+    public void Initialise(Vector2 initialVelocity,Vector2 endPosition, Action onTimeCollected)
+    {
+        _endPosition = endPosition;
+        _onItemCollected = onTimeCollected;
+        
+        _rb = GetComponent<Rigidbody2D>();
+        _rb.AddForce(initialVelocity, ForceMode2D.Impulse);
+    }
+
     public void Start()
     {
-        spriteRenderer = transform.GetComponentInChildren<SpriteRenderer>(true);
-        itemCollider = GetComponent<Collider2D>();
+        _itemCollider = GetComponent<Collider2D>();
+        _itemCollider.enabled = false;
         
-        if (IsClient && !IsHost)
-        {
-            Destroy(GetComponent<Collider2D>());
-        }
+        _spriteRenderer = transform.GetComponentInChildren<SpriteRenderer>(true);
+        _spriteRenderer.color = new Color(1f, 1f, 1f, 0.11f);
+        
+        _rb = GetComponent<Rigidbody2D>();
     }
     
     public void Update()
     {
-        timer += Time.deltaTime; 
-        if (timer > 0.5f && spriteRenderer.enabled == false)
+        _timer += Time.deltaTime; 
+        if (_timer > 0.5f && _spriteRenderer.enabled == false)
         {
-            spriteRenderer.enabled = true;
-            itemCollider.enabled = true;
+            _spriteRenderer.enabled = true;
+            _itemCollider.enabled = true;
         }
+
+        if (IsServer && !canCollect)
+        {
+            if (Vector3.Distance(transform.position, _endPosition) < 1f)
+            {
+                canCollect = true;
+                _rb.velocity = Vector3.zero;
+                _rb.bodyType = RigidbodyType2D.Kinematic;
+                _itemCollider.enabled = true;
+                _spriteRenderer.color = Color.white;
+                
+                SendCanCollectClientRPC();
+            }
+        }
+    }
+
+    [ClientRpc]
+    private void SendCanCollectClientRPC()
+    {
+        _itemCollider.enabled = true;
+        _spriteRenderer.color = Color.white;
     }
 
     public void OnPickUp(ulong clientID)
@@ -45,8 +79,8 @@ public class Item : NetworkBehaviour , IPickable
         
         OnPickUpServerRPC(clientID);
 
-        spriteRenderer.enabled = false;
-        itemCollider.enabled = false;
+        _spriteRenderer.enabled = false;
+        _itemCollider.enabled = false;
     }
     
     [ServerRpc(RequireOwnership = false)]
@@ -59,5 +93,6 @@ public class Item : NetworkBehaviour , IPickable
         }
         
         NetworkObject.Despawn(this);
+        _onItemCollected?.Invoke();
     }
 }

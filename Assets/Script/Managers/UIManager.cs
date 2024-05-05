@@ -14,7 +14,15 @@ public enum Screens
 
 public class UIManager : Singleton<UIManager>
 {
+    [SerializeField] private Canvas _canvas;
     [SerializeField] private GameObject[] screens;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        
+        //GameEvents.OnGameStateChange += OnGameStateChange;
+    }
 
     public GameObject ReplaceScreen(Screens screenEnum)
     {
@@ -35,5 +43,18 @@ public class UIManager : Singleton<UIManager>
     public T GetScreen<T>(Screens screenEnum)
     {
         return screens[(int)screenEnum].GetComponent<T>();
+    }
+
+    private void OnGameStateChange(EGameStates state)
+    {
+        switch (state)
+        {
+            case EGameStates.GAME:
+            {
+                _canvas = GetComponent<Canvas>();
+                _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                break;
+            }
+        }
     }
 }

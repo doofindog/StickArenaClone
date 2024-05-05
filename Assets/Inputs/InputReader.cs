@@ -22,6 +22,7 @@ public class InputReader : ScriptableObject, CharacterInput.IGameplayActions
 
     public event Action<Vector2> MoveEvent;
     public event Action<bool> AttackEvent;
+    public event Action<bool> ChargeEvent;
     public event Action<bool> InteractEvent;
     public event Action<bool> ReloadEvent;
 
@@ -41,6 +42,18 @@ public class InputReader : ScriptableObject, CharacterInput.IGameplayActions
         else if(context.canceled)
         {
             AttackEvent?.Invoke(false);
+        }
+    }
+
+    public void OnCharge(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            ChargeEvent?.Invoke(true);
+        }
+        else if(context.canceled)
+        {
+            ChargeEvent?.Invoke(false);
         }
     }
 
