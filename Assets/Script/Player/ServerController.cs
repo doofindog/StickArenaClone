@@ -14,7 +14,6 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     private Queue<HitResponseData> _damageProcessor;
     
     
-
     private Vector3 gizmoPosition;
 
     public override void Awake()
@@ -80,8 +79,12 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
                            hitResponseData == null ||
                            _netStateProcessor.frameHistory.First == null ||
                            _netStateProcessor.frameHistory.Last == null;
-            
-        if(failedCheck) return;
+
+        if (failedCheck)
+        {
+            Debug.Log("[SSR] Failed Check");
+            return;
+        }
 
         //Frame history of the hit character
         LinkedList<NetStatePayLoad> history = _netStateProcessor.frameHistory;
@@ -90,6 +93,7 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         if (oldestHistoryTime > hitResponseData.hitTime)
         {
             //Too Far Back
+            Debugger.Log($"[SSR] History too Far Back Skipping Rewind : {oldestHistoryTime} , {hitResponseData.hitTime}");
             return;
         }
 
@@ -116,7 +120,6 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         }
             
         //Confirm Hit After Getting Frame to check and Interpolation
-
         if (scheduleRewind)
         {
             float distance = younger.Value.time - older.Value.time;
@@ -124,23 +127,28 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
             frameToCheck.position = Vector3.Lerp(older.Value.position, younger.Value.position, interpFraction);
             frameToCheck.time = hitResponseData.hitTime;
         }
+        
+        //PredictPath
+        if (ConfirmHit(frameToCheck, hitResponseData)) 
+        {
+            Debugger.Log("[SSR] Hit Confirmed");
+            float currentHealth = DataHandler.ReduceHealth(hitResponseData.damage);
+            if (currentHealth <= 0)
+            {
+                ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
+                SpawnManager spawnManager = GameManager.Instance.spawnManager;
+                spawnManager.DespawnPlayer(clientID);
 
-        
-         if (ConfirmHit(frameToCheck, hitResponseData)) //PredictPath
-         {
-             float currentHealth = DataHandler.ReduceHealth(hitResponseData.damage);
-             if (currentHealth <= 0)
-             {
-                 ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
-                 SpawnManager spawnManager = GameManager.Instance.spawnManager;
-                 spawnManager.DespawnPlayer(clientID);
-        
-                 //GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
-             
-                 Animator.PlayDeathAnimation(true);
-                 _damageProcessor.Clear();
-             }
-         }
+                //GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
+
+                Animator.PlayDeathAnimation(true);
+                _damageProcessor.Clear();
+            }
+        }
+        else
+        {
+            Debugger.Log("[SSR] Hit Failed");
+        }
 
 
         //StartCoroutine(ConfirmHitCoroutine(frameToCheck, hitResponseData));
@@ -189,6 +197,18 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     public override void OnDestroy()
     {
         TickManager.Instance.RemoveEntity(this);
+    }
+
+    public override void OnRespawn()
+    {
+        base.OnRespawn();
+        
+        GameObject weaponPrefab = GameManager.Instance.GetSessionSettings().defaultWeapon;
+        GameObject weaponObj = SpawnManager.Instance.SpawnObject(weaponPrefab, SpawnManager.SpawnType.NETWORK, Vector3.zero,
+            Quaternion.identity);
+        weaponObj.GetComponent<NetworkObject>().Spawn();
+        Weapon weapon = weaponObj.GetComponent<Weapon>();
+        GetComponent<WeaponComponent>().EquipWeapon(weapon);
     }
 
     public override void OnDespawn()

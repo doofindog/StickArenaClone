@@ -16,7 +16,7 @@ MonoBehaviour:
   startGameTime: 3
   prepGameTime: 2
   playerRespawnTime: 3
-  maxCoinSpawns: 0
-  spawnSpawnRate: 0
+  defaultWeapon: {fileID: 11347924877574632, guid: 29bf7527f826d419e9eefe3c78630a6c,
+    type: 3}
   scoreUpdateTime: 1.5
   winThreshold: 15

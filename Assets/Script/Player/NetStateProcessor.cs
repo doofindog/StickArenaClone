@@ -10,7 +10,7 @@ public class NetStateProcessor : NetworkBehaviour
     [SerializeField] private NetStatePayLoad _lastProcessedState;
 
     public LinkedList<NetStatePayLoad> frameHistory = new LinkedList<NetStatePayLoad>();
-    private float maxTimeStamp = 0.2f;
+    private float maxTimeStamp = 0.4f;
 
 
     public void AddState(NetStatePayLoad netStatePayLoad)

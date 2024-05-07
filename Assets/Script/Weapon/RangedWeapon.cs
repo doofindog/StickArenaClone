@@ -12,12 +12,15 @@ public class RangedWeapon : Weapon, IReloadable
 {
     [Header("Weapon Data")] 
     [SerializeField] protected MuzzleFlare muzzleFlare;
+    [SerializeField] protected ChargeEffect _chargeEffect;
     [SerializeField] protected Transform barrelTransform;
     [SerializeField] protected int ammoInClip;
     [SerializeField] protected int totalAmmo;
     [SerializeField] protected FireType fireType;
     [SerializeField] protected WeaponState weaponState;
     [SerializeField] protected AudioClip fireAudio;
+    [SerializeField] protected float chargeTimer;
+    [SerializeField] protected bool chargeComplete;
 
     private Weapon.Params _weaponParams;
     
@@ -60,7 +63,17 @@ public class RangedWeapon : Weapon, IReloadable
         _unequipedWeaponObj.SetActive(false);
     }
 
-    public override void Trigger(Weapon.Params inputPayLoad)
+    public override void HandleWeapon(Weapon.Params weaponParams)
+    {
+        base.HandleWeapon(weaponParams);
+
+        if (weaponParams.reloadPressed)
+        {
+            Reload();
+        }
+    }
+
+    public override void Trigger(Weapon.Params weaponParams)
     {
         if (totalAmmo == 0 && ammoInClip == 0)
         {
@@ -74,7 +87,7 @@ public class RangedWeapon : Weapon, IReloadable
             return;
         }
 
-        _weaponParams = inputPayLoad;
+        _weaponParams = weaponParams;
 
         switch (fireType)
         {
@@ -93,6 +106,41 @@ public class RangedWeapon : Weapon, IReloadable
                 HandleAutoFire();
                 break;
             }
+            case FireType.Charge:
+            {
+                HandleChargeFire();
+                break;
+            }
+        }
+    }
+
+    public override void ReleaseTrigger()
+    {
+        if (chargeTimer > _weaponData.chargeTime && chargeComplete)
+        {
+            chargeTimer = 0;
+            chargeComplete = false;
+        }
+
+        if(chargeTimer > 0 && !chargeComplete )
+        {
+            chargeTimer -= TickManager.Instance.GetMinTickTime();
+        }
+    }
+
+    private void HandleChargeFire()
+    {
+        if(weaponState != global::WeaponState.Ready) return;
+
+        if (!chargeComplete)
+        {
+            chargeTimer += TickManager.Instance.GetMinTickTime();
+            if (!(chargeTimer > _weaponData.chargeTime)) return;
+            chargeComplete = true;
+            weaponState = global::WeaponState.Fired;
+            FireBullet();
+
+            StartCoroutine(ResetFireRate());
         }
     }
 
@@ -204,6 +252,20 @@ public class RangedWeapon : Weapon, IReloadable
     private void SetWeaponAsReady()
     {
         weaponState = global::WeaponState.Ready;
+    }
+
+    protected override void UpdateAnimation()
+    {
+        if(_chargeEffect == null) return;
+
+        if (!chargeComplete)
+        {
+            _chargeEffect.Charge(chargeTimer, _weaponData.chargeTime);
+        }
+        else
+        {
+            _chargeEffect.Charge(0, _weaponData.chargeTime);
+        }
     }
 
     private void OnWeaponStateChanged(WeaponState oldState, WeaponState newState)

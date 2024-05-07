@@ -11,10 +11,9 @@ public class SessionSettings : ScriptableObject
     public float prepGameTime;
     public float playerRespawnTime;
 
-    [Header("Arena")] 
-    public int maxCoinSpawns;
-    public float spawnSpawnRate;
-    
+    [Header("Game")] 
+    public GameObject defaultWeapon;
+
     [Header("Score")] 
     public float scoreUpdateTime;
     public int winThreshold;

@@ -12,8 +12,7 @@ public class WeaponComponent : NetworkBehaviour
 
     [SerializeField] private GameObject _arm;
     [SerializeField] private GameObject _hand;
-
-    private Weapon _defaultWeapon;
+    
     private Weapon _equippedWeapon;
     private Weapon _nearByWeapon;
     
@@ -21,29 +20,26 @@ public class WeaponComponent : NetworkBehaviour
     {
         CharacterDataHandler dataHandler = GetComponent<CharacterDataHandler>();
         
+        Aim(inputPayLoad.aimAngle);
+        
         if (dataHandler.interactPressed)
         {
             TryPickUpWeapon();
         }
 
-        if (inputPayLoad.attackPressed)
+        Weapon.Params weaponParams = new Weapon.Params()
         {
-            TriggerWeapon(new Weapon.Params()
-            {
-                tick = inputPayLoad.tick
-            });
-        }
-        else
-        {
-            ReleaseTrigger();
-        }
+            tick = inputPayLoad.tick,
+            triggerPressed = inputPayLoad.attackPressed,
+            reloadPressed = dataHandler.reloadPressed
+        };
+        
 
-        if (dataHandler.reloadPressed)
+        if (_equippedWeapon != null)
         {
-            ReloadWeapon();
+            _equippedWeapon.HandleWeapon(weaponParams);
         }
         
-        Aim(inputPayLoad.aimAngle);
     }
     
     private void TryPickUpWeapon()
@@ -61,18 +57,12 @@ public class WeaponComponent : NetworkBehaviour
 
     public void EquipWeapon(Weapon weapon = null)
     {
-        if (weapon != null)
-        {
-            _nearByWeapon = weapon;
-        }
-        if(_nearByWeapon == null) return;
-
         if (_equippedWeapon != null)
         {
             DestroyWeapon(_equippedWeapon);
         }
 
-        _equippedWeapon = _nearByWeapon;
+        _equippedWeapon = weapon;
         
         ConstraintSource constrainSource = new ConstraintSource
         {
@@ -91,11 +81,6 @@ public class WeaponComponent : NetworkBehaviour
         
         _nearByWeapon = null;
         EquipWeaponClientRpc(_equippedWeapon.GetComponent<NetworkObject>());
-
-        if (_defaultWeapon == null)
-        {
-            _defaultWeapon = _equippedWeapon;
-        }
     }
 
     private void DestroyWeapon(Weapon weapon)
@@ -105,16 +90,15 @@ public class WeaponComponent : NetworkBehaviour
         weapon.GetComponent<NetworkObject>().Despawn();
     }
 
+    public bool WeaponEquipped()
+    {
+        return _equippedWeapon != null;
+    }
+
 
     public void DropEquippedWeapon()
     {
-        if (_equippedWeapon == null || _defaultWeapon == _equippedWeapon)
-        {
-            return;
-        }
-
-        _equippedWeapon.GetComponent<BoxCollider2D>().enabled = true;
-        _equippedWeapon.Reset();
+        _equippedWeapon.GetComponent<NetworkObject>().Despawn();
         _equippedWeapon = null;
         
         DropEquippedWeaponClientRpc();
@@ -123,13 +107,6 @@ public class WeaponComponent : NetworkBehaviour
     [ClientRpc]
     private void DropEquippedWeaponClientRpc()
     {
-        if (_equippedWeapon == null)
-        {
-            return;
-        }
-
-        _equippedWeapon.GetComponent<BoxCollider2D>().enabled = true;
-        _equippedWeapon.Reset();
         _equippedWeapon = null;
     }
 

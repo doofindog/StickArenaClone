@@ -21,7 +21,7 @@ public class UIManager : Singleton<UIManager>
     {
         base.Awake();
         
-        //GameEvents.OnGameStateChange += OnGameStateChange;
+        GameEvents.OnGameStateChange += OnGameStateChange;
     }
 
     public GameObject ReplaceScreen(Screens screenEnum)

@@ -42,14 +42,14 @@ public class FollowCameraState : CameraState, ITickableEntity
         
         TickManager.Instance.AddEntity(this);
         
-        
         _originalPosition = transform.position;
         _originalRotation = transform.rotation;
-
-        // var cameraData = GetComponent<Camera>().GetUniversalAdditionalCameraData();
-        // cameraData.cameraStack.RemoveAt(0);
-        // _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
-        // _pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
+        
+        UniversalAdditionalCameraData cameraData = GetComponent<Camera>().GetUniversalAdditionalCameraData();
+        cameraData.renderPostProcessing = true;
+        cameraData.cameraStack.RemoveAt(0);
+        _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
+        _pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
     }
 
     public override void UpdateState()

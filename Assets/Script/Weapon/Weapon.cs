@@ -12,6 +12,8 @@ public class Weapon : NetworkBehaviour
     public class Params
     {
         public int tick;
+        public bool triggerPressed;
+        public bool reloadPressed;
     }
     
     [SerializeField] protected WeaponDataScriptable _weaponData;
@@ -33,7 +35,19 @@ public class Weapon : NetworkBehaviour
         playerClientID = playerNetObj.OwnerClientId;
     }
 
-    public virtual void Trigger(Params inputPayLoad) { }
+    public virtual void HandleWeapon(Params weaponParams)
+    {
+        if (weaponParams.triggerPressed)
+        {
+            Trigger(weaponParams);
+        }
+        else
+        {
+            ReleaseTrigger();
+        }
+    }
+
+    public virtual void Trigger(Params weaponParams) { }
     
     public virtual void ReleaseTrigger()
     {

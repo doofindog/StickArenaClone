@@ -20,6 +20,7 @@ public class WeaponDataScriptable : ScriptableObject
     public float bulletSpeed;
     public int burstBulletCount;
     public float burstFireRate;
+    public float chargeTime;
     [FormerlySerializedAs("fireSound")] public AudioClip fireAudio;
 }
 
@@ -27,7 +28,8 @@ public enum FireType
 {
     Single = 0,
     Burst = 1,
-    Auto = 2
+    Auto = 2,
+    Charge = 3
 }
 
 public enum WeaponState

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Mono.CSharp;
 using Unity.Mathematics;
 using Unity.Netcode;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
@@ -23,7 +24,7 @@ public class SpawnManager : NetworkBehaviour
     [SerializeField] private List<SpawnData> playerSpawnLocations;
     [SerializeField] private ObjectPool _monoObjectPool;
     [SerializeField] private NetworkObjectPool _networkObjectPool;
-
+    [SerializeField] private GameObject defaultWeapon;
     private Dictionary<int, GameObject> bulletsFired = new  Dictionary<int, GameObject>();
 
     public void Awake()
@@ -37,6 +38,7 @@ public class SpawnManager : NetworkBehaviour
     public void Start()
     {
         NetworkManager.Singleton.NetworkConfig.PlayerPrefab = playerPrefab;
+        defaultWeapon = GameManager.Instance.GetSessionSettings().defaultWeapon;
     }
     
     public GameObject SpawnObject(GameObject prefab, SpawnType spawnType)
@@ -99,7 +101,8 @@ public class SpawnManager : NetworkBehaviour
         Transform spawnTransform = GetSpawnLocation(playerTeam);
         serverController.transform.position = spawnTransform.position;
         serverController.OnRespawn();
-        
+
+
         RespawnPlayerClientRpc(clientID);
     }
     

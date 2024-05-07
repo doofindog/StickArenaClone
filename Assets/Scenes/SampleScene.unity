@@ -11875,37 +11875,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!1 &812970216
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 812970217}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &812970217
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 812970216}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 0.5, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &813966118
 GameObject:
   m_ObjectHideFlags: 0
@@ -23333,7 +23302,7 @@ PrefabInstance:
     - target: {fileID: 7723531697288480336, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
       propertyPath: DebugSimulator.PacketDelayMS
-      value: 150
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7723531697288480336, guid: d28c9fab99e6b4dd3a5c3adc514e792b,
         type: 3}
@@ -24425,12 +24394,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dispenserItems:
+  - prefab: {fileID: 8427824012255521433, guid: aada3d46665373b45878e4aa01274ad2,
+      type: 3}
+    priority: 1
   - prefab: {fileID: 1747835260134465961, guid: 12ff0eeb2adc22842aa7f3067362f869,
       type: 3}
-    priority: 0
-  - prefab: {fileID: 1747835260134465961, guid: 12ff0eeb2adc22842aa7f3067362f869,
-      type: 3}
-    priority: 0
+    priority: 0.3
   - prefab: {fileID: 5569162338281056924, guid: ad5a16121828040f784129da941fefce,
       type: 3}
     priority: 1
@@ -44756,4 +44725,3 @@ SceneRoots:
   - {fileID: 438982346}
   - {fileID: 8306152618729499008}
   - {fileID: 1451087799}
-  - {fileID: 812970217}
