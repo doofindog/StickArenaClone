@@ -1,7 +1,11 @@
 using UnityEngine;
+using UnityEngine.Experimental.Rendering.Universal;
+using UnityEngine.Rendering.Universal;
 
 public class MenuCameraState : CameraState
 {
+    public Camera uiCamera;
+    
     [SerializeField] private float _cameraSpeed;
     [SerializeField] private Vector3 _networkStartPosition;
     [SerializeField] private Transform[] _locations;
@@ -19,6 +23,16 @@ public class MenuCameraState : CameraState
         PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
         
         UpdateNextLocation();
+        
+        UniversalAdditionalCameraData cameraData = GetComponent<Camera>().GetUniversalAdditionalCameraData();
+        if (cameraData.cameraStack.Count < 1)
+        {
+            cameraData.renderPostProcessing = true;
+            cameraData.cameraStack.Add(uiCamera);
+        }
+
+        PixelPerfectCamera _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
+        _pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.PixelSnapping;
     }
 
     public override void UpdateState()

@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using CrazyGames;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -9,7 +7,6 @@ using Unity.Services.Authentication;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class GameManager : NetworkBehaviour
 {
@@ -47,14 +44,13 @@ public class GameManager : NetworkBehaviour
     
     public async void Start()
     {
-        CrazySDK.Init(() => { });
         await Initialise();
     }
     
 
     private async Task Initialise()
     {
-        //Cursor.visible = f
+        Cursor.visible = false;
         
         _gameStates.Add(EGameStates.MENU, GetComponent<MenuState>());
         _gameStates.Add(EGameStates.GAME, GetComponent<GameState>());

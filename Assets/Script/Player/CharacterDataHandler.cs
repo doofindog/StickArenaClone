@@ -20,6 +20,7 @@ public class CharacterDataHandler : NetworkBehaviour
     public Vector2 direction;
 
     [Header("Dodge")] public bool canDodge;
+    public bool isDodge;
     public NetworkVariable<float> dodgeDuration = new NetworkVariable<float>();
     public NetworkVariable<float> dodgeSpeed = new NetworkVariable<float>();
 

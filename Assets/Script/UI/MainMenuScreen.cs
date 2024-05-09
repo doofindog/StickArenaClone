@@ -39,6 +39,10 @@ public class MainMenuScreen : MonoBehaviour
             PlayNoUserNameAnim();
             return;
         }
+        if (usernameField.text.Contains(' '))
+        {
+            usernameField.text = usernameField.text.Replace(' ', '_');
+        }
         
         GameManager.Instance.TryStartHost(usernameField.text);
     }
@@ -57,6 +61,11 @@ public class MainMenuScreen : MonoBehaviour
 
     public void OnJoinWithCodePressed()
     {
+        if (usernameField.text.Contains(' '))
+        {
+            usernameField.text = usernameField.text.Replace(' ', '_');
+        }
+        
         GameManager.Instance.TryJoin(usernameField.text, joinCode.text);
     }
 
@@ -103,6 +112,11 @@ public class MainMenuScreen : MonoBehaviour
     {
         menuPanel.SetActive(!menuPanel.activeInHierarchy);
         settingsPopUp.SetActive(!settingsPopUp.activeInHierarchy);
+    }
+
+    public void OnCodeValueChanged()
+    {
+        joinCode.text = joinCode.text.ToUpper();
     }
 }
 

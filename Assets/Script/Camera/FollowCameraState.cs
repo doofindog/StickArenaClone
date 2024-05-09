@@ -9,6 +9,8 @@ using UnityEngine.Serialization;
 
 public class FollowCameraState : CameraState, ITickableEntity
 {
+    public Camera uiCamera;
+    
     [SerializeField] private Transform _follow;
     [SerializeField] private Vector3 _cameraOffset;
     [SerializeField] private float _interpolationSpeed;
@@ -28,7 +30,7 @@ public class FollowCameraState : CameraState, ITickableEntity
     {
         PlayerEvents.PlayerDiedEvent += PerformShake;
         GameEvents.WeaponFiredEvent += PerformShake;
-        
+
         NetworkSpawnManager spawnManager = NetworkManager.Singleton.SpawnManager;
         ulong playerId = NetworkManager.Singleton.LocalClientId;
         if (spawnManager.GetPlayerNetworkObject(playerId) != null)
@@ -70,7 +72,7 @@ public class FollowCameraState : CameraState, ITickableEntity
         PlayerEvents.PlayerDiedEvent -= PerformShake;
         GameEvents.WeaponFiredEvent -= PerformShake;
         
-        TickManager.Instance.AddEntity(this);
+        TickManager.Instance.RemoveEntity(this);
     }
     
     

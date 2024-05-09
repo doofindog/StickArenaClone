@@ -68,7 +68,7 @@ public class GameState : BaseGameState
             yield return new WaitForSeconds(3);
             GameManager.Instance.prepTimer.Value++;
         }
-
+        
         PreparingGameClientRPC();
         
         GameManager.Instance.startGameTimer.Value = sessionSettings.startGameTime;
@@ -77,15 +77,12 @@ public class GameState : BaseGameState
             yield return new WaitForSeconds(1);
             GameManager.Instance.startGameTimer.Value--;
         }
-
+        
         SpawnManager.Instance.SpawnAllPlayers();
         List<NetworkClient> clients = NetworkManager.ConnectedClientsList.ToList();
         foreach (NetworkClient client in clients)
         {
-            NetworkObject weaponNetObj = SpawnManager.Instance.SpawnObject(defaultWeapon, SpawnManager.SpawnType.NETWORK).GetComponent<NetworkObject>();
-            weaponNetObj.Spawn();
-            WeaponComponent weaponComponent = client.PlayerObject.GetComponent<WeaponComponent>();
-            weaponComponent.EquipWeapon(weaponNetObj.GetComponent<Weapon>());
+            client.PlayerObject.GetComponent<WeaponComponent>().GiveDefaultWeapon();
         }
 
         StartGameClientRPC();

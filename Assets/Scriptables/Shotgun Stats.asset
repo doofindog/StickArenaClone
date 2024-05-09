@@ -19,10 +19,17 @@ MonoBehaviour:
   damage: 1
   fireRate: 1
   spread: 10
-  ammoInClip: 20
-  maxAmmo: 150
-  reloadTime: 3
+  recoilPattern:
+  - -0.077
+  - 0.144
+  - -0.084
+  - 0.017
+  ammoInClip: 4
+  maxAmmo: 8
+  reloadTime: 2
   fireType: 0
   bulletSpeed: 20
   burstBulletCount: 3
   burstFireRate: 0.075
+  chargeTime: 0
+  fireAudio: {fileID: 8300000, guid: 040af3b026d70b14b98cd3d703dd7e20, type: 3}

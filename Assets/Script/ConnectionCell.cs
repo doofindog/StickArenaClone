@@ -10,6 +10,6 @@ public class ConnectionCell : MonoBehaviour
 
     public void UpdateCell(PlayerData data)
     {
-        usernameText.text = data.userName;
+        usernameText.text = data.userName.Replace('_',' ');
     }
 }

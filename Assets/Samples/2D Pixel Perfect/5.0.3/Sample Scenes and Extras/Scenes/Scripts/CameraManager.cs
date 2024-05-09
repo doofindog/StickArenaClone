@@ -4,7 +4,8 @@ using UnityEngine.U2D;
 
 public class CameraManager : MonoBehaviour
 {
-    public Camera ordinaryCamera;
+    public Camera gameCamera;
+    public Camera uiCamera;
     public PixelPerfectCamera pixelPerfectCamera;
 
     private bool isPixelPerfect;
@@ -25,12 +26,12 @@ public class CameraManager : MonoBehaviour
     {
         if (value)
         {
-            ordinaryCamera.gameObject.SetActive(false);
+            gameCamera.gameObject.SetActive(false);
             pixelPerfectCamera.gameObject.SetActive(true);
         }
         else
         {
-            ordinaryCamera.gameObject.SetActive(true);
+            gameCamera.gameObject.SetActive(true);
             pixelPerfectCamera.gameObject.SetActive(false);
         }
     }

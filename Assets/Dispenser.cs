@@ -26,13 +26,38 @@ public class Dispenser : NetworkBehaviour
     public float maxDispenseCount;
     public float dispenseRate;
     public float timer;
+    public bool canDispense;
 
     private List<DispensedItem> _dispensedItems = new List<DispensedItem>();
+
+    public void Awake()
+    {
+        GameEvents.OnGameStateChange += OnGameStateChanged;
+    }
+
+    private void OnGameStateChanged(EGameStates state)
+    {
+        switch (state)
+        {
+            case EGameStates.GAME:
+            {
+                dispenseCount = 0;
+                timer = 0;
+                canDispense = true;
+                break;
+            }
+            default:
+            {
+                canDispense = false;
+                break;
+            }
+        }
+    }
 
 
     public void Update()
     {
-        if (IsServer && GameManager.Instance.GetState() == EGameStates.GAME)
+        if (IsServer && canDispense)
         {
             DispenseItem();
         }

@@ -10,12 +10,13 @@ using Random = UnityEngine.Random;
 
 public class RangedWeapon : Weapon, IReloadable
 {
-    [Header("Weapon Data")] 
+    [Header("Weapon Data")]
+    public int ammoInClip;
+    public int totalAmmo;
+    
     [SerializeField] protected MuzzleFlare muzzleFlare;
     [SerializeField] protected ChargeEffect _chargeEffect;
     [SerializeField] protected Transform barrelTransform;
-    [SerializeField] protected int ammoInClip;
-    [SerializeField] protected int totalAmmo;
     [SerializeField] protected FireType fireType;
     [SerializeField] protected WeaponState weaponState;
     [SerializeField] protected AudioClip fireAudio;
@@ -23,7 +24,7 @@ public class RangedWeapon : Weapon, IReloadable
     [SerializeField] protected bool chargeComplete;
 
     private Weapon.Params _weaponParams;
-    
+
     protected NetworkAnimator _netAnimator;
 
     public override void OnNetworkSpawn()
@@ -78,6 +79,7 @@ public class RangedWeapon : Weapon, IReloadable
         if (totalAmmo == 0 && ammoInClip == 0)
         {
             Debugger.Log("[WEAPON] out of ammo and clips");
+            WeaponExhausted();
             return;
         }
         
@@ -116,6 +118,8 @@ public class RangedWeapon : Weapon, IReloadable
 
     public override void ReleaseTrigger()
     {
+        base.ReleaseTrigger();
+        
         if (chargeTimer > _weaponData.chargeTime && chargeComplete)
         {
             chargeTimer = 0;
@@ -139,6 +143,12 @@ public class RangedWeapon : Weapon, IReloadable
             chargeComplete = true;
             weaponState = global::WeaponState.Fired;
             FireBullet();
+            
+                    
+            if(TryGetComponent(out AudioSource source))
+            {
+                source.PlayOneShot(fireAudio);
+            } 
 
             StartCoroutine(ResetFireRate());
         }
@@ -150,8 +160,13 @@ public class RangedWeapon : Weapon, IReloadable
         
         _triggerPressed = true;
         weaponState = global::WeaponState.Fired;
-
         FireBullet();
+        
+                
+        if(TryGetComponent(out AudioSource source))
+        {
+            source.PlayOneShot(fireAudio);
+        }
         
         StartCoroutine(ResetFireRate());
     }
@@ -170,6 +185,12 @@ public class RangedWeapon : Weapon, IReloadable
     {
         for (int i = 0; i < _weaponData.burstBulletCount; i++)
         {
+                    
+            if(TryGetComponent(out AudioSource source))
+            {
+                source.PlayOneShot(fireAudio);
+            }
+            
             FireBullet();
 
             yield return new WaitForSeconds(_weaponData.burstFireRate);
@@ -184,11 +205,19 @@ public class RangedWeapon : Weapon, IReloadable
         
         FireBullet();
         
+                
+        if(TryGetComponent(out AudioSource source))
+        {
+            source.PlayOneShot(fireAudio);
+        }
+        
         StartCoroutine(ResetFireRate());
     }
 
     protected virtual void FireBullet()
     {
+        Debug.Log("Called");
+        
         if (muzzleFlare != null)
         {
             muzzleFlare.Play();
@@ -197,11 +226,11 @@ public class RangedWeapon : Weapon, IReloadable
         weaponState = global::WeaponState.Fired;
         
         Debugger.Log("[weapon] fire bullet called");
-        
+
         int index = _weaponParams.tick % _weaponData.recoilPattern.Length;
         float rotation = _weaponData.recoilPattern[index] * _weaponData.spread;
         Quaternion bulletRotation = barrelTransform.rotation * Quaternion.Euler(0, 0, rotation);
-        
+
         GameObject bulletNetObj = ObjectPool.Instance.GetPooledObject(_weaponData.bulletPrefab, barrelTransform.position, bulletRotation);
         Bullet bullet = bulletNetObj.GetComponent<Bullet>();
         bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
@@ -214,8 +243,6 @@ public class RangedWeapon : Weapon, IReloadable
         }
         
         _animator.Play("Fire");
-        
-        GetComponent<AudioSource>().PlayOneShot(fireAudio);
     }
     
 

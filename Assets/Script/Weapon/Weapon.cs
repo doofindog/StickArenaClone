@@ -19,13 +19,14 @@ public class Weapon : NetworkBehaviour
     [SerializeField] protected WeaponDataScriptable _weaponData;
     
     protected ulong playerClientID;
-    protected bool _triggerPressed;
+    [SerializeField] protected bool _triggerPressed;
     protected Animator _animator;
     
     public GameObject _equipedWeaponObj;
     public GameObject _unequipedWeaponObj;
 
     public NetworkObject weaponOwner;
+    public Action onWeaponExhausted;
 
     protected virtual void InitialiseData() { }
 
@@ -80,5 +81,10 @@ public class Weapon : NetworkBehaviour
         _equipedWeaponObj.SetActive(false);
         _unequipedWeaponObj.SetActive(true);
         transform.rotation = quaternion.Euler(Vector3.zero);
+    }
+
+    public virtual void WeaponExhausted()
+    {
+        onWeaponExhausted?.Invoke();
     }
 }

@@ -94,8 +94,9 @@ public class NetController : NetworkBehaviour
     {
         if (DataHandler.state == CharacterDataHandler.State.Dodge) yield break;
 
+        GetComponent<Collider2D>().enabled = false;
         DataHandler.canDodge = false;
-        
+        DataHandler.isDodge = true;
         float timer = 0;
         DataHandler.state = CharacterDataHandler.State.Dodge;
         
@@ -108,12 +109,14 @@ public class NetController : NetworkBehaviour
 
             timer += tickManager.GetMinTickTime();
         }
-        
+        GetComponent<Collider2D>().enabled = true;
         DataHandler.state = CharacterDataHandler.State.Idle;
 
         yield return new WaitForSeconds(1.5f);
 
         DataHandler.canDodge = true;
+        DataHandler.isDodge = false;
+        
     }
     
     protected virtual void UpdateAnimation(NetInputPayLoad inputPayLoad)

@@ -61,6 +61,7 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
             position = interpolate ? newPosition : transform.position,
             aimAngle = inputPayLoad.aimAngle,
             dodge = inputPayLoad.dodgePressed,
+            isDodge = DataHandler.isDodge,
             firedWeapon =  inputPayLoad.attackPressed
         };
         

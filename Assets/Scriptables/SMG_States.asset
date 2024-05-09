@@ -34,4 +34,5 @@ MonoBehaviour:
   bulletSpeed: 20
   burstBulletCount: 3
   burstFireRate: 0.075
-  fireAudio: {fileID: 0}
+  chargeTime: 0
+  fireAudio: {fileID: 8300000, guid: 040af3b026d70b14b98cd3d703dd7e20, type: 3}

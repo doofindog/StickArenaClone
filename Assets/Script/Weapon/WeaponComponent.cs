@@ -39,7 +39,6 @@ public class WeaponComponent : NetworkBehaviour
         {
             _equippedWeapon.HandleWeapon(weaponParams);
         }
-        
     }
     
     private void TryPickUpWeapon()
@@ -80,7 +79,19 @@ public class WeaponComponent : NetworkBehaviour
         _equippedWeapon.HandleOnEquipped(playerNetObj);
         
         _nearByWeapon = null;
+        _equippedWeapon.onWeaponExhausted = GiveDefaultWeapon;
         EquipWeaponClientRpc(_equippedWeapon.GetComponent<NetworkObject>());
+    }
+
+    public void GiveDefaultWeapon()
+    {
+        GameObject weaponPrefab = GameManager.Instance.GetSessionSettings().defaultWeapon;
+        GameObject weaponObj = SpawnManager.Instance.SpawnObject(weaponPrefab, SpawnManager.SpawnType.NETWORK, Vector3.zero,
+            Quaternion.identity);
+        weaponObj.GetComponent<NetworkObject>().Spawn();
+        Weapon weapon = weaponObj.GetComponent<Weapon>();
+        
+        EquipWeapon(weapon);
     }
 
     private void DestroyWeapon(Weapon weapon)

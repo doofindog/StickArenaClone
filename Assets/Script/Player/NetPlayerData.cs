@@ -47,6 +47,7 @@ public struct NetStatePayLoad : INetworkSerializable
     public Vector3 position;
     public float aimAngle;
     public bool dodge;
+    public bool isDodge;
     public bool canDodge;
     public bool firedWeapon;
     
@@ -60,6 +61,7 @@ public struct NetStatePayLoad : INetworkSerializable
             reader.ReadValueSafe(out position);
             reader.ReadValueSafe(out aimAngle);
             reader.ReadValueSafe(out dodge);
+            reader.ReadValueSafe(out isDodge);
             reader.ReadValueSafe(out canDodge);
             reader.ReadValueSafe(out firedWeapon);
         }
@@ -71,6 +73,7 @@ public struct NetStatePayLoad : INetworkSerializable
             writer.WriteValueSafe(position);
             writer.WriteValueSafe(aimAngle);
             writer.WriteValueSafe(dodge);
+            writer.WriteValueSafe(isDodge);
             writer.WriteValueSafe(canDodge);
             writer.WriteValueSafe(firedWeapon);
         }

@@ -72,6 +72,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 				aimAngle = inputPayLoad.aimAngle,
 				dodge = inputPayLoad.dodgePressed,
 				canDodge = DataHandler.canDodge,
+				isDodge = DataHandler.isDodge,
 				firedWeapon = inputPayLoad.attackPressed
 			});
 		}
@@ -92,28 +93,30 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 
 		float positionError = Vector3.Distance(serverPosition, clientPosition);
 
-		if (positionError > POSITION_ERROR_THRESHOLD)
+		if (serverState.isDodge || !(positionError > POSITION_ERROR_THRESHOLD))
 		{
-			transform.position = serverState.position;
-			_netStateProcessor.UpdateState(serverState);
+			return;
+		}
 
-			int tickToProcess = serverState.tick + 1;
-			while (tickToProcess < TickManager.Instance.GetTick())
+		transform.position = serverState.position;
+		_netStateProcessor.UpdateState(serverState);
+
+		int tickToProcess = serverState.tick + 1;
+		while (tickToProcess < TickManager.Instance.GetTick())
+		{
+			NetInputPayLoad inputPayLoad = _netInputProcessor.GetPayloadAtTick(tickToProcess);
+			ProcessMovement(inputPayLoad);
+			NetStatePayLoad netStatePayLoad = new NetStatePayLoad()
 			{
-				NetInputPayLoad inputPayLoad = _netInputProcessor.GetPayloadAtTick(tickToProcess);
-				ProcessMovement(inputPayLoad);
-				NetStatePayLoad netStatePayLoad = new NetStatePayLoad()
-				{
-					tick = inputPayLoad.tick,
-					position = transform.position,
-					aimAngle = inputPayLoad.aimAngle,
-					dodge = inputPayLoad.dodgePressed,
-					firedWeapon = inputPayLoad.attackPressed
-				};
+				tick = inputPayLoad.tick,
+				position = transform.position,
+				aimAngle = inputPayLoad.aimAngle,
+				dodge = inputPayLoad.dodgePressed,
+				firedWeapon = inputPayLoad.attackPressed,
+			};
 				
-				_netStateProcessor.UpdateStateAtToTick(tickToProcess, netStatePayLoad);
-				tickToProcess++;
-			}
+			_netStateProcessor.UpdateStateAtToTick(tickToProcess, netStatePayLoad);
+			tickToProcess++;
 		}
 	}
 

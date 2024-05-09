@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfa4d990813ff42079777a21ded18b97, type: 3}
   m_Name: Session Settings
   m_EditorClassIdentifier: 
-  maxConnections: 2
+  maxConnections: 1
   startGameTime: 3
   prepGameTime: 2
   playerRespawnTime: 3
   defaultWeapon: {fileID: 11347924877574632, guid: 29bf7527f826d419e9eefe3c78630a6c,
     type: 3}
   scoreUpdateTime: 1.5
-  winThreshold: 15
+  winThreshold: 10

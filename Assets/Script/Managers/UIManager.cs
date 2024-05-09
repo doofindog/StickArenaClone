@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public enum Screens
 {
@@ -14,7 +15,9 @@ public enum Screens
 
 public class UIManager : Singleton<UIManager>
 {
-    [SerializeField] private Canvas _canvas;
+    [SerializeField] private Canvas _gameCanvas;
+    [SerializeField] private Canvas _tvCanvas;
+    [SerializeField] private Camera uiCamera;
     [SerializeField] private GameObject[] screens;
 
     protected override void Awake()
@@ -22,6 +25,17 @@ public class UIManager : Singleton<UIManager>
         base.Awake();
         
         GameEvents.OnGameStateChange += OnGameStateChange;
+        GameEvents.TeamWonEvent += TeamWonEvent;
+        _gameCanvas = GetComponent<Canvas>();
+    }
+
+    private void TeamWonEvent(TeamType obj)
+    {
+        _gameCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+        if (uiCamera != null)
+        {
+            _gameCanvas.worldCamera = uiCamera;
+        }
     }
 
     public GameObject ReplaceScreen(Screens screenEnum)
@@ -51,8 +65,16 @@ public class UIManager : Singleton<UIManager>
         {
             case EGameStates.GAME:
             {
-                _canvas = GetComponent<Canvas>();
-                _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                _gameCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                break;
+            }
+            case EGameStates.MENU:
+            {
+                _gameCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+                if (uiCamera != null)
+                {
+                    _gameCanvas.worldCamera = uiCamera;
+                }
                 break;
             }
         }
