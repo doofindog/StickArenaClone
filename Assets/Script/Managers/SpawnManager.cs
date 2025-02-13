@@ -21,7 +21,6 @@ public class SpawnManager : NetworkBehaviour
     public static SpawnManager Instance { get; private set; }
 
     [SerializeField] private GameObject playerPrefab;
-    [SerializeField] private List<SpawnData> playerSpawnLocations;
     [SerializeField] private ObjectPool _monoObjectPool;
     [SerializeField] private NetworkObjectPool _networkObjectPool;
     [SerializeField] private GameObject defaultWeapon;
@@ -67,9 +66,29 @@ public class SpawnManager : NetworkBehaviour
         }
     }
     
-    private Transform GetSpawnLocation(TeamType type)
+    private Vector3 GetSpawnLocation(TeamType type)
     {
-        return (from location in playerSpawnLocations where type == location.teamType select location.spawnLocation[Random.Range(0, location.spawnLocation.Length)]).FirstOrDefault();
+        switch (type)
+        {
+            case TeamType.Blue:
+            {
+                    return new Vector3()
+                    {
+                        x = Random.Range(-5.0f, 0.0f),
+                        y = Random.Range(0.0f, 5.0f)
+                    };
+            }
+            case TeamType.Red:
+                {
+                    return new Vector3()
+                    {
+                        x = Random.Range(0.0f, 5.0f),
+                        y = Random.Range(-5.0f, 0.0f)
+                    };
+                }
+            default:
+                return Vector3.zero;
+        }
     }
     
     public void SpawnAllPlayers()
@@ -82,14 +101,13 @@ public class SpawnManager : NetworkBehaviour
             SpawnPlayer(clientID);
         }
     }
-    
+     
     private void SpawnPlayer(ulong clientID)
     {
         NetworkManager networkManager = NetworkManager.Singleton;
         GameObject playerObj = Instantiate(networkManager.NetworkConfig.PlayerPrefab);
         TeamType playerTeam = TeamManager.Instance.GetTeamFromID(clientID).teamType;
-        Transform spawnTransform = GetSpawnLocation(playerTeam);
-        playerObj.transform.position = spawnTransform.position;
+        playerObj.transform.position = GetSpawnLocation(playerTeam);
         playerObj.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID);
     }
     
@@ -98,10 +116,8 @@ public class SpawnManager : NetworkBehaviour
         NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(clientID);
         ServerController serverController = networkObject.GetComponent<ServerController>();
         TeamType playerTeam = TeamManager.Instance.GetTeamFromID(clientID).teamType;
-        Transform spawnTransform = GetSpawnLocation(playerTeam);
-        serverController.transform.position = spawnTransform.position;
+        serverController.transform.position = GetSpawnLocation(playerTeam);
         serverController.OnRespawn();
-
 
         RespawnPlayerClientRpc(clientID);
     }
@@ -111,46 +127,45 @@ public class SpawnManager : NetworkBehaviour
     {
         RespawnPlayer(clientID);
     }
-    
+
     [ClientRpc]
     private void RespawnPlayerClientRpc(ulong clientId)
     {
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerData playerData = connectionManager.GetPlayerData(clientId);
-        if (playerData != null)
+        ClientData playerData = SessionManager.Instance.GetClientData(clientId);
+        if (!playerData.isNull)
         {
-            
-            if (playerData.networkObject != null)
-            {
-                ClientController clientController = playerData.networkObject.GetComponent<ClientController>();
-                if (clientController != null)
-                {
-                    TeamType playerTeam = TeamManager.Instance.GetTeamFromID(clientId).teamType;
-                    Transform spawnTransform = GetSpawnLocation(playerTeam);
-                    clientController.transform.position = spawnTransform.position;
-                    clientController.OnRespawn();
-                }
-            }
-            else
-            {
-                Debugger.Log($"[Spawn] Client {clientId} network object is null");
-            }
+            return;
+        }
 
+        if (playerData.networkObject != null)
+        {
+            ClientController clientController = playerData.networkObject.GetComponent<ClientController>();
+            if (clientController != null)
+            {
+                TeamType playerTeam = TeamManager.Instance.GetTeamFromID(clientId).teamType;
+                Vector3 spawnPosition = GetSpawnLocation(playerTeam);
+                clientController.transform.position = spawnPosition;
+                clientController.OnRespawn();
+            }
+        }
+        else
+        {
+            Debugger.Log($"[Spawn] Client {clientId} network object is null");
         }
     }
-
     
     public void DespawnPlayer(ulong clientId)
     {
         if(!IsServer) return;
 
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerData playerData = connectionManager.GetPlayerData(clientId);
-        if (playerData != null )
+        ClientData clientData = SessionManager.Instance.GetClientData(clientId);
+        if (!clientData.isNull)
         {
-            if (playerData.networkObject != null)
+            if (clientData.networkObject != null)
             {
-                if(playerData.networkObject.TryGetComponent(out ServerController controller))
+                if(clientData.networkObject.TryGetComponent(out ServerController controller))
                 {
                     controller.OnDespawn();
                 }
@@ -167,23 +182,17 @@ public class SpawnManager : NetworkBehaviour
     [ClientRpc]
     private void SendDespawnClientRpc(ulong clientId)
     {
-        
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerData playerData = connectionManager.GetPlayerData(clientId);
-        if (playerData != null)
+        ClientData playerData = SessionManager.Instance.GetClientData(clientId);
+        if (!playerData.isNull || playerData.networkObject != null)
         {
-            if (playerData.networkObject != null)
-            {
-                ClientController controller = playerData.networkObject.GetComponent<ClientController>();
-                if (controller != null)
-                {
-                    controller.OnDespawn();
-                }
-            }
-            else
-            {
-                Debugger.Log($"[Spawn] Client {clientId} network object is null");
-            }
+            return;
+        }
+
+        ClientController controller = playerData.networkObject.GetComponent<ClientController>();
+        if (controller != null)
+        {
+            controller.OnDespawn();
         }
     }
 }

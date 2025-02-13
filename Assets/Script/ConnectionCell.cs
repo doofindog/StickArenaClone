@@ -7,9 +7,13 @@ using UnityEngine.Serialization;
 public class ConnectionCell : MonoBehaviour
 {
     public TMP_Text usernameText;
+    public Color teamColour;
 
-    public void UpdateCell(PlayerData data)
+    public void UpdateCell(PublicPlayerData data)
     {
-        usernameText.text = data.userName.Replace('_',' ');
+        usernameText.text = data.username.ToString().Replace('_',' ');
+
+        teamColour = TeamManager.Instance.GetTeamData(data.teamType).color;
+        usernameText.color = teamColour;
     }
 }

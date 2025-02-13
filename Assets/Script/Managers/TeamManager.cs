@@ -21,27 +21,27 @@ public class Team
     public TeamType teamType;
     public Color color;
     public int score;
-    public List<PlayerData> players;
+    public List<ClientData> players;
 
     public Team(TeamType teamType, Color color)
     {
         name = teamType.ToString();
         this.teamType = teamType;
         this.color = color;
-        players = new List<PlayerData>();
+        players = new List<ClientData>();
     }
 
-    public void AddPlayer(PlayerData player)
+    public void AddPlayer(ClientData? pClientData)
     {
-        if (player == null)
+        if (pClientData == null)
         {
             Debug.Log("Player Session Data is null ");
             return;
         }
-        
-        
-        player.teamType = teamType;
-        players.Add(player);
+
+        ClientData clientData = pClientData.Value;
+        clientData.publicPlayerData.teamType = teamType;
+        players.Add(clientData);
     }
 }
 
@@ -49,7 +49,7 @@ public class TeamManager : NetworkBehaviour
 {
     public static TeamManager Instance { get; private set; }
     
-    [SerializeField] private List<Team> _teams = new List<Team>();
+    [SerializeField] private List<Team> m_teamCollection = new List<Team>();
 
     public void Awake()
     {
@@ -61,60 +61,46 @@ public class TeamManager : NetworkBehaviour
         {
             Destroy(this.gameObject);
         }
-        
-        CreateTeams();
     }
-    
+
     public void Init()
     {
-        CreateTeams();
+        m_teamCollection ??= new List<Team>();
+        m_teamCollection.Add(new Team(TeamType.Blue, Color.blue));
+        m_teamCollection.Add(new Team(TeamType.Yellow, Color.yellow));
+        m_teamCollection.Add(new Team(TeamType.Red, Color.red));
+        m_teamCollection.Add(new Team(TeamType.Green, Color.green));
+
+        NetworkManager.OnClientConnectedCallback += HandleOnClientConnected;
     }
 
-    private void CreateTeams()
+    private void HandleOnClientConnected(ulong pClientId)
     {
-        _teams ??= new List<Team>();
-        _teams.Add(new Team(TeamType.Blue, Color.blue));
-        _teams.Add(new Team(TeamType.Yellow, Color.yellow));
-        _teams.Add(new Team(TeamType.Red, Color.red));
-        _teams.Add(new Team(TeamType.Green, Color.green));
+        AddPlayerToTeam(pClientId);
     }
 
-    public void AddPlayerToTeam(PlayerData playerData)
+    public void AddPlayerToTeam(ClientData playerData)
     {
-        _teams.Sort((team1, team2)=> team1.players.Count.CompareTo(team2.players.Count));
-        _teams[0].AddPlayer(playerData);
-
-        AddPlayerClientRpc(playerData.clientID, playerData.teamType);
+        m_teamCollection.Sort((team1, team2)=> team1.players.Count.CompareTo(team2.players.Count));
+        m_teamCollection[0].AddPlayer(playerData);
     }
 
     public void AddPlayerToTeam(ulong clientID)
     {
-        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerData playerData = connectionManager.GetPlayerData(clientID);
+        ClientData playerData = SessionManager.Instance.GetClientData(clientID);
         AddPlayerToTeam(playerData);
-    }
-
-    [ClientRpc]
-    private void AddPlayerClientRpc(ulong clientID, TeamType type)
-    {
-        if(NetworkManager.Singleton.IsHost) return;
-
-        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        PlayerData playerData = connectionManager.GetPlayerData(clientID);
-        Team team = GetTeamFromType(type);
-        team.AddPlayer(playerData);
     }
     
     public Team GetTeamFromID(ulong clientID)
     {
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        TeamType teamType = connectionManager.GetPlayerData(clientID).teamType;
+        TeamType teamType = TeamType.Default;
         return GetTeamFromType(teamType);
     }
 
     public Team GetTeamFromType(TeamType teamType)
     {
-        foreach(Team team in _teams)
+        foreach(Team team in m_teamCollection)
         {
             if (team.teamType == teamType)
             {
@@ -127,14 +113,27 @@ public class TeamManager : NetworkBehaviour
 
     public List<Team> GetAllTeams()
     {
-        return _teams;
+        return m_teamCollection;
     }
 
-    public void Reset()
+    public Team GetTeamData(TeamType pTeamType)
     {
-        if(_teams == null) return;
+        for (int i = 0; i < m_teamCollection.Count; i++) 
+        {
+            if(m_teamCollection[i].teamType == pTeamType)
+            {
+                return m_teamCollection[i];
+            }
+        }
 
-        foreach (Team team in _teams)
+        return null;
+    }
+
+    public void Clean(bool stopped)
+    {
+        if(m_teamCollection == null) return;
+
+        foreach (Team team in m_teamCollection)
         {
             team.score = 0;
             team.players.Clear();

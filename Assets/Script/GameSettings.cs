@@ -4,11 +4,15 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 [CreateAssetMenu(menuName = "Pixel Arena/Session Setting")]
-public class SessionSettings : ScriptableObject
+public class GameSettings : ScriptableObject
 {
+    [Header("Start up Setting")]
+    public int cassetAudioTime;
+    public int TurnOnScreenTime;
+
+    [Header("Session Settings")]
     public int maxConnections;
-    public float startGameTime;
-    public float prepGameTime;
+    public int countDownTime;
     public float playerRespawnTime;
 
     [Header("Game")] 
@@ -17,4 +21,7 @@ public class SessionSettings : ScriptableObject
     [Header("Score")] 
     public float scoreUpdateTime;
     public int winThreshold;
+
+    [Header("Player")]
+    public GameObject player;
 }

@@ -19,6 +19,9 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private Canvas _tvCanvas;
     [SerializeField] private Camera uiCamera;
     [SerializeField] private GameObject[] screens;
+    [SerializeField] private TvController m_tvController;
+
+    public TvController TvController => m_tvController;
 
     protected override void Awake()
     {
@@ -27,6 +30,8 @@ public class UIManager : Singleton<UIManager>
         GameEvents.OnGameStateChange += OnGameStateChange;
         GameEvents.TeamWonEvent += TeamWonEvent;
         _gameCanvas = GetComponent<Canvas>();
+
+        m_tvController = FindAnyObjectByType<TvController>();
     }
 
     private void TeamWonEvent(TeamType obj)

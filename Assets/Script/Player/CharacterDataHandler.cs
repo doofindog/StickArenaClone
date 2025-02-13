@@ -18,6 +18,7 @@ public class CharacterDataHandler : NetworkBehaviour
     [Header("Movement")]
     public NetworkVariable<float> speed = new NetworkVariable<float>();
     public Vector2 direction;
+    public Vector3 predictPosition;
 
     [Header("Dodge")] public bool canDodge;
     public bool isDodge;

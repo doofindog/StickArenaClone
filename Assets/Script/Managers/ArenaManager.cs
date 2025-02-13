@@ -43,8 +43,6 @@ public class ArenaManager : NetworkBehaviour, ITickableEntity
         }
         
         _arenaStates.Add(States.Idle, GetComponent<ArenaNormalState>());
-        
-        GenerateTile();
     }
 
     public void ChangeState(States arenaState)

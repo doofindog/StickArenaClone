@@ -3,42 +3,67 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 [ExecuteInEditMode]
 public class TvController : MonoBehaviour
 {
-    public Image image;
-    public float height;
-    public float width;
-    public Animator animator;
-    private Action _onTurnOnComplete;
-    private Action _onTurnOffComplete;
-
+    [SerializeField] private GameObject m_uiObj;
+    [SerializeField] private Image m_image;
+    [SerializeField] private float m_height;
+    [SerializeField] private float m_width;
+    [SerializeField] private Animator m_animator;
+    private Action onTurnOnComplete;
+    private Action onTurnOffComplete;
 
     public void Awake()
     {
-        animator = GetComponent<Animator>();
+        if (m_uiObj != null)
+        {
+            m_uiObj.SetActive(true);
+            m_animator = m_uiObj.GetComponent<Animator>();
+        }
     }
 
-    public void TurnOff(Action onTurnOffComplete = null)
+    public void TurnOff(Action pOnTurnOffComplete = null)
     {
-        this._onTurnOffComplete = onTurnOffComplete;
-        animator.Play("TurnOff");
+        this.onTurnOffComplete = pOnTurnOffComplete;
+        m_animator.Play("TurnOff");
     }
 
-    public void TurnOn(Action onTurnOnComplete = null)
+    public void TurnOn(Action pOnTurnOnComplete = null, int delay = 0)
     {
-        this._onTurnOnComplete = onTurnOnComplete;
-        animator.Play("TurnOn");
+        if(delay != 0 )
+        {
+            StartCoroutine(TurnOnDelayed(delay, pOnTurnOnComplete));
+            return;
+        }
+
+        this.onTurnOnComplete = pOnTurnOnComplete;
+        m_animator.Play("TurnOn");
+    }
+
+    private IEnumerator TurnOnDelayed(int delay, Action pOnCompleted = null)
+    {
+        yield return new WaitForSeconds(delay);
+
+        TurnOn(pOnCompleted);
     }
 
     public void OnAnimComplete()
     {
-        _onTurnOnComplete?.Invoke();
+        onTurnOnComplete?.Invoke();
+        onTurnOffComplete = null;
+    }
+
+    public void OffAnimCompleted()
+    {
+        onTurnOffComplete?.Invoke();
+        onTurnOffComplete = null;
     }
 
     public void Update()
     {
-        image.material.SetFloat("_height", height);
-        image.material.SetFloat("_width", width);
+        m_image.material.SetFloat("_height", m_height);
+        m_image.material.SetFloat("_width", m_width);
     }
 }

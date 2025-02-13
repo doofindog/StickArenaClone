@@ -10,9 +10,10 @@ using UnityEngine.Rendering.Universal;
 public class GameState : BaseGameState
 {
     [SerializeField] private GameObject defaultWeapon;
-    [SerializeField] private TvController _tvController;
     [SerializeField] private Volume _postProcessVolume;
     [SerializeField] private AudioClip gameMusic;
+
+    private int clientReadyCount;
 
     public void Awake()
     {
@@ -21,61 +22,66 @@ public class GameState : BaseGameState
 
     public override void OnEnter()
     {
-        if (NetworkManager.Singleton == null)
+        void HandleClient()
         {
-            GameManager.Instance.SwitchState(EGameStates.MENU);
+            UIManager.Instance.ReplaceScreen(Screens.Game);
+            ScoreManager.Instance.Reset();
+
+            if (_postProcessVolume != null)
+            {
+                if (_postProcessVolume.profile.TryGet(out LensDistortion lensDistortion))
+                {
+                    lensDistortion.active = false;
+                }
+
+                if (_postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection))
+                {
+                    paniniProjection.distance.value = 0.01f;
+                    paniniProjection.cropToFit.value = 0.632f;
+                }
+
+                if (_postProcessVolume.profile.TryGet(out Bloom bloom))
+                {
+                    bloom.intensity.value = 2.0f;
+                }
+            }
+
+            ClientReadyServerRPC();
         }
-        
-        UIManager.Instance.ReplaceScreen(Screens.Game);
-        ScoreManager.Instance.Reset();
 
-        if (_postProcessVolume != null)
+        if(IsServer)
         {
-            if(_postProcessVolume.profile.TryGet(out LensDistortion lensDistortion))
-            {
-                lensDistortion.active = false;
-            }
 
-            if (_postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection))
-            {
-                paniniProjection.distance.value = 0.01f;
-                paniniProjection.cropToFit.value = 0.632f;
-            }
-
-            if (_postProcessVolume.profile.TryGet(out Bloom bloom))
-            {
-                bloom.intensity.value = 2.0f;
-            }
         }
-        
-        if (IsServer)
+        else if(IsClient)
         {
-            StartCoroutine(StartGame());
+            HandleClient();
         }
     }
-    
+
     public override void OnExit()
     {
         StopAllCoroutines();
-        _tvController.TurnOff();
+
+        TvController tvController = UIManager.Instance.TvController;
+        if (tvController != null)
+        {
+            tvController.TurnOff();
+        }
     }
     
     private IEnumerator StartGame()
     {
-        SessionSettings sessionSettings = GameManager.Instance.GetSessionSettings();
-        while (GameManager.Instance.prepTimer.Value < sessionSettings.prepGameTime)
-        {
-            yield return new WaitForSeconds(3);
-            GameManager.Instance.prepTimer.Value++;
-        }
-        
+        GameSettings sessionSettings = GameManager.Instance.GetSessionSettings();
+
+        yield return new WaitForSeconds(sessionSettings.countDownTime);
+
         PreparingGameClientRPC();
-        
-        GameManager.Instance.startGameTimer.Value = sessionSettings.startGameTime;
-        while (GameManager.Instance.startGameTimer.Value > 0)
+
+        while (SessionManager.Instance.countDownTimer.Value > 0)
         {
             yield return new WaitForSeconds(1);
-            GameManager.Instance.startGameTimer.Value--;
+            SessionManager.Instance.countDownTimer.Value--;
         }
         
         SpawnManager.Instance.SpawnAllPlayers();
@@ -119,7 +125,8 @@ public class GameState : BaseGameState
     [ClientRpc]
     private void  PreparingGameClientRPC()
     {
-        _tvController.TurnOn(GameEvents.SendPreparingArenaEvent);
+        TvController tvController = UIManager.Instance.TvController;
+        tvController.TurnOn(GameEvents.SendPreparingArenaEvent);
     }
     
     [ClientRpc]
@@ -133,4 +140,14 @@ public class GameState : BaseGameState
             AudioManager.Instance.Play(gameMusic);
         }
     }
+
+    [ServerRpc]
+    private void ClientReadyServerRPC()
+    {
+        bool canStartGame = SessionManager.Instance.clientDataCollection.Count == GameManager.Instance.GetSessionSettings().maxConnections;
+        if (canStartGame)
+        {
+            StartCoroutine(StartGame());
+        }
+    }    
 }

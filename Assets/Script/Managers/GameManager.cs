@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
@@ -7,11 +8,12 @@ using Unity.Services.Authentication;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance { get; private set; }
-    
+
     public NetworkVariable<float> prepTimer = new NetworkVariable<float>();
     public NetworkVariable<float> startGameTimer = new NetworkVariable<float>();
 
@@ -22,14 +24,17 @@ public class GameManager : NetworkBehaviour
     public TeamManager teamManager;
     public ArenaManager arenaManger;
     public ScoreManager scoreManager;
-    
-    [SerializeField] private SessionSettings sessionSettings;
-    
-    private BaseGameState _currentState;
-    private EGameStates _currentStateType;
-    private Dictionary<EGameStates, BaseGameState> _gameStates = new Dictionary<EGameStates, BaseGameState>();
-    
-    
+    public SessionManager sessionManager;
+
+    [Header("Settings")]
+    public bool startServerOnBoot;
+    public GameSettings sessionSettings;
+
+    private BaseGameState m_currentState;
+    private EGameStates m_currentStateType;
+    private Dictionary<EGameStates, BaseGameState> m_gameStates = new Dictionary<EGameStates, BaseGameState>();
+
+
     public void Awake()
     {
         if (Instance != null && Instance != this)
@@ -41,121 +46,78 @@ public class GameManager : NetworkBehaviour
             Instance = this;
         }
     }
-    
-    public async void Start()
-    {
-        await Initialise();
-    }
-    
 
-    private async Task Initialise()
+    public void Start()
+    {
+        Initialise();
+    }
+
+
+    private void Initialise()
     {
         Cursor.visible = false;
-        
-        _gameStates.Add(EGameStates.MENU, GetComponent<MenuState>());
-        _gameStates.Add(EGameStates.GAME, GetComponent<GameState>());
-        _gameStates.Add(EGameStates.OVER, GetComponent<GameOverState>());
-        
-        await connectionManager.Init();
+
+        m_gameStates.Add(EGameStates.MENU, GetComponent<MenuState>());
+        m_gameStates.Add(EGameStates.GAME, GetComponent<GameState>());
+        m_gameStates.Add(EGameStates.OVER, GetComponent<GameOverState>());
+
+
+        connectionManager ??= ConnectionManager.Instance;
+        tickManager ??= TickManager.Instance;
+        teamManager ??= TeamManager.Instance;
+        arenaManger ??= ArenaManager.Instance;
+        sessionManager ??= SessionManager.Instance;
+
+        connectionManager.Init();
         tickManager.Init();
         teamManager.Init();
         arenaManger.Init();
-        
+        sessionManager.Init();
+
         SwitchState(EGameStates.MENU);
     }
 
-    public void SwitchState(EGameStates state)
+    public void SwitchState(EGameStates state, int delay = 0)
     {
-        if (_currentState != null)
+        if(delay != 0)
         {
-            _currentState.OnExit();
+            StartCoroutine(SwitchStateDelayed(delay, state));
+            return;
         }
 
-        _currentStateType = state;
-        _currentState = GetGameState(state);
-        _currentState.OnEnter();
+        if (m_currentState != null)
+        {
+            m_currentState.OnExit();
+        }
 
+        m_currentStateType = state;
+        m_currentState = GetGameState(state);
+        m_currentState.OnEnter();
+
+        Debugger.Log("[GAME_MANAGER] Game State has been Changed");
         GameEvents.SendGameStateChange(state);
     }
-    
+
+    private IEnumerator SwitchStateDelayed(int delay, EGameStates state)
+    {
+        yield return new WaitForSeconds(delay);
+
+        SwitchState(state);
+    }
+
     public EGameStates GetState()
     {
-        return _currentStateType;
+        return m_currentStateType;
     }
 
     private BaseGameState GetGameState(EGameStates state)
     {
-        _gameStates.TryGetValue(state, out BaseGameState gameState);
+        m_gameStates.TryGetValue(state, out BaseGameState gameState);
         return gameState;
     }
 
-
-
-    public SessionSettings GetSessionSettings()
+    public GameSettings GetSessionSettings()
     {
         return sessionSettings;
-    }
-    
-    public async void TryJoin(string username, string joinCode = "")
-    {
-        if (!AuthenticationService.Instance.IsSignedIn)
-        {
-            await connectionManager.TrySignInPlayer(username);
-        }
-        
-        JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
-        
-        ConnectionPayload connectionPayload = new ConnectionPayload() { userName = username };
-        string payloadJson = JsonUtility.ToJson(connectionPayload);
-        NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
-        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(joinAllocation, "wss"));
-        NetworkManager.Singleton.StartClient();
-        
-        CustomNetworkEvents.SendNetworkStartedEvent();
-    }
-
-    public async void TryStartHost(string username)
-    {
-        CustomNetworkEvents.SendNetworkStartedEvent();
-        
-        if (!AuthenticationService.Instance.IsSignedIn)
-        {
-            await connectionManager.TrySignInPlayer(username);
-        }
-#if UNITY_EDITOR
-        List<Region> regions = await RelayService.Instance.ListRegionsAsync();
-
-        foreach (var region in regions)
-        {
-            Debug.Log($"[CONNECTION] : Region : {region.Description} :  {region.Id}");
-        }
-#endif
-
-        Allocation allocation = await RelayService.Instance.CreateAllocationAsync(connectionManager.MaxPlayers);
-        
-        
-        ConnectionPayload connectionPayload = new ConnectionPayload() { userName = username };
-        string payloadJson = JsonUtility.ToJson(connectionPayload);
-        NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJson);
-        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(allocation, "wss"));
-        string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-        SessionData sessionData = connectionManager.GetSessionData();
-        sessionData.joinCode = joinCode;
-        NetworkManager.Singleton.StartHost();
-    }
-    
-    public void TryDisconnect()
-    {
-        connectionManager.ClearData();
-        NetworkManager.Singleton.Shutdown();
-        TeamManager.Instance.Reset();
-
-        if (IsServer)
-        {
-            prepTimer.Value = 0;
-            startGameTimer.Value = 0;
-        }
-
-        CustomNetworkEvents.SendDisconnectedEvent();
     }
 }

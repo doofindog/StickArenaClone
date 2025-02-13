@@ -37,8 +37,6 @@ public class NetController : NetworkBehaviour
         ulong clientID = netObj.OwnerClientId;
         Team team = TeamManager.Instance.GetTeamFromID(clientID);
         _spriteRenderer.material.SetColor("_newColour", team.color);
-        
-        ConnectionManager.Instance.AddPlayer(clientID, netObj);
     }
     
     public virtual void Start()

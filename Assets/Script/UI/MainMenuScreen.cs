@@ -19,6 +19,7 @@ public class MainMenuScreen : MonoBehaviour
     {
         CustomNetworkEvents.NetworkStartedEvent += ChangeToConnectionPanel;
         CustomNetworkEvents.DisconnectedEvent += OnDisconnected;
+        NetworkManager.Singleton.OnServerStarted += ChangeToConnectionPanel;
     }
 
     public void Start()
@@ -44,7 +45,7 @@ public class MainMenuScreen : MonoBehaviour
             usernameField.text = usernameField.text.Replace(' ', '_');
         }
         
-        GameManager.Instance.TryStartHost(usernameField.text);
+        ConnectionManager.Instance.StartServer(usernameField.text);
     }
 
     public void OnJoinPressed()
@@ -66,7 +67,7 @@ public class MainMenuScreen : MonoBehaviour
             usernameField.text = usernameField.text.Replace(' ', '_');
         }
         
-        GameManager.Instance.TryJoin(usernameField.text, joinCode.text);
+        ConnectionManager.Instance.TryJoin(usernameField.text, joinCode.text);
     }
 
     private void ChangeToConnectionPanel()

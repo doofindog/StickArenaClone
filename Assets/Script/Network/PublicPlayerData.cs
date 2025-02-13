@@ -1,30 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class SessionData : INetworkSerializable
+[System.Serializable]
+public struct PublicPlayerData : INetworkSerializable, System.IEquatable<PublicPlayerData>
 {
-    public string hostName;
-    public string joinCode;
+    public FixedString32Bytes username;
+    public TeamType teamType;
 
-    public SessionData()
+    public bool Equals(PublicPlayerData other)
     {
+        return username == other.username;
     }
-    
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         if (serializer.IsReader)
         {
             FastBufferReader reader = serializer.GetFastBufferReader();
-            reader.ReadValueSafe(out hostName);
-            reader.ReadValueSafe(out joinCode);
+            reader.ReadValueSafe(out username);
         }
         else
         {
             FastBufferWriter writer = serializer.GetFastBufferWriter();
-            writer.WriteValueSafe(hostName);
-            writer.WriteValueSafe(joinCode);
+            writer.WriteValueSafe(username);
         }
     }
 }

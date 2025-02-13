@@ -1,5 +1,16 @@
 {
+  "scopedRegistries": [
+    {
+      "name": "Unity NuGet",
+      "url": "https://unitynuget-registry.azurewebsites.net",
+      "scopes": [
+        "org.nuget"
+      ]
+    }
+  ],
   "dependencies": {
+    "com.amazonaws.gamelift": "file:C:/The Works/Plugins and Packages/AWS/com.amazonaws.gamelift-3.0.0.tgz",
+    "com.amazonaws.gameliftserver.sdk": "file:C:/The Works/Plugins and Packages/AWS/C# SDK/com.amazonaws.gameliftserver.sdk-5.2.0.tgz",
     "com.unity.2d.pixel-perfect": "5.0.3",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.2d.tilemap": "1.0.0",
@@ -21,6 +32,7 @@
     "com.unity.textmeshpro": "3.0.7",
     "com.unity.timeline": "1.8.6",
     "com.unity.transport": "2.1.0",
+    "org.nuget.scriban": "2.1.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",

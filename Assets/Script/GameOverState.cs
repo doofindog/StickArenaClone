@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem.XR;
 
 public class GameOverState : BaseGameState
 {
-    [SerializeField] private TvController _controller;
     public override void OnEnter()
     {
         StartCoroutine(TurnTvOn());
@@ -12,13 +12,21 @@ public class GameOverState : BaseGameState
 
     public override void OnExit()
     {
-        _controller.TurnOff();
+        TvController tvController = UIManager.Instance.TvController;
+        if (tvController != null)
+        {
+            tvController.TurnOff();
+        }
     }
 
     private IEnumerator TurnTvOn()
     {
         yield return new WaitForSeconds(1);
-        _controller.TurnOn(HandleShowResults);
+        TvController tvController = UIManager.Instance.TvController;
+        if(tvController != null)
+        {
+            tvController.TurnOn(HandleShowResults);
+        }
     }
 
     private void HandleShowResults()
@@ -33,7 +41,7 @@ public class GameOverState : BaseGameState
     private IEnumerator ExitGame()
     {
         yield return new WaitForSeconds(5);
-        GameManager.Instance.TryDisconnect();
+        ConnectionManager.Instance.TryDisconnect();
         ObjectPool.Instance.ClearPool();
         GameManager.Instance.SwitchState(EGameStates.MENU);
     }

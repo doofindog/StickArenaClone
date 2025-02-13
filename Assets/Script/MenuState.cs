@@ -1,11 +1,13 @@
 using System.Collections;
+using System.Runtime.Serialization;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem.XR;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 public class MenuState : BaseGameState
 {
-    [SerializeField] private TvController controller;
     [SerializeField] public AudioClip menuMusic;
     [SerializeField] public AudioClip cassetteAudio;
     [SerializeField] public AudioClip turnOffAudio;
@@ -21,51 +23,52 @@ public class MenuState : BaseGameState
 
     public override void OnEnter()
     {
+#if SERVER
+        TvController controller = UIManager.Instance.TvController;
+        controller.gameObject.SetActive(false);
+        ConnectionManager.Instance.StartServer();
+
+#elif CLIENT
         AudioManager.Instance.GetSource().pitch = 1;
         CameraController.Instance.ChangeState(ECameraState.MENU);
-        
+
         if (_postProcessVolume != null)
         {
-            //_postProcessVolume.profile.TryGet(out ChromaticAberration chromaticAberration);
             _postProcessVolume.profile.TryGet(out LensDistortion lensDistortion);
             _postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
             _postProcessVolume.profile.TryGet(out Bloom bloom);
 
             lensDistortion.active = true;
             paniniProjection.active = true;
-            //chromaticAberration.active = true;
 
-            //chromaticAberration.intensity.value = 0.4f;
             lensDistortion.intensity.value = 0.278f;
             lensDistortion.xMultiplier.value = 0.85f;
             lensDistortion.yMultiplier.value = 0.85f;
             paniniProjection.distance.value = 0.213f;
             bloom.intensity.value = 4.65f;
         }
-        
-        StartCoroutine(ShowScreen());
+
+        ShowScreen();
+#endif
     }
 
-    public void Update()
+    private void ShowScreen()
     {
-        
-    }
+        int audioDelay = GameManager.Instance.GetSessionSettings().cassetAudioTime;
+        AudioManager.Instance.PlayOneShot(cassetteAudio, audioDelay);
 
-    private IEnumerator ShowScreen()
-    {
-        yield return new WaitForSeconds(1);
-        AudioManager.Instance.PlayOneShot(cassetteAudio);
-        yield return new WaitForSeconds(2);
-
-        controller.TurnOn(HandleSplashCompleted);
+        TvController tvController = UIManager.Instance.TvController;
+        if(tvController)
+        {
+            int turnOnDelay = GameManager.Instance.GetSessionSettings().TurnOnScreenTime;
+            tvController.TurnOn(HandleSplashCompleted, turnOnDelay);
+        }
     }
 
     private void HandleSplashCompleted()
     {
         UIManager.Instance.ReplaceScreen(Screens.Menu);
         AudioManager.Instance.Play(menuMusic);
-        
-        GameEvents.SendSplashCompleted();
     }
 
     private void LoadToGame()
@@ -76,8 +79,34 @@ public class MenuState : BaseGameState
     public override void OnExit()
     {
         UIManager.Instance.ReplaceScreen(Screens.None);
-        controller.TurnOff();
+
+        void HandleServer()
+        {
+
+           
+            
+        }
+
+        void HandleClient()
+        {
+
+        }
+
+#if SERVER
+        Debugger.Log($"{this.name} SERVER ON EXIT");
+
+#elif CLIENT
+        if (!IsClient) return;
+
+            
+        TvController tvController = UIManager.Instance.TvController;
+        if (tvController != null)
+        {
+            tvController.TurnOff();
+        }
         AudioManager.Instance.Stop();
         AudioManager.Instance.PlayOneShot(turnOffAudio);
+
+#endif   
     }
 }

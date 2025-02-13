@@ -1,63 +1,73 @@
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
 public class ConnectionUI : MonoBehaviour
 {
     private const string LOADING_GAME_TEXT = "LOADING GAME";
-    private const string WAITING_PLAYERS_TEXT = "WAITING FOR PLAYERS";
+    private const string JOINING_GAME_TEXT = "JOINING GAME";
     
     [SerializeField] private GameObject cellPrefab;
     [SerializeField] private GameObject connectionLayoutPanel; 
     [SerializeField] private GameObject menuPanel;
-    [SerializeField] private TMP_Text headingText;
-    [SerializeField] private TMP_Text connectionCodeText;
+    [SerializeField] private TMP_Text m_connectionCodeText;
     
     private void Awake()
     {
-        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        connectionManager.playersConnected.OnValueChanged += UpdatePanel;
+
+    }
+
+    private void OnEnable()
+    {
+        UpdatedHeadingText(JOINING_GAME_TEXT);
     }
 
     public void Update()
     {
-        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        List<PlayerData> playerCollection = connectionManager.GetPlayerSessionDataDict().Values.ToList();
+        UpdatePlayerTable();
+    }
+
+    public void UpdatePlayerTable()
+    {
+        if(NetworkManager.Singleton == null) return;
+
+        NetworkList<PublicPlayerData> playerCollection = SessionManager.Instance.publicPlayerDataCollection;
+        if (playerCollection == null || playerCollection.Count == 0)
+        {
+            return;
+        }
+
         foreach (Transform children in connectionLayoutPanel.transform)
         {
             Destroy(children.gameObject);
         }
-            
-        foreach (PlayerData data in playerCollection)
+
+        foreach (PublicPlayerData data in playerCollection)
         {
             ConnectionCell cell = Instantiate(cellPrefab, connectionLayoutPanel.transform).GetComponent<ConnectionCell>();
             cell.UpdateCell(data);
         }
-
-        SessionData sessionData = GameManager.Instance.connectionManager.GetSessionData();
-        if (sessionData != null && !string.IsNullOrEmpty(sessionData.joinCode))
-        {
-            connectionCodeText.text = sessionData.joinCode;
-        }
     }
 
-    private void UpdatePanel(int value, int newValue)
+    private void UpdatedHeadingText(string pUpdatedText)
     {
-        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        headingText.text = WAITING_PLAYERS_TEXT + " " + $"{connectionManager.playersConnected.Value}/{connectionManager.MaxPlayers}";
-        
-        if (newValue >= connectionManager.MaxPlayers)
+        if (m_connectionCodeText == null)
         {
-            headingText.text = LOADING_GAME_TEXT;
+            return;
         }
+
+        m_connectionCodeText.text = string.IsNullOrEmpty(pUpdatedText) ? m_connectionCodeText.text : pUpdatedText;
     }
 
     public void Disconnected()
     {
-        GameManager.Instance.TryDisconnect();
+        ConnectionManager.Instance.TryDisconnect();
         
         menuPanel.SetActive(true);
         gameObject.SetActive(false);
     }
+
+    
 }

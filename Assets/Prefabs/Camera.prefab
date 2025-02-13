@@ -114,8 +114,7 @@ MonoBehaviour:
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
-  m_Cameras:
-  - {fileID: 0}
+  m_Cameras: []
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
@@ -180,6 +179,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _currentState: {fileID: 0}
+  uiCamera: {fileID: 0}
 --- !u!114 &392556327117631205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,6 +192,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7c6e910aa2474844be88385969eff33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiCamera: {fileID: 0}
   _cameraSpeed: 2.5
   _networkStartPosition: {x: 0, y: 0, z: -10}
   _locations:
@@ -210,6 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad20b2f980f45924c8b124352fc88d65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiCamera: {fileID: 0}
   _follow: {fileID: 0}
   _cameraOffset: {x: 0, y: 0, z: -10}
   _interpolationSpeed: 3.2
@@ -218,6 +220,7 @@ MonoBehaviour:
   _shakeDuration: 0.06
   _shakeTimer: 0
   _originalPosition: {x: 0, y: 0, z: 0}
+  _pixelPerfectCamera: {fileID: 0}
 --- !u!114 &1777237436
 MonoBehaviour:
   m_ObjectHideFlags: 0

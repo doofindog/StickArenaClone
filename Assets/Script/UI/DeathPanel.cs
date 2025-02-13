@@ -25,7 +25,7 @@ public class DeathPanel : MonoBehaviour
 
     private IEnumerator StartRespawnCounter()
     {
-        SessionSettings sessionSettings = GameManager.Instance.GetSessionSettings();
+        GameSettings sessionSettings = GameManager.Instance.GetSessionSettings();
         float counter = sessionSettings.playerRespawnTime;
         counterText.text = counter.ToString(CultureInfo.InvariantCulture);
         

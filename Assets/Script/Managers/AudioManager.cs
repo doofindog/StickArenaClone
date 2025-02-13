@@ -1,3 +1,5 @@
+using Mono.CSharp;
+using System.Collections;
 using UnityEngine;
 
 public enum AudioChannel
@@ -13,9 +15,22 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField] private AudioSource sfxSource;
     [SerializeField] private AudioClip themeSong;
 
-    public void PlayOneShot(AudioClip clip)
+    public void PlayOneShot(AudioClip pClip, int delay = 0)
     {
-        sfxSource.PlayOneShot(clip);
+        if(delay != 0)
+        {
+            StartCoroutine(PlayOneShotDelayed(delay, pClip));
+            return;
+        }
+
+        sfxSource.PlayOneShot(pClip);
+    }
+
+    private IEnumerator PlayOneShotDelayed(int delay, AudioClip pClip)
+    {
+        yield return new WaitForSeconds(delay);
+
+        PlayOneShot(pClip);
     }
     
     public void Play(AudioClip clip, float volume = 0.0f, float delay = 0.0f)
@@ -33,6 +48,7 @@ public class AudioManager : Singleton<AudioManager>
             case AudioChannel.MUSIC:
                 musicSource.volume = volume;
                 break;
+
             case AudioChannel.SFX:
                 sfxSource.volume = volume;
                 break;
@@ -45,10 +61,9 @@ public class AudioManager : Singleton<AudioManager>
         {
             case AudioChannel.MUSIC:
                 return musicSource.volume;
-                break;
+
             case AudioChannel.SFX:
                 return sfxSource.volume;
-                break;
         }
 
         return 0;
