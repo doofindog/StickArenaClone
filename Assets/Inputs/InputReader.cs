@@ -5,15 +5,15 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [CreateAssetMenu(menuName = "Input/Create Input Reader")]
-public class InputReader : ScriptableObject, CharacterInput.IGameplayActions
+public class InputReader : ScriptableObject, CharacterInputActions.IGameplayActions
 {
-    private CharacterInput _playerInput;
+    private CharacterInputActions _playerInput;
     
     private void OnEnable()
     {
         if (_playerInput == null)
         {
-            _playerInput = new CharacterInput();
+            _playerInput = new CharacterInputActions();
             _playerInput.Gameplay.SetCallbacks(this);
             
             _playerInput.Gameplay.Enable();

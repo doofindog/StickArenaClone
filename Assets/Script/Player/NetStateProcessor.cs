@@ -6,67 +6,61 @@ public class NetStateProcessor : NetworkBehaviour
 {
     private const int NETWORK_BUFFER_SIZE = 1024;
 
-    [SerializeField] private NetStatePayLoad[] _statePayLoads = new NetStatePayLoad[NETWORK_BUFFER_SIZE];
-    [SerializeField] private NetStatePayLoad _lastProcessedState;
+    private NetStatePayLoad[] m_statePayLoads = new NetStatePayLoad[NETWORK_BUFFER_SIZE];
+    private NetStatePayLoad m_lastProcessedState;
+
+
 
     public LinkedList<NetStatePayLoad> frameHistory = new LinkedList<NetStatePayLoad>();
-    private float maxTimeStamp = 0.4f;
 
 
-    public void AddState(NetStatePayLoad netStatePayLoad)
+    public NetStatePayLoad AddState(NetStatePayLoad pNetStatePayLoad)
     {
-        int bufferIndex = TickManager.Instance.GetTick() % NETWORK_BUFFER_SIZE;
-        _statePayLoads[bufferIndex] = netStatePayLoad;
+        int bufferIndex = pNetStatePayLoad.inputSequence % NETWORK_BUFFER_SIZE;
+        m_statePayLoads[bufferIndex] = pNetStatePayLoad;
 
-        if (frameHistory.Count <= 1)
-        {
-            frameHistory.AddFirst(_statePayLoads[bufferIndex]);
-        }
-        else
-        {
-            double historyLength = frameHistory.First.Value.time - frameHistory.Last.Value.time;
-            while (historyLength > maxTimeStamp)
-            {
-                frameHistory.RemoveLast();
-                historyLength = frameHistory.First.Value.time - frameHistory.Last.Value.time;
-            }
+        return m_statePayLoads[bufferIndex];
 
-            frameHistory.AddFirst(_statePayLoads[bufferIndex]);
-        }
-    }
-    
-    public void UpdateLastProcessedState(NetStatePayLoad lastProcessedState)
-    {
-        _lastProcessedState = lastProcessedState;
     }
 
     [ClientRpc(Delivery = RpcDelivery.Unreliable)]
-    public void SendStateClientRpc(NetStatePayLoad state)
+    public void SendProcessedStateClientRPC(NetStatePayLoad[] pNetStatePayLoads)
     {
-        _lastProcessedState = state;
+        if(pNetStatePayLoads.Length == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < pNetStatePayLoads.Length; i++)
+        {
+            int buffeIndex = pNetStatePayLoads[i].inputSequence % NETWORK_BUFFER_SIZE;
+            m_statePayLoads[buffeIndex] = pNetStatePayLoads[i];
+        }
+
+        m_lastProcessedState = pNetStatePayLoads[pNetStatePayLoads.Length - 1];
     }
 
     public NetStatePayLoad GetLastProcessedState()
     {
-        return _lastProcessedState;
+        return m_lastProcessedState;
     }
 
-    public NetStatePayLoad GetStateAtTick(int tick)
+    public NetStatePayLoad GetStateAtSequenceNumber(int pSequenceNumber)
     {
-        int bufferIndex = tick % NETWORK_BUFFER_SIZE;
-        return _statePayLoads[bufferIndex];
+        int bufferIndex = pSequenceNumber % NETWORK_BUFFER_SIZE;
+        return m_statePayLoads[bufferIndex];
     }
 
     public void UpdateState(NetStatePayLoad statePayLoad)
     {
         int bufferIndex = statePayLoad.tick % NETWORK_BUFFER_SIZE;
-        _statePayLoads[bufferIndex] = statePayLoad;
+        m_statePayLoads[bufferIndex] = statePayLoad;
     }
 
     public void UpdateStateAtToTick(int tick, NetStatePayLoad statePayLoad)
     {
         int bufferIndex = tick % NETWORK_BUFFER_SIZE;
-        _statePayLoads[bufferIndex] = statePayLoad;
+        m_statePayLoads[bufferIndex] = statePayLoad;
     }
     
 

@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using Unity.Multiplayer.Playmode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,5 +13,26 @@ public class GameUtilt
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
         
         return mouseWorldPos;
+    }
+
+    public static void ExecuteNetworkCode(Action pServer, Action pClient)
+    {
+#if SERVER
+        pServer?.Invoke();
+
+#elif CLIENT
+        pClient?.Invoke();
+
+#elif UNITY_EDITOR
+        string[] multiplayTag = CurrentPlayer.ReadOnlyTags();
+        if (multiplayTag.Contains("CLIENT"))
+        {
+            pClient?.Invoke();
+        }
+        else if (multiplayTag.Contains("SERVER"))
+        {
+            pServer?.Invoke();
+        }
+#endif
     }
 }

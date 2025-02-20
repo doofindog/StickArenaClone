@@ -7,19 +7,21 @@ using UnityEngine;
 public class NetController : NetworkBehaviour
 {
     protected bool IsEnabled;
-    protected CharacterDataHandler DataHandler;
-    protected PlayerInputHandler PlayerInputHandler;
-    protected WeaponComponent WeaponComponent;
-    protected CharacterAnimator Animator;
+
+    [Header("Components")]
+    public CharacterDataHandler DataHandler;
+    public PlayerInputHandler PlayerInputHandler;
+    public WeaponComponent WeaponComponent;
+    public CharacterAnimator Animator;
+    public SpriteRenderer CharacterSprite;
+    public Transform Arm;
 
     [SerializeField] protected bool interpolate;
-    [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private CharacterAnimator _animator;
     [SerializeField] private Transform _crownPlaceholder;
 
+    protected List<PlayerFeature> playerFeature = new List<PlayerFeature>();
 
-    
-    protected Vector3 newPosition;
     public virtual void Awake()
     {
         GameEvents.OnGameOverEvent += StopControls;
@@ -28,7 +30,13 @@ public class NetController : NetworkBehaviour
         PlayerInputHandler = GetComponent<PlayerInputHandler>();
         WeaponComponent = GetComponent<WeaponComponent>();
         Animator = GetComponent<CharacterAnimator>();
+        Arm = transform.Find("Arm");
+
         IsEnabled = true;
+        
+        playerFeature.Add(new Movement(this));
+        playerFeature.Add(new Flip(this));
+        playerFeature.Add(new Aim(this));
     }
 
     public override void OnNetworkSpawn()
@@ -36,85 +44,64 @@ public class NetController : NetworkBehaviour
         NetworkObject netObj = GetComponent<NetworkObject>();
         ulong clientID = netObj.OwnerClientId;
         Team team = TeamManager.Instance.GetTeamFromID(clientID);
-        _spriteRenderer.material.SetColor("_newColour", team.color);
+        CharacterSprite.material.SetColor("_newColour", team.color);
     }
     
     public virtual void Start()
     {
         DataHandler.Init();
-        newPosition = transform.position;
-    }
-    
-    protected virtual void ProcessMovement(NetInputPayLoad inputPayLoad)
-    {
-        if (inputPayLoad.dodgePressed && DataHandler.canDodge)
-        {
-            StartCoroutine(PerformDodge(inputPayLoad.direction));
-        }
-        
-        Move(inputPayLoad.direction);
-        Flip(inputPayLoad.aimAngle);
-        
-        WeaponComponent.UpdateComponent(inputPayLoad);
-        
-        UpdateAnimation(inputPayLoad);
     }
 
-    protected virtual void Move(Vector3 direction)
+    protected void ProcessFeature(NetInputPayLoad pInputPayload)
     {
-        if (DataHandler.state == CharacterDataHandler.State.Dodge)
+        foreach (PlayerFeature feature in playerFeature)
         {
-            return;
-        }
-        
-        DataHandler.state = direction == Vector3.zero ? CharacterDataHandler.State.Idle : CharacterDataHandler.State.Move;
-        TickManager tickManager = TickManager.Instance;
-        if (interpolate) { newPosition += direction * (tickManager.GetMinTickTime() * DataHandler.speed.Value); }
-        else { transform.position += direction * (tickManager.GetMinTickTime() * DataHandler.speed.Value); }
-    }
-
-    public void Update()
-    {
-        if (interpolate)
-        {
-            transform.position = Vector3.Lerp(transform.position, newPosition, .25f);
+            feature.Process(pInputPayload);
         }
     }
 
-    protected virtual void Flip(float aimAngle)
-    {
-        SpriteRenderer playerSprite = GetComponentInChildren<SpriteRenderer>();
-        bool isFlip = aimAngle is > 90 and < 270;
-        playerSprite.flipX = isFlip;
-    }
-    
     protected virtual IEnumerator PerformDodge(Vector3 direction)
     {
         if (DataHandler.state == CharacterDataHandler.State.Dodge) yield break;
 
         GetComponent<Collider2D>().enabled = false;
-        DataHandler.canDodge = false;
-        DataHandler.isDodge = true;
-        float timer = 0;
+        DataHandler.canDodge.Anticipate(false);
         DataHandler.state = CharacterDataHandler.State.Dodge;
-        
-        while (timer < DataHandler.dodgeDuration.Value)
-        {
-            TickManager tickManager = TickManager.Instance;
-            transform.position += direction.normalized * (tickManager.GetMinTickTime() * DataHandler.dodgeSpeed.Value);
-             
-            yield return new WaitForSeconds(tickManager.GetMinTickTime());
 
-            timer += tickManager.GetMinTickTime();
+        TickManager tickManager = TickManager.Instance;
+        float tickInterval = tickManager.GetMinTickTime();
+        int dodgeTicks = Mathf.CeilToInt(DataHandler.dodgeDuration.Value / tickInterval);
+
+        Vector3 startPos = transform.position;
+        Vector3 totalDisplacement = direction.normalized * (DataHandler.dodgeSpeed.Value * DataHandler.dodgeDuration.Value);
+        Vector3 targetPos = startPos + totalDisplacement;
+
+        for (int i = 0; i < dodgeTicks; i++)
+        {
+            float t = (i + 1) / (float)dodgeTicks;
+            // Lerp from start to target position
+            transform.position = Vector3.Lerp(startPos, targetPos, t);
+            yield return new WaitForSeconds(tickInterval);
         }
+
+        transform.position = targetPos;
+
         GetComponent<Collider2D>().enabled = true;
         DataHandler.state = CharacterDataHandler.State.Idle;
 
-        yield return new WaitForSeconds(1.5f);
+        int waitTicks = Mathf.CeilToInt(1.5f / tickInterval);
+        for (int i = 0; i < waitTicks; i++)
+        {
+            yield return new WaitForSeconds(tickInterval);
+        }
 
-        DataHandler.canDodge = true;
-        DataHandler.isDodge = false;
-        
+        DataHandler.canDodge.Anticipate(true);
+        DataHandler.state = CharacterDataHandler.State.Idle;
+    }
+
+    protected virtual void Dodge()
+    {
+
     }
     
     protected virtual void UpdateAnimation(NetInputPayLoad inputPayLoad)
@@ -147,7 +134,7 @@ public class NetController : NetworkBehaviour
         IsEnabled = true;
         gameObject.SetActive(true);
         Animator.PlayIdle(false);
-        DataHandler.Refresh();
+        DataHandler.Reset();
         GetComponent<Collider2D>().enabled = true;
     }
 
@@ -158,12 +145,7 @@ public class NetController : NetworkBehaviour
 
     public virtual void Drown()
     {
-        
-    }
 
-    public SpriteRenderer GetSpriteRendered()
-    {
-        return _spriteRenderer;
     }
 
     public Transform GetCrownPlaceholder()

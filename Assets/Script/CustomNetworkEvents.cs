@@ -1,5 +1,4 @@
 using System;
-using Unity.Services.Authentication;
 using UnityEngine;
 
 public class CustomNetworkEvents : MonoBehaviour

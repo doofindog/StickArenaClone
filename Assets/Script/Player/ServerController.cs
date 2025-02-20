@@ -9,23 +9,29 @@ using UnityEngine;
 
 public class ServerController : NetController, ITickableEntity, IDamageableEntity
 {
-    private NetInputProcessor _netInputProcessor;
-    private NetStateProcessor _netStateProcessor;
-    private Queue<HitResponseData> _damageProcessor;
+    private NetInputProcessor m_netInputProcessor;
+    private NetStateProcessor m_netStateProcessor;
+    private Queue<HitResponseData> m_damageProcessor;
     
     
     private Vector3 gizmoPosition;
 
     public override void Awake()
     {
+        if(IsClient)
+        {
+            Destroy(this);
+            return;
+        }
+
         base.Awake();
 
-        _netInputProcessor = GetComponent<NetInputProcessor>();
-        _netStateProcessor = GetComponent<NetStateProcessor>();
-        _damageProcessor = new Queue<HitResponseData>();
+        m_damageProcessor = new Queue<HitResponseData>();
+        m_netInputProcessor = GetComponent<NetInputProcessor>();
+        m_netStateProcessor = GetComponent<NetStateProcessor>();
         
-        _netInputProcessor.processedInputEvent += HandleInputProcessed;
-        _netInputProcessor.processCompletedEvent += HandleInputProcessedCompleted;
+        
+        m_netInputProcessor.processedInputEvent += ProcessStatePayLoad;
 
     }
     
@@ -43,34 +49,35 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
 
     public void UpdateTick(int tick)
     {
-        _netInputProcessor.ProcessInputs();
-        _netStateProcessor.AddState(_netStateProcessor.GetLastProcessedState());
+        NetInputPayLoad[] processedInputPayload = m_netInputProcessor.ProcessInputs();
+        NetStatePayLoad[] processedStatePayload = new NetStatePayLoad[processedInputPayload.Length];
+        for(int i = 0; i < processedInputPayload.Length; i++)
+        {
+            NetInputPayLoad inputPayload = processedInputPayload[i];
+            ProcessFeature(inputPayload);
+
+            NetStatePayLoad statePayLoad = new NetStatePayLoad()
+            {
+                inputSequence = inputPayload.payloadSequence,
+                time = NetworkManager.ServerTime.TimeAsFloat,
+                tick = inputPayload.tick,
+                position = transform.position,
+                aimAngle = inputPayload.aimAngle,
+            };
+
+            processedStatePayload[i] = m_netStateProcessor.AddState(statePayLoad);
+        }
+
+        m_netStateProcessor.SendProcessedStateClientRPC(processedStatePayload);
     }
 
-    private void HandleInputProcessed(NetInputPayLoad inputPayLoad)
+    private void ProcessStatePayLoad(NetInputPayLoad inputPayLoad)
     {
         if (!IsOwner)
         {
-            ProcessMovement(inputPayLoad);
+            ProcessFeature(inputPayLoad);
         }
 
-        NetStatePayLoad statePayLoad = new NetStatePayLoad()
-        {
-            time = NetworkManager.ServerTime.TimeAsFloat,
-            tick = inputPayLoad.tick,
-            position = interpolate ? newPosition : transform.position,
-            aimAngle = inputPayLoad.aimAngle,
-            dodge = inputPayLoad.dodgePressed,
-            isDodge = DataHandler.isDodge,
-            firedWeapon =  inputPayLoad.attackPressed
-        };
-        
-        _netStateProcessor.UpdateLastProcessedState(statePayLoad);
-    }
-
-    private void HandleInputProcessedCompleted()
-    {
-        _netStateProcessor.SendStateClientRpc(_netStateProcessor.GetLastProcessedState());
     }
 
     public override void TakeDamage(HitResponseData hitResponseData)
@@ -78,8 +85,8 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         // Server Side Rewind
         bool failedCheck = GetComponent<CharacterDataHandler>().health.Value <= 0 ||
                            hitResponseData == null ||
-                           _netStateProcessor.frameHistory.First == null ||
-                           _netStateProcessor.frameHistory.Last == null;
+                           m_netStateProcessor.frameHistory.First == null ||
+                           m_netStateProcessor.frameHistory.Last == null;
 
         if (failedCheck)
         {
@@ -88,7 +95,7 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
         }
 
         //Frame history of the hit character
-        LinkedList<NetStatePayLoad> history = _netStateProcessor.frameHistory;
+        LinkedList<NetStatePayLoad> history = m_netStateProcessor.frameHistory;
         float oldestHistoryTime = history.Last.Value.time;
         float newestHistoryTime = history.Last.Value.time;
         if (oldestHistoryTime > hitResponseData.hitTime)
@@ -138,21 +145,18 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
             {
                 ulong clientID = GetComponent<NetworkObject>().OwnerClientId;
                 SpawnManager spawnManager = GameManager.Instance.spawnManager;
-                spawnManager.DespawnPlayer(clientID);
+                //spawnManager.DespawnPlayer(clientID);
 
                 //GameEvents.SendPlayerKilledEvent(GetComponent<NetworkObject>(), source);
 
                 Animator.PlayDeathAnimation(true);
-                _damageProcessor.Clear();
+                m_damageProcessor.Clear();
             }
         }
         else
         {
             Debugger.Log("[SSR] Hit Failed");
         }
-
-
-        //StartCoroutine(ConfirmHitCoroutine(frameToCheck, hitResponseData));
     }
 
 
@@ -223,7 +227,6 @@ public class ServerController : NetController, ITickableEntity, IDamageableEntit
     {
         Animator.PlayDrownAnimation(true);
         SpawnManager spawnManager = GameManager.Instance.spawnManager;
-        spawnManager.DespawnPlayer(NetworkObject.OwnerClientId);
     }
 
     public void AddHealth()

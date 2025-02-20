@@ -1,20 +1,23 @@
+using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Windows;
 
 public class ClientController : NetController, ITickableEntity, IDamageableEntity
 {
-	private const float POSITION_ERROR_THRESHOLD = 0.2f;
+	private const float POSITION_ERROR_THRESHOLD = 0.1f;
 	
-	private NetInputProcessor _netInputProcessor;
-	private NetStateProcessor _netStateProcessor;
+	private NetInputProcessor m_netInputProcessor;
+	private NetStateProcessor m_netStateProcessor;
 	
 
 	public override void Awake()
 	{
 		base.Awake();
 
-		_netInputProcessor = GetComponent<NetInputProcessor>();
-		_netStateProcessor = GetComponent<NetStateProcessor>();
+		m_netInputProcessor = GetComponent<NetInputProcessor>();
+		m_netStateProcessor = GetComponent<NetStateProcessor>();
 	}
 	
 	public override void OnNetworkSpawn()
@@ -30,7 +33,7 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 		GameEvents.SendPlayerSpawned(networkObject.OwnerClientId, networkObject);
 	}
 
-	public override void Start()
+    public override void Start()
 	{
 		base.Start();
 
@@ -49,101 +52,100 @@ public class ClientController : NetController, ITickableEntity, IDamageableEntit
 
 	public void UpdateTick(int tick)
 	{
-		if (IsEnabled == false) return; 
-		
-		if (!IsLocalPlayer)
-		{
-			SimulateMovement();
-		}
-		else
-		{
-			PerformServerReallocation();
-			
-			NetInputPayLoad inputPayLoad = DataHandler.GetNewInputPayLoad();
-			_netInputProcessor.AddInput(inputPayLoad);
-			
-			ProcessMovement(inputPayLoad);
+		if (IsEnabled == false) return;
 
-			_netStateProcessor.AddState(new NetStatePayLoad()
-			{
-				time = NetworkManager.Singleton.ServerTime.TimeAsFloat,
-				tick = inputPayLoad.tick,
-				position = transform.position,
-				aimAngle = inputPayLoad.aimAngle,
-				dodge = inputPayLoad.dodgePressed,
-				canDodge = DataHandler.canDodge,
-				isDodge = DataHandler.isDodge,
-				firedWeapon = inputPayLoad.attackPressed
-			});
-		}
-	}
+		//PerformServerReallocation();
+    }
 
-	private void PerformServerReallocation()
+    public void Update()
+    {
+        NetInputPayLoad inputPayLoad = m_netInputProcessor.AddInput(new NetInputPayLoad()
+        {
+            time = NetworkManager.Singleton.ServerTime.TimeAsFloat,
+            tick = TickManager.Instance.GetTick(),
+            direction = DataHandler.direction,
+            aimAngle = DataHandler.aimAngle,
+        });
+
+		PredictClientMovement(inputPayLoad);
+    }
+
+	private void PredictClientMovement(NetInputPayLoad pInputPayload)
 	{
-		NetStatePayLoad serverState = _netStateProcessor.GetLastProcessedState();
-		NetStatePayLoad clientState = _netStateProcessor.GetStateAtTick(serverState.tick);
-		
-		if (DataHandler.canDodge == false)
-		{
-			DataHandler.canDodge = DataHandler.canDodge;
-		}
-		
-		Vector3 serverPosition = serverState.position;
-		Vector3 clientPosition = clientState.position;
+        ProcessFeature(pInputPayload);
 
-		float positionError = Vector3.Distance(serverPosition, clientPosition);
+        //Client Side Prediction
+        m_netStateProcessor.AddState(new NetStatePayLoad()
+        {
+			inputSequence = pInputPayload.payloadSequence,
+            time = NetworkManager.Singleton.ServerTime.TimeAsFloat,
+            tick = pInputPayload.tick,
+            position = transform.position,
+            aimAngle = pInputPayload.aimAngle,
+        });
+    }
 
-		if (serverState.isDodge || !(positionError > POSITION_ERROR_THRESHOLD))
+    private void PerformServerReallocation()
+	{
+        if (m_netStateProcessor == null || m_netInputProcessor == null)
+        {
+            Debug.LogWarning("NetStateProcessor or NetInputProcessor is not assigned.");
+            return;
+        }
+
+        NetStatePayLoad serverState = m_netStateProcessor.GetLastProcessedState();
+		NetStatePayLoad clientState = m_netStateProcessor.GetStateAtSequenceNumber(serverState.tick);
+		
+		float positionError = Vector3.Distance(serverState.position, clientState.position);
+
+		if (!(positionError > POSITION_ERROR_THRESHOLD))
 		{
 			return;
 		}
 
 		transform.position = serverState.position;
-		_netStateProcessor.UpdateState(serverState);
+		m_netStateProcessor.UpdateState(serverState);
 
 		int tickToProcess = serverState.tick + 1;
 		while (tickToProcess < TickManager.Instance.GetTick())
 		{
-			NetInputPayLoad inputPayLoad = _netInputProcessor.GetPayloadAtTick(tickToProcess);
-			ProcessMovement(inputPayLoad);
+			NetInputPayLoad inputPayLoad = m_netInputProcessor.GetPayloadAtSequence(tickToProcess);
+
+			ProcessFeature(inputPayLoad);
+
 			NetStatePayLoad netStatePayLoad = new NetStatePayLoad()
 			{
 				tick = inputPayLoad.tick,
 				position = transform.position,
 				aimAngle = inputPayLoad.aimAngle,
-				dodge = inputPayLoad.dodgePressed,
-				firedWeapon = inputPayLoad.attackPressed,
 			};
-				
-			_netStateProcessor.UpdateStateAtToTick(tickToProcess, netStatePayLoad);
+
+			m_netStateProcessor.UpdateStateAtToTick(tickToProcess, netStatePayLoad);
 			tickToProcess++;
 		}
 	}
 
 	public override void OnDestroy()
 	{
-		TickManager.Instance.RemoveEntity(this);
+		GameManager.Instance.tickManager.RemoveEntity(this);
 	}
 	
 	protected virtual void SimulateMovement()
 	{
-		NetStatePayLoad latestServerState = _netStateProcessor.GetLastProcessedState();
+		NetStatePayLoad latestServerState = m_netStateProcessor.GetLastProcessedState();
 		transform.position = Vector3.Lerp(transform.position, latestServerState.position, 0.5f);
 
-		WeaponComponent.Aim(latestServerState.aimAngle);
-		if (latestServerState.firedWeapon)
-		{
-			WeaponComponent.TriggerWeapon(new Weapon.Params()
-			{
-				tick = latestServerState.tick
-			});
-		}
-		else
-		{
-			WeaponComponent.ReleaseTrigger();
-		}
-
-		Flip(latestServerState.aimAngle);
+		//if (latestServerState.firedWeapon)
+		//{
+		//	WeaponComponent.TriggerWeapon(new Weapon.Params()
+		//	{
+		//		tick = latestServerState.tick
+		//	});
+		//}
+		//else
+		//{
+		//	WeaponComponent.ReleaseTrigger();
+		//}
 	}
 	
 	public override void TakeDamage(HitResponseData hitResponseData)

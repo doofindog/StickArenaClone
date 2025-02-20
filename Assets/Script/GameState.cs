@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using Unity.Netcode;
+
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -22,10 +24,15 @@ public class GameState : BaseGameState
 
     public override void OnEnter()
     {
+        void HandleServer()
+        {
+            UIManager.Instance.ReplaceScreen(Screens.Game);
+        }
+
         void HandleClient()
         {
             UIManager.Instance.ReplaceScreen(Screens.Game);
-            ScoreManager.Instance.Reset();
+            //ScoreManager.Instance.Reset();
 
             if (_postProcessVolume != null)
             {
@@ -46,17 +53,26 @@ public class GameState : BaseGameState
                 }
             }
 
-            ClientReadyServerRPC();
+            ClientConnectedToStateServerRPC();
         }
 
-        if(IsServer)
+#if SERVER
+        HandleServer();
+
+#elif CLIENT
+        HandleClient();
+#elif UNITY_EDITOR
+        GameManager.GameType gameType = GameManager.Instance.GetGameType();
+        if (gameType == GameManager.GameType.SERVER)
         {
-
+            HandleServer();
         }
-        else if(IsClient)
+        else if (gameType == GameManager.GameType.CLIENT)
         {
             HandleClient();
         }
+
+#endif
     }
 
     public override void OnExit()
@@ -69,12 +85,29 @@ public class GameState : BaseGameState
             tvController.TurnOff();
         }
     }
+
+    private void TryStartGame()
+    {
+        bool canStartGame = SessionManager.Instance.clientDataCollection.Count == GameManager.Instance.GetSessionSettings().maxConnections;
+        if (canStartGame)
+        {
+            StartCoroutine(StartGame());
+        }
+    }
     
     private IEnumerator StartGame()
     {
+
         GameSettings sessionSettings = GameManager.Instance.GetSessionSettings();
 
         yield return new WaitForSeconds(sessionSettings.countDownTime);
+
+        SpawnManager.Instance.SpawnAllPlayers();
+        List<NetworkClient> clients = NetworkManager.ConnectedClientsList.ToList();
+        foreach (NetworkClient client in clients)
+        {
+            client.PlayerObject.GetComponent<WeaponComponent>().GiveDefaultWeapon();
+        }
 
         PreparingGameClientRPC();
 
@@ -84,13 +117,6 @@ public class GameState : BaseGameState
             SessionManager.Instance.countDownTimer.Value--;
         }
         
-        SpawnManager.Instance.SpawnAllPlayers();
-        List<NetworkClient> clients = NetworkManager.ConnectedClientsList.ToList();
-        foreach (NetworkClient client in clients)
-        {
-            client.PlayerObject.GetComponent<WeaponComponent>().GiveDefaultWeapon();
-        }
-
         StartGameClientRPC();
     }
     
@@ -132,22 +158,19 @@ public class GameState : BaseGameState
     [ClientRpc]
     private void StartGameClientRPC()
     {
+        Debug.Log("Client rpc Called");
+
         GameEvents.SendStartGameEvent();
-        ArenaManager.Instance.ChangeState(ArenaManager.States.Idle);
-        
+
         if (gameMusic != null)
         {
             AudioManager.Instance.Play(gameMusic);
         }
     }
 
-    [ServerRpc]
-    private void ClientReadyServerRPC()
+    [ServerRpc(RequireOwnership = false)]
+    private void ClientConnectedToStateServerRPC()
     {
-        bool canStartGame = SessionManager.Instance.clientDataCollection.Count == GameManager.Instance.GetSessionSettings().maxConnections;
-        if (canStartGame)
-        {
-            StartCoroutine(StartGame());
-        }
+        TryStartGame();
     }    
 }

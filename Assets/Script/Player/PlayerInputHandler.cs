@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 //Handles All the Data Being Passed through the Input Reader
 public class PlayerInputHandler : NetworkBehaviour
 {
+    private bool inputChanged;
     private CharacterDataHandler _dataHandler;
     [SerializeField] private InputReader _inputReader;
     

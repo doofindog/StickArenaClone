@@ -6,15 +6,22 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class TickManager : Singleton<TickManager>
+public class TickManager : NetworkBehaviour
 {
+    public static TickManager Instance;
+
     [SerializeField] private float serverTickRate;
 
     private bool _enable;
-    [SerializeField] private int _tick;
-    private float _timer;
-    [SerializeField] private float _minTimeBetweenTicks; //how many seconds between each tick
+    [SerializeField] private int m_tick;
+    [SerializeField] private float m_timer;
+    [SerializeField] private float m_minTimeBetweenTicks; //how many seconds between each tick
     private List<ITickableEntity> _tickableEntities = new List<ITickableEntity>();
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
 
     public void Init()
@@ -22,14 +29,14 @@ public class TickManager : Singleton<TickManager>
         NetworkManager.Singleton.OnClientStarted += Init;
         NetworkManager.Singleton.OnServerStarted += Init;
 
-        NetworkManager.Singleton.OnClientStarted += OnNetworkStopped;
-        NetworkManager.Singleton.OnServerStarted += OnNetworkStopped;
+        NetworkManager.Singleton.OnClientStopped += OnNetworkStopped;
+        NetworkManager.Singleton.OnServerStopped += OnNetworkStopped;
         
-        _minTimeBetweenTicks = 1f / serverTickRate;
-        _enable = _minTimeBetweenTicks != 0;
+        m_minTimeBetweenTicks = 1f / serverTickRate;
+        _enable = m_minTimeBetweenTicks != 0;
     }
-    
-    private void OnNetworkStopped()
+
+    private void OnNetworkStopped(bool obj)
     {
         NetworkManager.Singleton.OnClientStarted -= Init;
         NetworkManager.Singleton.OnServerStarted -= Init;
@@ -53,27 +60,27 @@ public class TickManager : Singleton<TickManager>
             return;
         }
         
-        _timer += Time.deltaTime;
-        while (_timer >= _minTimeBetweenTicks)
+        m_timer += Time.deltaTime;
+        while (m_timer >= m_minTimeBetweenTicks)
         {
-            _timer -= _minTimeBetweenTicks;
+            m_timer -= m_minTimeBetweenTicks;
             foreach (ITickableEntity entity in _tickableEntities.ToList())
             {
-                entity.UpdateTick(_tick);
+                entity.UpdateTick(m_tick);
             }
 
-            _tick++;
+            m_tick++;
         }
     }
 
     public int GetTick()
     {
-        return _tick;
+        return m_tick;
     }
-
+     
     public float GetMinTickTime()
     {
-        return _minTimeBetweenTicks;
+        return m_minTimeBetweenTicks;
     }
 
     public float GetTickRate()

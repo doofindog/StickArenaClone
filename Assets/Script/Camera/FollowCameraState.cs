@@ -7,7 +7,7 @@ using UnityEngine.Experimental.Rendering.Universal;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
 
-public class FollowCameraState : CameraState, ITickableEntity
+public class FollowCameraState : CameraState
 {
     public Camera uiCamera;
     
@@ -42,8 +42,6 @@ public class FollowCameraState : CameraState, ITickableEntity
             Debug.Log("No player Object found");
         }
         
-        TickManager.Instance.AddEntity(this);
-        
         _originalPosition = transform.position;
         _originalRotation = transform.rotation;
         
@@ -71,8 +69,6 @@ public class FollowCameraState : CameraState, ITickableEntity
     {
         PlayerEvents.PlayerDiedEvent -= PerformShake;
         GameEvents.WeaponFiredEvent -= PerformShake;
-        
-        TickManager.Instance.RemoveEntity(this);
     }
     
     
@@ -112,12 +108,12 @@ public class FollowCameraState : CameraState, ITickableEntity
         }
     }
 
-    public void UpdateTick(int tick)
+    public void Update()
     {
-        if(_follow == null) return;
+        if (_follow == null) return;
 
         Vector3 followPosition = _follow.position + _cameraOffset;
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition, 
+        Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition,
             _interpolationSpeed * TickManager.Instance.GetMinTickTime());
 
         _originalPosition = smoothedPosition;

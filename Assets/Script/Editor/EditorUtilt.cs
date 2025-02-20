@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Compilation;
 using Unity.Netcode;
+using Unity.Multiplayer.Playmode;
 
 public class EditorUtilt : MonoBehaviour
 {
@@ -82,5 +83,11 @@ public class EditorUtilt : MonoBehaviour
         {
             Debug.Log($"Define Symbol '{pSymbol}' not found.");
         }
+    }
+
+
+    public static string[] GetMultiplayTags()
+    {
+        return CurrentPlayer.ReadOnlyTags();
     }
 }

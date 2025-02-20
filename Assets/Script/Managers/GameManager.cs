@@ -1,17 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
-using Unity.Networking.Transport.Relay;
-using Unity.Services.Authentication;
-using Unity.Services.Relay;
-using Unity.Services.Relay.Models;
+using System.Linq;
+
 using UnityEngine;
-using UnityEngine.Serialization;
+using Unity.Netcode;
+
+#if UNITY_EDITOR
+using Unity.Multiplayer.Playmode;
+#endif
 
 public class GameManager : NetworkBehaviour
 {
+    public enum GameType
+    {
+        SERVER,
+        CLIENT
+    }
+
     public static GameManager Instance { get; private set; }
 
     public NetworkVariable<float> prepTimer = new NetworkVariable<float>();
@@ -22,7 +27,6 @@ public class GameManager : NetworkBehaviour
     public SpawnManager spawnManager;
     public TickManager tickManager;
     public TeamManager teamManager;
-    public ArenaManager arenaManger;
     public ScoreManager scoreManager;
     public SessionManager sessionManager;
 
@@ -33,6 +37,10 @@ public class GameManager : NetworkBehaviour
     private BaseGameState m_currentState;
     private EGameStates m_currentStateType;
     private Dictionary<EGameStates, BaseGameState> m_gameStates = new Dictionary<EGameStates, BaseGameState>();
+
+#if UNITY_EDITOR
+    private GameType m_gameType;
+#endif
 
 
     public void Awake()
@@ -45,6 +53,18 @@ public class GameManager : NetworkBehaviour
         {
             Instance = this;
         }
+
+#if UNITY_EDITOR
+        string[] multiplayTag = CurrentPlayer.ReadOnlyTags();
+        if(multiplayTag.Contains("CLIENT"))
+        {
+            m_gameType = GameType.CLIENT;
+        }
+        else if(multiplayTag.Contains("SERVER"))
+        {
+            m_gameType = GameType.SERVER;
+        }
+#endif
     }
 
     public void Start()
@@ -65,16 +85,30 @@ public class GameManager : NetworkBehaviour
         connectionManager ??= ConnectionManager.Instance;
         tickManager ??= TickManager.Instance;
         teamManager ??= TeamManager.Instance;
-        arenaManger ??= ArenaManager.Instance;
         sessionManager ??= SessionManager.Instance;
 
         connectionManager.Init();
         tickManager.Init();
         teamManager.Init();
-        arenaManger.Init();
         sessionManager.Init();
 
+        InitialiseServer();
+
         SwitchState(EGameStates.MENU);
+    }
+
+    public void InitialiseServer()
+    {
+        string[] tag = CurrentPlayer.ReadOnlyTags();
+
+        if (tag.Contains("SERVER"))
+        {
+            connectionManager.StartServer();
+        }
+
+#if SERVER
+        connectionManager.StartServer();
+#endif
     }
 
     public void SwitchState(EGameStates state, int delay = 0)
@@ -120,4 +154,12 @@ public class GameManager : NetworkBehaviour
     {
         return sessionSettings;
     }
+
+#if UNITY_EDITOR
+    public GameType GetGameType()
+    {
+        return m_gameType;
+    }
+
+#endif
 }

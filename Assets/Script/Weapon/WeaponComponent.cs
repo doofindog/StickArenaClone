@@ -19,9 +19,7 @@ public class WeaponComponent : NetworkBehaviour
     public void UpdateComponent(NetInputPayLoad inputPayLoad)
     {
         CharacterDataHandler dataHandler = GetComponent<CharacterDataHandler>();
-        
-        Aim(inputPayLoad.aimAngle);
-        
+
         if (dataHandler.interactPressed)
         {
             TryPickUpWeapon();
@@ -30,7 +28,7 @@ public class WeaponComponent : NetworkBehaviour
         Weapon.Params weaponParams = new Weapon.Params()
         {
             tick = inputPayLoad.tick,
-            triggerPressed = inputPayLoad.attackPressed,
+            //triggerPressed = inputPayLoad.attackPressed,
             reloadPressed = dataHandler.reloadPressed
         };
         
@@ -221,13 +219,5 @@ public class WeaponComponent : NetworkBehaviour
         {
             weaponSprite.flipY = isFlip;
         }
-    }
-    
-    public void Aim(float aimAngle)
-    {
-        _arm.transform.rotation = Quaternion.Euler(0,0,aimAngle);
-        
-        bool isFlip = aimAngle is > 90 and < 270;
-        FlipWeapon(isFlip);
     }
 }

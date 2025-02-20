@@ -155,44 +155,44 @@ public class SpawnManager : NetworkBehaviour
         }
     }
     
-    public void DespawnPlayer(ulong clientId)
-    {
-        if(!IsServer) return;
+    //public void DespawnPlayer(ulong clientId)
+    //{
+    //    if(!IsServer) return;
 
-        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        ClientData clientData = SessionManager.Instance.GetClientData(clientId);
-        if (!clientData.isNull)
-        {
-            if (clientData.networkObject != null)
-            {
-                if(clientData.networkObject.TryGetComponent(out ServerController controller))
-                {
-                    controller.OnDespawn();
-                }
-            }
-            else
-            {
-                Debugger.Log($"[Spawn] Client {clientId} network object is null");
-            }
-        }
+    //    ConnectionManager connectionManager = GameManager.Instance.connectionManager;
+    //    ClientData clientData = SessionManager.Instance.GetClientData(clientId);
+    //    if (!clientData.isNull)
+    //    {
+    //        if (clientData.networkObject != null)
+    //        {
+    //            if(clientData.networkObject.TryGetComponent(out ServerController controller))
+    //            {
+    //                controller.OnDespawn();
+    //            }
+    //        }
+    //        else
+    //        {
+    //            Debugger.Log($"[Spawn] Client {clientId} network object is null");
+    //        }
+    //    }
         
-        SendDespawnClientRpc(clientId);
-    }
+    //    SendDespawnClientRpc(clientId);
+    //}
 
-    [ClientRpc]
-    private void SendDespawnClientRpc(ulong clientId)
-    {
-        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        ClientData playerData = SessionManager.Instance.GetClientData(clientId);
-        if (!playerData.isNull || playerData.networkObject != null)
-        {
-            return;
-        }
+    //[ClientRpc]
+    //private void SendDespawnClientRpc(ulong clientId)
+    //{
+    //    ConnectionManager connectionManager = GameManager.Instance.connectionManager;
+    //    ClientData playerData = SessionManager.Instance.GetClientData(clientId);
+    //    if (!playerData.isNull || playerData.networkObject != null)
+    //    {
+    //        return;
+    //    }
 
-        ClientController controller = playerData.networkObject.GetComponent<ClientController>();
-        if (controller != null)
-        {
-            controller.OnDespawn();
-        }
-    }
+    //    ClientController controller = playerData.networkObject.GetComponent<ClientController>();
+    //    if (controller != null)
+    //    {
+    //        controller.OnDespawn();
+    //    }
+    //}
 }

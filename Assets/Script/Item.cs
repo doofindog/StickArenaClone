@@ -50,7 +50,7 @@ public class Item : NetworkBehaviour , IPickable
             if (Vector3.Distance(transform.position, _endPosition) < 1f)
             {
                 canCollect = true;
-                _rb.velocity = Vector3.zero;
+                _rb.linearVelocity = Vector3.zero;
                 _rb.bodyType = RigidbodyType2D.Kinematic;
                 _itemCollider.enabled = true;
                 _spriteRenderer.color = Color.white;

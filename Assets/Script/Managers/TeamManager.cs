@@ -93,8 +93,8 @@ public class TeamManager : NetworkBehaviour
     
     public Team GetTeamFromID(ulong clientID)
     {
-        ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        TeamType teamType = TeamType.Default;
+        SessionManager manager = SessionManager.Instance;
+        TeamType teamType = manager.GetClientData(clientID).publicPlayerData.teamType;
         return GetTeamFromType(teamType);
     }
 

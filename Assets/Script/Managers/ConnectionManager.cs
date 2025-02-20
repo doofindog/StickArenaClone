@@ -49,10 +49,9 @@ public class ConnectionManager : NetworkBehaviour
 
         if (!IsServer)
         {
-
             return;
-
         }
+
         pApprovalResponse.Approved = true;
 
         if (pApprovalResponse.Approved)
@@ -79,7 +78,7 @@ public class ConnectionManager : NetworkBehaviour
     {
         ConnectionPayload payload = new ConnectionPayload() { userName = pUsername };
         string payloadJSON = JsonUtility.ToJson(payload);
-        NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes(payloadJSON);
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.UTF8.GetBytes(payloadJSON);
         NetworkManager.Singleton.StartClient();
 
         CustomNetworkEvents.SendNetworkStartedEvent();

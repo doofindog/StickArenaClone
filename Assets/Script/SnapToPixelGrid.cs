@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SnapToPixelGrid : MonoBehaviour
 {
-    public UnityEngine.Experimental.Rendering.Universal.PixelPerfectCamera ppc;
+    public UnityEngine.Rendering.Universal.PixelPerfectCamera ppc;
  
     private void Update()
     {

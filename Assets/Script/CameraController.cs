@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Multiplayer.Playmode;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.Universal;
 using UnityEngine.Rendering.Universal;
@@ -12,22 +14,31 @@ public enum ECameraState
 
 public class CameraController : Singleton<CameraController>
 {
-    
     [SerializeField] private CameraState _currentState;
     [SerializeField] private Camera uiCamera;
     private Dictionary<ECameraState,CameraState> _states = new Dictionary<ECameraState,CameraState>();
     
-    public void Awake()
+    protected override void Awake()
     {
-        _states.Add(ECameraState.MENU, gameObject.GetComponent<MenuCameraState>());
-        _states.Add(ECameraState.GAME, gameObject.GetComponent<FollowCameraState>());
+        base.Awake();
+        void HandleServer()
+        {
+            this.enabled = false;
+        }
 
-        GameEvents.TeamWonEvent += OnTeamWon;
+        void HandleClient()
+        {
+            _states.Add(ECameraState.MENU, gameObject.GetComponent<MenuCameraState>());
+            _states.Add(ECameraState.GAME, gameObject.GetComponent<FollowCameraState>());
+
+            GameEvents.TeamWonEvent += OnTeamWon;
+        }
+
+        GameUtilt.ExecuteNetworkCode(HandleServer, HandleClient);
     }
 
     private void OnTeamWon(TeamType obj)
     {
-        Debug.Log("Called");
         UniversalAdditionalCameraData cameraData = GetComponent<Camera>().GetUniversalAdditionalCameraData();
         cameraData.renderPostProcessing = false;
         cameraData.cameraStack.Add(uiCamera);

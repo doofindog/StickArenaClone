@@ -16,12 +16,17 @@ public class CharacterDataHandler : NetworkBehaviour
     [SerializeField] private BasePixelManDataScriptable pixelManData;
 
     [Header("Movement")]
+    public Vector3 direction;
+    public Vector2 preDirection;
     public NetworkVariable<float> speed = new NetworkVariable<float>();
-    public Vector2 direction;
-    public Vector3 predictPosition;
 
-    [Header("Dodge")] public bool canDodge;
-    public bool isDodge;
+    [Header("Dodge")]
+    public int dodgeTicksElapsed;
+    public int totalDodgeTicks;
+    public int cooldownTicksRemaining;
+    public Vector3 dodgeStartPosition;
+    public Vector3 dodgeTargetPosition;
+    public AnticipatedNetworkVariable<bool> canDodge = new AnticipatedNetworkVariable<bool>();
     public NetworkVariable<float> dodgeDuration = new NetworkVariable<float>();
     public NetworkVariable<float> dodgeSpeed = new NetworkVariable<float>();
 
@@ -52,7 +57,7 @@ public class CharacterDataHandler : NetworkBehaviour
             dodgeDuration.Value = pixelManData.dodgeDuration;
         } 
         
-        canDodge = true;
+        canDodge.Anticipate(true);
         state = State.Idle;
 
         health.OnValueChanged = (value, newValue) =>
@@ -64,7 +69,7 @@ public class CharacterDataHandler : NetworkBehaviour
         };
     }
 
-    public void Refresh()
+    public void Reset()
     {
         if (IsServer)
         {
@@ -72,21 +77,8 @@ public class CharacterDataHandler : NetworkBehaviour
             speed.Value = pixelManData.speed;
         } 
         
-        canDodge = true;
+        canDodge.Anticipate(true);
         state = State.Idle;
-    }
-
-    public NetInputPayLoad GetNewInputPayLoad()
-    {
-        return new NetInputPayLoad()
-        {
-            time = NetworkManager.Singleton.ServerTime.TimeAsFloat,
-            tick = TickManager.Instance.GetTick(),
-            direction = direction,
-            aimAngle =  aimAngle,
-            dodgePressed = dodgePressed,
-            attackPressed = attackPressed
-        };
     }
     
     public float ReduceHealth(int reduceBy)

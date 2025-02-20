@@ -1,40 +1,51 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 [System.Serializable]
 public struct NetInputPayLoad : INetworkSerializable
 {
+    public bool isNull;
+    public int payloadSequence;
     public float time;
     public int tick;
     public int mousePosition;
     public Vector3 direction;
     public float aimAngle;
-    public bool dodgePressed;
-    public bool attackPressed;
+    public List<NetInputPayLoad> previousPayloads;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
-        if (serializer.IsReader)
+        serializer.SerializeValue(ref isNull);
+        serializer.SerializeValue(ref payloadSequence);
+        serializer.SerializeValue(ref time);
+        serializer.SerializeValue(ref tick);
+        serializer.SerializeValue(ref mousePosition);
+        serializer.SerializeValue(ref direction);
+        serializer.SerializeValue(ref aimAngle);
+
+        // Next, serialize the count of previous payloads.
+        int count = previousPayloads != null ? previousPayloads.Count : 0;
+        serializer.SerializeValue(ref count);
+
+        // Then, serialize each previous payload.
+        if (serializer.IsWriter)
         {
-            FastBufferReader reader = serializer.GetFastBufferReader();
-            reader.ReadValueSafe(out time);
-            reader.ReadValueSafe(out tick);
-            reader.ReadValueSafe(out mousePosition);
-            reader.ReadValueSafe(out direction);
-            reader.ReadValueSafe(out aimAngle);
-            reader.ReadValueSafe(out dodgePressed);
-            reader.ReadValueSafe(out attackPressed);
+            for (int i = 0; i < count; i++)
+            {
+                previousPayloads[i].NetworkSerialize(serializer);
+            }
         }
         else
         {
-            FastBufferWriter writer = serializer.GetFastBufferWriter();
-            writer.WriteValueSafe(time);
-            writer.WriteValueSafe(tick);
-            writer.WriteValueSafe(mousePosition);
-            writer.WriteValueSafe(direction);
-            writer.WriteValueSafe(aimAngle);
-            writer.WriteValueSafe(dodgePressed);
-            writer.WriteValueSafe(attackPressed);
+            // On the reader side, reinitialize the list and read each payload.
+            previousPayloads = new List<NetInputPayLoad>(count);
+            for (int i = 0; i < count; i++)
+            {
+                NetInputPayLoad payload = new NetInputPayLoad();
+                payload.NetworkSerialize(serializer);
+                previousPayloads.Add(payload);
+            }
         }
     }
 }
@@ -42,40 +53,18 @@ public struct NetInputPayLoad : INetworkSerializable
 [System.Serializable]
 public struct NetStatePayLoad : INetworkSerializable
 {
+    public int inputSequence;
     public float time;
     public int tick;
     public Vector3 position;
     public float aimAngle;
-    public bool dodge;
-    public bool isDodge;
-    public bool canDodge;
-    public bool firedWeapon;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
-        if (serializer.IsReader)
-        {
-            FastBufferReader reader = serializer.GetFastBufferReader();
-            reader.ReadValueSafe(out time);
-            reader.ReadValueSafe(out tick);
-            reader.ReadValueSafe(out position);
-            reader.ReadValueSafe(out aimAngle);
-            reader.ReadValueSafe(out dodge);
-            reader.ReadValueSafe(out isDodge);
-            reader.ReadValueSafe(out canDodge);
-            reader.ReadValueSafe(out firedWeapon);
-        }
-        else
-        {
-            FastBufferWriter writer = serializer.GetFastBufferWriter();
-            writer.WriteValueSafe(time);
-            writer.WriteValueSafe(tick);
-            writer.WriteValueSafe(position);
-            writer.WriteValueSafe(aimAngle);
-            writer.WriteValueSafe(dodge);
-            writer.WriteValueSafe(isDodge);
-            writer.WriteValueSafe(canDodge);
-            writer.WriteValueSafe(firedWeapon);
-        }
+        serializer.SerializeValue(ref inputSequence);
+        serializer.SerializeValue(ref time);
+        serializer.SerializeValue(ref tick);
+        serializer.SerializeValue(ref position);
+        serializer.SerializeValue(ref aimAngle);
     }
 }

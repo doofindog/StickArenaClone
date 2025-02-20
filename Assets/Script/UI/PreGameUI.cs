@@ -10,9 +10,9 @@ public class PreGameUI : MonoBehaviour
     [SerializeField] private TMP_Text countText;
     [SerializeField] private Animator timerAnim;
 
-    private void Start()
+    private void Awake()
     {
-        GameManager.Instance.startGameTimer.OnValueChanged += (value, newValue) =>
+        SessionManager.Instance.countDownTimer.OnValueChanged += (value, newValue) =>
         {
             timerAnim.Play("Timer");
             countText.text = newValue.ToString(CultureInfo.InvariantCulture);

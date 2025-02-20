@@ -1,17 +1,19 @@
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Xml.Serialization;
+using Unity.Multiplayer.Playmode;
 using Unity.Netcode;
 
 public class SessionManager : NetworkBehaviour
 {
-    public NetworkVariable<int> countDownTimer;
+    public NetworkVariable<int> countDownTimer = new NetworkVariable<int>();
     public List<ClientData> clientDataCollection = new List<ClientData>();
-    public NetworkList<PublicPlayerData> publicPlayerDataCollection;
+    public List<PublicPlayerData> publicPlayerDataCollection = new List<PublicPlayerData>();
 
     public static SessionManager Instance { get; private set; }
-
-
 
     private void HandleClientDisconnected(ulong pClientId)
     {
@@ -21,16 +23,48 @@ public class SessionManager : NetworkBehaviour
 
     private void HandleClientConnected(ulong pClientId)
     {
-#if SERVER
-        ClientData clientData = GetClientData(pClientId);
-        clientData.isConnected = true;
+        void HandleClient()
+        {
 
-        TryStartSession();
+        }
+
+        void HandleServer()
+        {
+            ClientData clientData = GetClientData(pClientId);
+            clientData.isConnected = true;
+
+            UpdatePlayerDataClientRPC(publicPlayerDataCollection.ToArray());
+
+            TryStartSession();
+        }
+
+#if SERVER
+        HandleServer();
+
+#elif CLIENT
+        HandleClient();
+
+#else
+
+        var tags = CurrentPlayer.ReadOnlyTags();
+        if (tags.Contains("CLIENT"))
+        {
+            HandleClient();
+        }
+        else if (tags.Contains("SERVER"))
+        {
+            HandleServer();
+        }
 #endif
     }
 
     private void TryStartSession()
     {
+        if(clientDataCollection.Count != GameManager.Instance.GetSessionSettings().maxConnections)
+        {
+            return;
+        }
+
         CustomNetworkEvents.SendAllPlayersConnectedEvent();
         StartSessionClientRPC();
     }
@@ -41,6 +75,13 @@ public class SessionManager : NetworkBehaviour
         CustomNetworkEvents.SendAllPlayersConnectedEvent();
     }
 
+    [ClientRpc]
+    private void UpdatePlayerDataClientRPC(PublicPlayerData[] pPlayerData)
+    {
+        publicPlayerDataCollection.Clear();
+        publicPlayerDataCollection.AddRange(pPlayerData);
+    }
+
     private void CleanData()
     {
         clientDataCollection.Clear();
@@ -49,10 +90,6 @@ public class SessionManager : NetworkBehaviour
     private void Awake()
     {
         SessionManager.Instance = this;
-
-        countDownTimer = new NetworkVariable<int>();
-        clientDataCollection = new List<ClientData>();
-        publicPlayerDataCollection = new NetworkList<PublicPlayerData>(new List<PublicPlayerData>());
     }
 
     public void Init()
@@ -84,6 +121,7 @@ public class SessionManager : NetworkBehaviour
     public void HandleServerStarted()
     {
         SessionManager.Instance.CreateNewSession();
+        countDownTimer.Value = GameManager.Instance.GetSessionSettings().countDownTime;
     }
 
     public ClientData GetClientData(ulong pClientID)
