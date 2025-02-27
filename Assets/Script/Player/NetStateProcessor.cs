@@ -7,11 +7,11 @@ public class NetStateProcessor : NetworkBehaviour
     private const int NETWORK_BUFFER_SIZE = 1024;
 
     private NetStatePayLoad[] m_statePayLoads = new NetStatePayLoad[NETWORK_BUFFER_SIZE];
-    private NetStatePayLoad m_lastProcessedState;
-
-
+    private NetStatePayLoad m_lastServerState;
 
     public LinkedList<NetStatePayLoad> frameHistory = new LinkedList<NetStatePayLoad>();
+    public NetStatePayLoad LastProcessedState { get; set; }
+    public List<NetStatePayLoad> stateQueue = new List<NetStatePayLoad>();
 
 
     public NetStatePayLoad AddState(NetStatePayLoad pNetStatePayLoad)
@@ -19,8 +19,9 @@ public class NetStateProcessor : NetworkBehaviour
         int bufferIndex = pNetStatePayLoad.inputSequence % NETWORK_BUFFER_SIZE;
         m_statePayLoads[bufferIndex] = pNetStatePayLoad;
 
-        return m_statePayLoads[bufferIndex];
+        LastProcessedState = pNetStatePayLoad;
 
+        return m_statePayLoads[bufferIndex];
     }
 
     [ClientRpc(Delivery = RpcDelivery.Unreliable)]
@@ -31,18 +32,13 @@ public class NetStateProcessor : NetworkBehaviour
             return;
         }
 
-        for (int i = 0; i < pNetStatePayLoads.Length; i++)
-        {
-            int buffeIndex = pNetStatePayLoads[i].inputSequence % NETWORK_BUFFER_SIZE;
-            m_statePayLoads[buffeIndex] = pNetStatePayLoads[i];
-        }
-
-        m_lastProcessedState = pNetStatePayLoads[pNetStatePayLoads.Length - 1];
+        m_lastServerState = pNetStatePayLoads[pNetStatePayLoads.Length - 1];
+        //stateQueue.AddRange(pNetStatePayLoads);
     }
 
-    public NetStatePayLoad GetLastProcessedState()
+    public NetStatePayLoad GetServerState()
     {
-        return m_lastProcessedState;
+        return m_lastServerState;
     }
 
     public NetStatePayLoad GetStateAtSequenceNumber(int pSequenceNumber)
@@ -53,13 +49,13 @@ public class NetStateProcessor : NetworkBehaviour
 
     public void UpdateState(NetStatePayLoad statePayLoad)
     {
-        int bufferIndex = statePayLoad.tick % NETWORK_BUFFER_SIZE;
+        int bufferIndex = statePayLoad.inputSequence % NETWORK_BUFFER_SIZE;
         m_statePayLoads[bufferIndex] = statePayLoad;
     }
 
-    public void UpdateStateAtToTick(int tick, NetStatePayLoad statePayLoad)
+    public void UpdateAtSequence(int sequenceNumber, NetStatePayLoad statePayLoad)
     {
-        int bufferIndex = tick % NETWORK_BUFFER_SIZE;
+        int bufferIndex =  sequenceNumber % NETWORK_BUFFER_SIZE;
         m_statePayLoads[bufferIndex] = statePayLoad;
     }
     

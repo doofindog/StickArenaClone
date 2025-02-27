@@ -142,4 +142,9 @@ public class NetInputProcessor : NetworkBehaviour
         int index = sequence % NETWORK_BUFFER_SIZE;
         return m_inputPayLoads[index];
     }
+
+    public int GetCurrentSequenceCount()
+    {
+        return m_processedSequenceNumber;
+    }
 }

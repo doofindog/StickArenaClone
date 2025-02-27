@@ -8,23 +8,34 @@ using UnityEngine.InputSystem;
 //Handles All the Data Being Passed through the Input Reader
 public class PlayerInputHandler : NetworkBehaviour
 {
-    private bool inputChanged;
-    private CharacterDataHandler _dataHandler;
+    private PlayerData _dataHandler;
     [SerializeField] private InputReader _inputReader;
-    
 
     public void Init(NetController netController)
     {
-        _dataHandler = GetComponent<CharacterDataHandler>();
-        
-        if (IsClient && IsOwner)
-        {
-            _inputReader.MoveEvent += HandleMovePressed;
-            _inputReader.AttackEvent += HandleAttackPressed;
-            _inputReader.InteractEvent += HandleInteractPressed;
-            _inputReader.ReloadEvent += HandleReloadPressed;
-            _inputReader.DodgeEvent += HandleDodgePressed;
-        }
+        _dataHandler = GetComponent<PlayerData>();
+
+        _inputReader.MoveEvent += HandleMovePressed;
+        _inputReader.AttackEvent += HandleAttackPressed;
+        _inputReader.InteractEvent += HandleInteractPressed;
+        _inputReader.ReloadEvent += HandleReloadPressed;
+        _inputReader.DodgeEvent += HandleDodgePressed;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        _inputReader.MoveEvent -= HandleMovePressed;
+        _inputReader.AttackEvent -= HandleAttackPressed;
+        _inputReader.InteractEvent -= HandleInteractPressed;
+        _inputReader.ReloadEvent -= HandleReloadPressed;
+        _inputReader.DodgeEvent -= HandleDodgePressed;
+    }
+
+    public void Disable()
+    {
+        this.enabled = false;
     }
 
     private void HandleDodgePressed(bool pressed)
@@ -39,7 +50,7 @@ public class PlayerInputHandler : NetworkBehaviour
     
     private void HandleAttackPressed(bool pressed)
     {
-        _dataHandler.attackPressed = pressed;
+        _dataHandler.shootPressed = pressed;
     }
 
     private void HandleInteractPressed(bool pressed)

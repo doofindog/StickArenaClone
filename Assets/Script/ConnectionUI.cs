@@ -33,8 +33,8 @@ public class ConnectionUI : MonoBehaviour
     {
         if(NetworkManager.Singleton == null) return;
 
-        List<PublicPlayerData> playerCollection = SessionManager.Instance.publicPlayerDataCollection;
-        if (playerCollection == null || playerCollection.Count == 0)
+        PublicPlayerData[] playerCollection = SessionManager.Instance.GetAllPublicPlayerData();
+        if (playerCollection == null || playerCollection.Length == 0)
         {
             return;
         }

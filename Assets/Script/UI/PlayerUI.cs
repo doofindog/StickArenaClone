@@ -13,22 +13,22 @@ public class PlayerUI : MonoBehaviour
 
     public void OnEnable()
     {
-        PlayerEvents.PlayerSpawnedEvent += OnPlayerSpawned;
-        PlayerEvents.DamageTakenEvent += UpdateHealth;
+        LocalPlayerEvents.PlayerSpawnedEvent += OnPlayerSpawned;
+        LocalPlayerEvents.DamageTakenEvent += UpdateHealth;
     }
 
     public void OnDisable()
     {
-        PlayerEvents.PlayerSpawnedEvent -= OnPlayerSpawned;
-        PlayerEvents.DamageTakenEvent -= UpdateHealth;
+        LocalPlayerEvents.PlayerSpawnedEvent -= OnPlayerSpawned;
+        LocalPlayerEvents.DamageTakenEvent -= UpdateHealth;
     }
 
     private void OnPlayerSpawned(GameObject playerObj)
     {
-        UpdateHealth(playerObj.GetComponent<CharacterDataHandler>());
+        UpdateHealth(playerObj.GetComponent<PlayerData>());
     }
 
-    private void UpdateHealth(CharacterDataHandler playerData)
+    private void UpdateHealth(PlayerData playerData)
     {
         DisableAllHearts();
         

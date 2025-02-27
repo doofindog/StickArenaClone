@@ -1,11 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering.Universal;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.Serialization;
 
 public class FollowCameraState : CameraState
 {
@@ -24,32 +19,30 @@ public class FollowCameraState : CameraState
     [SerializeField] private Vector3 _originalPosition;
     private Quaternion _originalRotation;
     [SerializeField] private PixelPerfectCamera _pixelPerfectCamera;
-    
+
+    public void Awake()
+    {
+        LocalPlayerEvents.LocalPlayerSpawnedEvent += SetTarget;
+    }
+
 
     public override void Enter()
     {
-        PlayerEvents.PlayerDiedEvent += PerformShake;
+        LocalPlayerEvents.PlayerDiedEvent += PerformShake;
         GameEvents.WeaponFiredEvent += PerformShake;
-
-        NetworkSpawnManager spawnManager = NetworkManager.Singleton.SpawnManager;
-        ulong playerId = NetworkManager.Singleton.LocalClientId;
-        if (spawnManager.GetPlayerNetworkObject(playerId) != null)
-        {
-            _follow = spawnManager.GetPlayerNetworkObject(playerId).gameObject.transform;
-        }
-        else
-        {
-            Debug.Log("No player Object found");
-        }
         
         _originalPosition = transform.position;
         _originalRotation = transform.rotation;
         
         UniversalAdditionalCameraData cameraData = GetComponent<Camera>().GetUniversalAdditionalCameraData();
         cameraData.renderPostProcessing = true;
-        cameraData.cameraStack.RemoveAt(0);
         _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
-        _pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
+        _pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.None;
+    }
+
+    public void SetTarget(GameObject pTarget)
+    {
+        _follow = pTarget.transform;
     }
 
     public override void UpdateState()
@@ -67,7 +60,7 @@ public class FollowCameraState : CameraState
 
     public override void Exit()
     {
-        PlayerEvents.PlayerDiedEvent -= PerformShake;
+        LocalPlayerEvents.PlayerDiedEvent -= PerformShake;
         GameEvents.WeaponFiredEvent -= PerformShake;
     }
     

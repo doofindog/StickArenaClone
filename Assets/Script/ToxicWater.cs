@@ -15,7 +15,7 @@ public class ToxicWater : MonoBehaviour
                 NetController[] components = other.GetComponents<NetController>();
                 foreach (NetController component in components)
                 {
-                    component.Drown();
+                    //component.Drown();
                 }
             }
         }

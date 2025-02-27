@@ -16,6 +16,8 @@ public class TickManager : NetworkBehaviour
     [SerializeField] private int m_tick;
     [SerializeField] private float m_timer;
     [SerializeField] private float m_minTimeBetweenTicks; //how many seconds between each tick
+    [SerializeField] private float m_lastTickTime;
+    [SerializeField] private float m_tickDeltaTime;
     private List<ITickableEntity> _tickableEntities = new List<ITickableEntity>();
 
     private void Awake()
@@ -31,7 +33,8 @@ public class TickManager : NetworkBehaviour
 
         NetworkManager.Singleton.OnClientStopped += OnNetworkStopped;
         NetworkManager.Singleton.OnServerStopped += OnNetworkStopped;
-        
+
+        m_lastTickTime = Time.time;
         m_minTimeBetweenTicks = 1f / serverTickRate;
         _enable = m_minTimeBetweenTicks != 0;
     }
@@ -52,18 +55,22 @@ public class TickManager : NetworkBehaviour
         _tickableEntities.Remove(tickableEntity);
     }
 
-
     public void Update()
     {
         if (!_enable)
         {
             return;
         }
-        
+
         m_timer += Time.deltaTime;
         while (m_timer >= m_minTimeBetweenTicks)
         {
             m_timer -= m_minTimeBetweenTicks;
+            if (m_timer < m_minTimeBetweenTicks)
+            {
+                m_lastTickTime += m_minTimeBetweenTicks;
+            }
+
             foreach (ITickableEntity entity in _tickableEntities.ToList())
             {
                 entity.UpdateTick(m_tick);
@@ -86,5 +93,10 @@ public class TickManager : NetworkBehaviour
     public float GetTickRate()
     {
         return serverTickRate;
+    }
+
+    public float GetTickDeltaTime()
+    {
+        return m_lastTickTime;
     }
 }

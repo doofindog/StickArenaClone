@@ -12,9 +12,19 @@ public class CrowdManager : MonoBehaviour
 
     public void Awake()
     {
-        audioSource = audioSource.GetComponent<AudioSource>();
-        GameEvents.PlayerDiedEvent += Cheer;
-        GameEvents.OnGameStartEvent += OnGameStart;
+        void HanldeServer()
+        {
+
+        }
+
+        void HandleClient()
+        {
+            audioSource = audioSource.GetComponent<AudioSource>();
+            GameEvents.PlayerDiedEvent += Cheer;
+            GameEvents.OnGameStartEvent += OnGameStart;
+        }
+
+        GameUtilt.ExecuteNetworkCode(HanldeServer, HandleClient);
     }
 
     private void OnGameStart()

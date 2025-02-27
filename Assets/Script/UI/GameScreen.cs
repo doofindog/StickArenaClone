@@ -13,15 +13,25 @@ public class GameScreen : MonoBehaviour
     
     public void Awake()
     {
-        PlayerEvents.PlayerDiedEvent += DisplayDeathScreen;
+        LocalPlayerEvents.PlayerDiedEvent += DisplayDeathScreen;
         GameEvents.PreparingArenaEvent += DisplayPreGameScreen;
         GameEvents.OnGameStartEvent += DisplayGameUI;
     }
 
     private void DisplayGameUI()
     {
-        playerHealth.SetActive(true);
-        scoreUI.gameObject.SetActive(true);
+        void HandleServer()
+        {
+
+        }
+
+        void HandlerClient()
+        {
+            playerHealth.SetActive(true);
+            scoreUI.gameObject.SetActive(true);
+        }
+
+        GameUtilt.ExecuteNetworkCode(HandleServer, HandlerClient);
     }
 
     private void DisplayDeathScreen()
@@ -36,6 +46,6 @@ public class GameScreen : MonoBehaviour
     
     public void OnDestroy()
     {
-        PlayerEvents.PlayerDiedEvent -= DisplayDeathScreen;
+        LocalPlayerEvents.PlayerDiedEvent -= DisplayDeathScreen;
     }
 }

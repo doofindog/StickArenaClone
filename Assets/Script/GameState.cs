@@ -15,7 +15,7 @@ public class GameState : BaseGameState
     [SerializeField] private Volume _postProcessVolume;
     [SerializeField] private AudioClip gameMusic;
 
-    private int clientReadyCount;
+    public bool gameStarted;
 
     public void Awake()
     {
@@ -88,9 +88,11 @@ public class GameState : BaseGameState
 
     private void TryStartGame()
     {
-        bool canStartGame = SessionManager.Instance.clientDataCollection.Count == GameManager.Instance.GetSessionSettings().maxConnections;
+        bool sessionCountCheck = SessionManager.Instance.GetConnectedClientCount() == GameManager.Instance.GetSessionSettings().maxConnections;
+        bool canStartGame =  sessionCountCheck && gameStarted == false;
         if (canStartGame)
         {
+            gameStarted = true;
             StartCoroutine(StartGame());
         }
     }
@@ -103,11 +105,6 @@ public class GameState : BaseGameState
         yield return new WaitForSeconds(sessionSettings.countDownTime);
 
         SpawnManager.Instance.SpawnAllPlayers();
-        List<NetworkClient> clients = NetworkManager.ConnectedClientsList.ToList();
-        foreach (NetworkClient client in clients)
-        {
-            client.PlayerObject.GetComponent<WeaponComponent>().GiveDefaultWeapon();
-        }
 
         PreparingGameClientRPC();
 
@@ -118,6 +115,7 @@ public class GameState : BaseGameState
         }
         
         StartGameClientRPC();
+        GameEvents.SendStartGameEvent();
     }
     
     private void StopGame(TeamType teamType)

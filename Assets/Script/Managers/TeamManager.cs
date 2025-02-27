@@ -21,27 +21,28 @@ public class Team
     public TeamType teamType;
     public Color color;
     public int score;
-    public List<ClientData> players;
+    public List<PublicPlayerData> players;
 
     public Team(TeamType teamType, Color color)
     {
         name = teamType.ToString();
         this.teamType = teamType;
         this.color = color;
-        players = new List<ClientData>();
+        players = new List<PublicPlayerData>();
     }
 
-    public void AddPlayer(ClientData? pClientData)
+    public void AddPlayer(PublicPlayerData? pPlayerData)
     {
-        if (pClientData == null)
+        if (pPlayerData == null)
         {
             Debug.Log("Player Session Data is null ");
             return;
         }
 
-        ClientData clientData = pClientData.Value;
-        clientData.publicPlayerData.teamType = teamType;
-        players.Add(clientData);
+        PublicPlayerData playerData = pPlayerData.Value;
+        playerData.teamType = teamType;
+        SessionManager.Instance.UpdatePublicPlayerData(playerData);
+        players.Add(playerData);
     }
 }
 
@@ -76,10 +77,15 @@ public class TeamManager : NetworkBehaviour
 
     private void HandleOnClientConnected(ulong pClientId)
     {
+        if (IsClient)
+        {
+            return;
+        }
+
         AddPlayerToTeam(pClientId);
     }
 
-    public void AddPlayerToTeam(ClientData playerData)
+    public void AddPlayerToTeam(PublicPlayerData playerData)
     {
         m_teamCollection.Sort((team1, team2)=> team1.players.Count.CompareTo(team2.players.Count));
         m_teamCollection[0].AddPlayer(playerData);
@@ -87,14 +93,14 @@ public class TeamManager : NetworkBehaviour
 
     public void AddPlayerToTeam(ulong clientID)
     {
-        ClientData playerData = SessionManager.Instance.GetClientData(clientID);
+        PublicPlayerData playerData = SessionManager.Instance.GetPublicPlayerData(clientID);
         AddPlayerToTeam(playerData);
     }
     
     public Team GetTeamFromID(ulong clientID)
     {
         SessionManager manager = SessionManager.Instance;
-        TeamType teamType = manager.GetClientData(clientID).publicPlayerData.teamType;
+        TeamType teamType = manager.GetPublicPlayerData(clientID).teamType;
         return GetTeamFromType(teamType);
     }
 

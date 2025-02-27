@@ -35,9 +35,9 @@ public enum FireType
 public enum WeaponState
 {
     Ready,
-    Fired,
     Reloading,
-    ResettingFireRate
+    Fired,
+    Empty
 }
 
 public enum WeaponType

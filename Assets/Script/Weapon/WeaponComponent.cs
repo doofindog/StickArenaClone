@@ -10,38 +10,33 @@ public class WeaponComponent : NetworkBehaviour
 {
     private const string WEAPON_TAG = "Weapon";
 
-    [SerializeField] private GameObject _arm;
-    [SerializeField] private GameObject _hand;
-    
-    private Weapon _equippedWeapon;
-    private Weapon _nearByWeapon;
-    
+    private Transform m_arm;
+    private Transform m_weaponHolder;
+    private Weapon m_equippedWeapon;
+    private Weapon m_nearByWeapon;
+
+
+    public void Init(Transform pArm, Transform pWeaponHolder)
+    {
+        m_arm = pArm;
+        m_weaponHolder = pWeaponHolder;
+    }
+
     public void UpdateComponent(NetInputPayLoad inputPayLoad)
     {
-        CharacterDataHandler dataHandler = GetComponent<CharacterDataHandler>();
+        PlayerData dataHandler = GetComponent<PlayerData>();
 
         if (dataHandler.interactPressed)
         {
             TryPickUpWeapon();
         }
 
-        Weapon.Params weaponParams = new Weapon.Params()
-        {
-            tick = inputPayLoad.tick,
-            //triggerPressed = inputPayLoad.attackPressed,
-            reloadPressed = dataHandler.reloadPressed
-        };
-        
 
-        if (_equippedWeapon != null)
-        {
-            _equippedWeapon.HandleWeapon(weaponParams);
-        }
     }
     
     private void TryPickUpWeapon()
     {
-        if(!IsServer && _nearByWeapon == null) return;
+        if(!IsServer && m_nearByWeapon == null) return;
         
         SendEquipWeaponServerRpc();
     }
@@ -54,31 +49,32 @@ public class WeaponComponent : NetworkBehaviour
 
     public void EquipWeapon(Weapon weapon = null)
     {
-        if (_equippedWeapon != null)
+        if (m_equippedWeapon != null)
         {
-            DestroyWeapon(_equippedWeapon);
+            DestroyWeapon(m_equippedWeapon);
         }
 
-        _equippedWeapon = weapon;
+        m_equippedWeapon = weapon;
         
         ConstraintSource constrainSource = new ConstraintSource
         {
-            sourceTransform = _hand.transform,
+            sourceTransform = m_weaponHolder.transform,
             weight = 1
         };
 
-        ParentConstraint parentConstraint = _equippedWeapon.GetComponent<ParentConstraint>();
+        ParentConstraint parentConstraint = m_equippedWeapon.GetComponent<ParentConstraint>();
         parentConstraint.AddSource(constrainSource);
         parentConstraint.constraintActive = true;
         
-        _equippedWeapon.GetComponent<BoxCollider2D>().enabled = false;
+        m_equippedWeapon.GetComponent<BoxCollider2D>().enabled = false;
         
         NetworkObject playerNetObj = GetComponent<NetworkObject>();
-        _equippedWeapon.HandleOnEquipped(playerNetObj);
+        m_equippedWeapon.HandleOnEquipped(playerNetObj);
         
-        _nearByWeapon = null;
-        _equippedWeapon.onWeaponExhausted = GiveDefaultWeapon;
-        EquipWeaponClientRpc(_equippedWeapon.GetComponent<NetworkObject>());
+        m_nearByWeapon = null;
+        m_equippedWeapon.onWeaponExhausted = GiveDefaultWeapon;
+
+        EquipWeaponClientRpc(m_equippedWeapon.GetComponent<NetworkObject>());
     }
 
     public void GiveDefaultWeapon()
@@ -99,16 +95,16 @@ public class WeaponComponent : NetworkBehaviour
         weapon.GetComponent<NetworkObject>().Despawn();
     }
 
-    public bool WeaponEquipped()
+    public bool IsWeaponEquipped()
     {
-        return _equippedWeapon != null;
+        return m_equippedWeapon != null;
     }
 
 
     public void DropEquippedWeapon()
     {
-        _equippedWeapon.GetComponent<NetworkObject>().Despawn();
-        _equippedWeapon = null;
+        m_equippedWeapon.GetComponent<NetworkObject>().Despawn();
+        m_equippedWeapon = null;
         
         DropEquippedWeaponClientRpc();
     }
@@ -116,106 +112,45 @@ public class WeaponComponent : NetworkBehaviour
     [ClientRpc]
     private void DropEquippedWeaponClientRpc()
     {
-        _equippedWeapon = null;
+        m_equippedWeapon = null;
     }
 
     [ClientRpc]
     private void EquipWeaponClientRpc(NetworkObjectReference weapon)
     {
-        if(IsHost) return;
-        
-        if (weapon.TryGet(out NetworkObject targetObject))
+        if (!weapon.TryGet(out NetworkObject targetObject))
         {
-            NetworkObject playerNetObj = GetComponent<NetworkObject>();
-            _equippedWeapon = targetObject.GetComponent<Weapon>();
-            
-            ConstraintSource constrainSource = new ConstraintSource();
-            constrainSource.sourceTransform = _hand.transform;
-            constrainSource.weight = 1;
-        
-            ParentConstraint parentConstraint = _equippedWeapon.GetComponent<ParentConstraint>();
-            parentConstraint.AddSource(constrainSource);
-            parentConstraint.constraintActive = true;
-        
-            _equippedWeapon.GetComponent<BoxCollider2D>().enabled = false;
-            
-            _equippedWeapon.HandleOnEquipped(playerNetObj);
-            _nearByWeapon = null;
+            Debugger.Log("No networkObject found : " + weapon.NetworkObjectId);
         }
+
+;
+        NetworkObject playerNetObj = GetComponent<NetworkObject>();
+        m_equippedWeapon = targetObject.GetComponent<Weapon>();
+
+        ConstraintSource constrainSource = new ConstraintSource();
+        constrainSource.sourceTransform = m_weaponHolder.transform;
+        constrainSource.weight = 1;
+
+        ParentConstraint parentConstraint = m_equippedWeapon.GetComponent<ParentConstraint>();
+        parentConstraint.AddSource(constrainSource);
+        parentConstraint.constraintActive = true;
+
+        m_equippedWeapon.GetComponent<BoxCollider2D>().enabled = false;
+
+        m_equippedWeapon.HandleOnEquipped(playerNetObj);
+        m_nearByWeapon = null;
     }
 
-    public void TriggerWeapon(Weapon.Params weaponParams)
+    public Weapon GetEquipedWeapon()
     {
-        if (_equippedWeapon == null)
-        {
-            Debugger.Log("[WEAPON] Weapon Not Equiped");
-            return;
-        }
-            
-        _equippedWeapon.Trigger(weaponParams);
-    }
-
-    public void ReleaseTrigger()
-    {
-        if(_equippedWeapon == null) return;
-        
-        _equippedWeapon.ReleaseTrigger();
-    }
-
-    private void ReloadWeapon()
-    {
-        if (IsClient && IsOwner)
-        {
-            ReloadPressedServerRpc();
-        }
-    }
-
-    [ServerRpc]
-    private void ReleaseWeaponTriggerServerRpc()
-    {
-        if(_equippedWeapon == null) return;
-        
-        _equippedWeapon.ReleaseTrigger();
-    }
-
-    [ServerRpc]
-    private void ReloadPressedServerRpc()
-    {
-        if(_equippedWeapon == null) return;
-
-        if (_equippedWeapon is IReloadable reloadableWeapon)
-        {
-            reloadableWeapon.Reload();
-        }
-    }
-    
-    public void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.gameObject.CompareTag(WEAPON_TAG))
-        {
-            if(other.TryGetComponent(out Weapon weapon))
-            {
-                _nearByWeapon = weapon;
-            }
-        }
-    }
-
-    public void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.gameObject.CompareTag(WEAPON_TAG))
-        {
-            if(other.TryGetComponent(out Weapon weapon) == _nearByWeapon)
-            {
-                _nearByWeapon = null;
-            }
-        }
+        return m_equippedWeapon;
     }
 
     public void FlipWeapon(bool isFlip)
     {
-        if (_equippedWeapon == null) return;
+        if (m_equippedWeapon == null) return;
 
-        if(_equippedWeapon._equipedWeaponObj.TryGetComponent(out SpriteRenderer weaponSprite))
+        if(m_equippedWeapon._equipedWeaponObj.TryGetComponent(out SpriteRenderer weaponSprite))
         {
             weaponSprite.flipY = isFlip;
         }

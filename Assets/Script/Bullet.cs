@@ -22,14 +22,27 @@ public class Bullet : NetworkBehaviour, ITickableEntity
 
     public override void OnNetworkDespawn()
     {
+        void HandleServer()
+        {
+            TickManager.Instance.RemoveEntity(this);
+        }
+
+        void HandleClient() { }
+
         base.OnNetworkDespawn();
-        
-        TickManager.Instance.RemoveEntity(this);
+        GameUtilt.ExecuteNetworkCode(HandleServer, HandleClient);
     }
 
     public void Awake()
     {
-        TickManager.Instance.AddEntity(this);
+        void HandleServer()
+        {
+            TickManager.Instance.AddEntity(this);
+        }
+
+        void HandleClient() { }
+
+        GameUtilt.ExecuteNetworkCode(HandleServer, HandleClient);
     }
 
     public void OnEnable()
@@ -63,12 +76,11 @@ public class Bullet : NetworkBehaviour, ITickableEntity
         _animator = GetComponent<Animator>();
     }
 
-    public void UpdateTick(int tick)
+    public void FixedUpdate()
     {
-        if(!_isEnabled) return;
-        
-        transform.position += transform.right * (_speed * TickManager.Instance.GetMinTickTime());
-        _life += TickManager.Instance.GetMinTickTime();
+        transform.position += transform.right * (_speed * Time.fixedDeltaTime);
+        _life += Time.fixedDeltaTime;
+
         if (_life > BULLET_LIFE)
         {
             HandleImpact();
@@ -77,60 +89,46 @@ public class Bullet : NetworkBehaviour, ITickableEntity
 
     public void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.TryGetComponent(out NetworkObject networkObject))
-        {
-            bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value;
-            if (canTakeDamage)
-            {
-                if (other.TryGetComponent(out HitDetector hitDetector))
-                {
-                    HitResponseData responseData = new HitResponseData()
-                    {
-                        hitTime = NetworkManager.Singleton.ServerTime.TimeAsFloat,
-                        damage = _damage,
-                        sourceID = _playerNetID.Value,
-                        hitId = NetworkManager.LocalClient.ClientId,
-                        hitPosition =  other.transform.position,
-                        traceStart = _startPosition,
-                        projectileRotation = transform.rotation,
-                        hitVelocity = _speed * TickManager.Instance.GetMinTickTime(),
-                        projectileDirection = (transform.position + transform.right) - transform.position
-                    };
+        //if (other.gameObject.TryGetComponent(out NetworkObject networkObject))
+        //{
+        //    bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value;
+        //    if (canTakeDamage)
+        //    {
+        //        if (other.TryGetComponent(out HitDetector hitDetector))
+        //        {
+        //            HitResponseData responseData = new HitResponseData()
+        //            {
+        //                hitTime = NetworkManager.Singleton.ServerTime.TimeAsFloat,
+        //                damage = _damage,
+        //                sourceID = _playerNetID.Value,
+        //                hitId = NetworkManager.LocalClient.ClientId,
+        //                hitPosition =  other.transform.position,
+        //                traceStart = _startPosition,
+        //                projectileRotation = transform.rotation,
+        //                hitVelocity = _speed * TickManager.Instance.GetMinTickTime(),
+        //                projectileDirection = (transform.position + transform.right) - transform.position
+        //            };
                     
 
-                    hitDetector.Hit(responseData);
-                }
-            }
-        }
+        //            hitDetector.Hit(responseData);
+        //        }
+        //    }
+        //}
 
-        GameObject particle = ObjectPool.Instance.GetPooledObject(impactParticle, transform.position, quaternion.identity).gameObject;
-        particle.SetActive(true);
         HandleImpact();
     }
 
     private void HandleImpact()
     {
-        _isEnabled = false;
-        if (IsServer)
-        {
-            CoroutineHelper.Instance.StartCoroutine(ServerDestroy());
-        }
-        else
-        {
-            gameObject.SetActive(false);
-            transform.position = new Vector3(-1000, -1000, -1000);
-        }
+        GameObject particle = ObjectPool.Instance.GetPooledObject(impactParticle, transform.position, quaternion.identity).gameObject;
+        particle.SetActive(true);
+
+        gameObject.SetActive(false);
+        transform.position = new Vector3(-1000, -1000, -1000);
     }
 
-    private IEnumerator ServerDestroy()
+    public void UpdateTick(int tick)
     {
-        gameObject.SetActive(false);
-        yield return new WaitForSeconds(1);
-        if (IsSpawned)
-        {
-            GetComponent<NetworkObject>().Despawn(true);
-        }
-
-        transform.position = new Vector3(-1000, -1000, -1000);
+        //throw new NotImplementedException();
     }
 }

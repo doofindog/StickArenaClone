@@ -10,12 +10,12 @@ public class Shotgun : RangedWeapon
 
     protected override void HandleSingleFire()
     {
-        if (_triggerPressed || weaponState != global::WeaponState.Ready)
+        if (m_triggerPressed || weaponState != global::WeaponState.Ready)
         {
             return;
         }
         
-        _triggerPressed = true;
+        m_triggerPressed = true;
         weaponState = global::WeaponState.Fired;
 
         Quaternion defaultRotation = barrelTransform.rotation;

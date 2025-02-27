@@ -9,8 +9,6 @@ public struct ClientData : IEquatable<ClientData>
     public ulong clientID;
     public Guid playerID;
     public PublicPlayerData publicPlayerData;
-    public NetworkObject networkObject;
-    public bool isConnected;
     public bool isNull;
 
     public bool Equals(ClientData other)

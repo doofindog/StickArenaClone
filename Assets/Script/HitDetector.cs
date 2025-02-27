@@ -9,9 +9,9 @@ public class HitDetector : NetworkBehaviour
     {
         if(!IsClient) return;
         
-        if (TryGetComponent(out ClientController clientController))
+        if (TryGetComponent(out AuthorityClientController clientController))
         {
-            clientController.TakeDamage(hitResponseData);
+            //clientController.TakeDamage(hitResponseData);
         }
 
         if (NetworkManager.LocalClient.ClientId == hitResponseData.sourceID)
@@ -23,6 +23,6 @@ public class HitDetector : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void SendHitDetectedServerRpc(HitResponseData responseData)
     {
-        GetComponent<ServerController>().TakeDamage(responseData);
+        //GetComponent<ServerController>().TakeDamage(responseData);
     }
 }

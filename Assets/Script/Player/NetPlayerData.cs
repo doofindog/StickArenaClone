@@ -12,6 +12,7 @@ public struct NetInputPayLoad : INetworkSerializable
     public int mousePosition;
     public Vector3 direction;
     public float aimAngle;
+    public bool shootPressed;
     public List<NetInputPayLoad> previousPayloads;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -23,6 +24,7 @@ public struct NetInputPayLoad : INetworkSerializable
         serializer.SerializeValue(ref mousePosition);
         serializer.SerializeValue(ref direction);
         serializer.SerializeValue(ref aimAngle);
+        serializer.SerializeValue(ref shootPressed);
 
         // Next, serialize the count of previous payloads.
         int count = previousPayloads != null ? previousPayloads.Count : 0;
@@ -57,7 +59,9 @@ public struct NetStatePayLoad : INetworkSerializable
     public float time;
     public int tick;
     public Vector3 position;
+    public Vector3 positionDelta;
     public float aimAngle;
+    public bool shootPressed;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -65,6 +69,8 @@ public struct NetStatePayLoad : INetworkSerializable
         serializer.SerializeValue(ref time);
         serializer.SerializeValue(ref tick);
         serializer.SerializeValue(ref position);
+        serializer.SerializeValue(ref positionDelta);
         serializer.SerializeValue(ref aimAngle);
+        serializer.SerializeValue(ref shootPressed);
     }
 }

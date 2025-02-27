@@ -24457,7 +24457,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1451087796}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e208a47805bc804c991856ecb6406a0, type: 3}
   m_Name: 
@@ -24899,7 +24899,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PresetAsset: {fileID: 0}
   m_PresetReference:
-    rid: 5882676844314493177
+    rid: 5882676984671109231
   m_Scenario:
     rid: -2
   m_IsScenarioSettingsFolded: 0
@@ -24909,7 +24909,7 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 5882676844314493177
+    - rid: 5882676984671109231
       type: {class: NetworkSimulatorPreset, ns: Unity.Multiplayer.Tools.NetworkSimulator.Runtime,
         asm: Unity.Multiplayer.Tools.NetworkSimulator.Runtime}
       data:
@@ -36881,6 +36881,33 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 4208630490
       objectReference: {fileID: 0}
+    - target: {fileID: 4195422242549817066, guid: 7ec35185b9288e146a9f1cfc1456f8ca,
+        type: 3}
+      propertyPath: PooledPrefabsList.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4195422242549817066, guid: 7ec35185b9288e146a9f1cfc1456f8ca,
+        type: 3}
+      propertyPath: PooledPrefabsList.Array.data[0].Prefab
+      value: 
+      objectReference: {fileID: 2126290572856526050, guid: 8c49a56233b4b459bb2e8c69f4f87711,
+        type: 3}
+    - target: {fileID: 4195422242549817066, guid: 7ec35185b9288e146a9f1cfc1456f8ca,
+        type: 3}
+      propertyPath: PooledPrefabsList.Array.data[1].Prefab
+      value: 
+      objectReference: {fileID: 4356049550591393038, guid: 10730d19f0fa24539b5ea1ef0abca83b,
+        type: 3}
+    - target: {fileID: 4195422242549817066, guid: 7ec35185b9288e146a9f1cfc1456f8ca,
+        type: 3}
+      propertyPath: PooledPrefabsList.Array.data[0].PrewarmCount
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 4195422242549817066, guid: 7ec35185b9288e146a9f1cfc1456f8ca,
+        type: 3}
+      propertyPath: PooledPrefabsList.Array.data[1].PrewarmCount
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 8568343957238813938, guid: 7ec35185b9288e146a9f1cfc1456f8ca,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -39753,6 +39780,7 @@ MonoBehaviour:
     type: 3}
   _postProcessVolume: {fileID: 1745994780}
   gameMusic: {fileID: 0}
+  gameStarted: 0
 --- !u!114 &7523570234032645389
 MonoBehaviour:
   m_ObjectHideFlags: 0

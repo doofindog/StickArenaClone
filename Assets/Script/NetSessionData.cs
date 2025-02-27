@@ -2,6 +2,7 @@ using Unity.Netcode;
 
 public class NetSessionData : INetworkSerializable
 {
+    public bool gameStarted;
     public int blueScore;
     public int redScore;
     public int greenScore;

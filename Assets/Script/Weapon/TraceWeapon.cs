@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class TraceWeapon : RangedWeapon
 {
-    public override void Trigger(Params weaponParams)
+    public override void TriggerPressed(Params weaponParams)
     {
         
     }

@@ -125,22 +125,22 @@ public class SpawnManager : NetworkBehaviour
     [ServerRpc(RequireOwnership =false)]
     public void RequestSpawnPlayerServerRPC(ulong clientID)
     {
-        RespawnPlayer(clientID);
+        //RespawnPlayer(clientID);
     }
 
     [ClientRpc]
     private void RespawnPlayerClientRpc(ulong clientId)
     {
         ConnectionManager connectionManager = GameManager.Instance.connectionManager;
-        ClientData playerData = SessionManager.Instance.GetClientData(clientId);
+        PublicPlayerData playerData = SessionManager.Instance.GetPublicPlayerData(clientId);
         if (!playerData.isNull)
         {
             return;
         }
 
-        if (playerData.networkObject != null)
+        if(playerData.networkObject.TryGet(out NetworkObject networkObject))
         {
-            ClientController clientController = playerData.networkObject.GetComponent<ClientController>();
+            AuthorityClientController clientController = networkObject.GetComponent<AuthorityClientController>();
             if (clientController != null)
             {
                 TeamType playerTeam = TeamManager.Instance.GetTeamFromID(clientId).teamType;

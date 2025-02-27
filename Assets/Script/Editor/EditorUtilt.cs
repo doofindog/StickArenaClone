@@ -54,12 +54,12 @@ public class EditorUtilt : MonoBehaviour
     public static void AddDefineSymbol(string pSymbol)
     {
         BuildTargetGroup buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-        string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup);
+        string defines = UnityEditor.PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup);
 
         if (!defines.Contains(pSymbol))
         {
             defines += $";{pSymbol}";
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, defines);
+            UnityEditor.PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, defines);
             Debug.Log($"Added Define Symbol: {pSymbol}");
         }
         else
@@ -71,12 +71,12 @@ public class EditorUtilt : MonoBehaviour
     public static void RemoveDefineSymbol(string pSymbol)
     {
         BuildTargetGroup buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-        string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup);
+        string defines = UnityEditor.PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup);
 
         if (defines.Contains(pSymbol))
         {
             defines = defines.Replace(pSymbol, "").Replace(";;", ";").Trim(';');
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, defines);
+            UnityEditor.PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, defines);
             Debug.Log($"Removed Define Symbol: {pSymbol}");
         }
         else

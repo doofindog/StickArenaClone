@@ -2,18 +2,21 @@ using UnityEngine;
 
 public class Flip : PlayerFeature
 {
-    private CharacterDataHandler m_data;
     private SpriteRenderer m_spriteRenderer;
 
-    public Flip(NetController netController) : base(netController)
+    public override void Init(NetController pController)
     {
-        m_data = netController.DataHandler;
-        m_spriteRenderer = netController.CharacterSprite;
+        m_spriteRenderer = pController.playerComponent.spriteRenderer;
     }
 
     public override void Process(NetInputPayLoad pInputPayLoad)
     {
         FlipSprite(pInputPayLoad.aimAngle);
+    }
+
+    public override void Process(NetStatePayLoad pStatePayLoad)
+    {
+        FlipSprite(pStatePayLoad.aimAngle);
     }
 
     private void FlipSprite(float pAngle)

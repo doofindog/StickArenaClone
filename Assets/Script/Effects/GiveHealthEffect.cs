@@ -9,7 +9,7 @@ public class GiveHealthEffect : Effect
    public override void AddEffectToPlayer(ulong clientID)
    { 
       NetworkObject networkObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(clientID);
-      CharacterDataHandler dataHandler = networkObject.GetComponent<CharacterDataHandler>();
+      PlayerData dataHandler = networkObject.GetComponent<PlayerData>();
       dataHandler.health.Value +=  healthToGive;
    }
 }

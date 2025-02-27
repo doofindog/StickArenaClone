@@ -19,7 +19,7 @@ public class Weapon : NetworkBehaviour
     [SerializeField] protected WeaponDataScriptable _weaponData;
     
     protected ulong playerClientID;
-    [SerializeField] protected bool _triggerPressed;
+    [SerializeField] protected bool m_triggerPressed;
     protected Animator _animator;
     
     public GameObject _equipedWeaponObj;
@@ -36,25 +36,25 @@ public class Weapon : NetworkBehaviour
         playerClientID = playerNetObj.OwnerClientId;
     }
 
-    public virtual void HandleWeapon(Params weaponParams)
+    public virtual void Shoot(Params weaponParams)
     {
         if (weaponParams.triggerPressed)
         {
-            Trigger(weaponParams);
+            TriggerPressed(weaponParams);
         }
         else
         {
-            ReleaseTrigger();
+            TriggerReleased();
         }
     }
 
-    public virtual void Trigger(Params weaponParams) { }
+    public virtual void TriggerPressed(Params weaponParams) { }
     
-    public virtual void ReleaseTrigger()
+    public virtual void TriggerReleased()
     {
-        if(!_triggerPressed) return;
+        if(!m_triggerPressed) return;
         
-        _triggerPressed = false;
+        m_triggerPressed = false;
     }
 
     protected virtual void UpdateAnimation()

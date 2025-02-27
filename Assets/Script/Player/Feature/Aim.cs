@@ -5,15 +5,20 @@ public class Aim : PlayerFeature
     private Transform m_arm;
     private WeaponComponent m_weaponComponent;
 
-    public Aim(NetController pController) : base(pController)
+    public override void Init(NetController pController)
     {
-        m_arm = pController.Arm;
-        m_weaponComponent = pController.WeaponComponent;
+        m_arm = pController.playerComponent.arm;
+        m_weaponComponent = pController.weaponComponent;
     }
 
     public override void Process(NetInputPayLoad pInputPayLoad)
     {
         ProcessAim(pInputPayLoad.aimAngle);
+    }
+
+    public override void Process(NetStatePayLoad pStatePayLoad)
+    {
+        ProcessAim(pStatePayLoad.aimAngle);
     }
 
     private void ProcessAim(float aimAngle)

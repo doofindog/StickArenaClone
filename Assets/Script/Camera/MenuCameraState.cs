@@ -20,7 +20,7 @@ public class MenuCameraState : CameraState
         
         CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
         CustomNetworkEvents.DisconnectedEvent += HandleNetworkStopped;
-        PlayerEvents.PlayerSpawnedEvent += HandlePlayerConnected;
+        LocalPlayerEvents.LocalPlayerSpawnedEvent += HandlePlayerConnected;
         
         UpdateNextLocation();
         
@@ -64,7 +64,7 @@ public class MenuCameraState : CameraState
     {
         CustomNetworkEvents.NetworkStartedEvent -= MoveCameraToCenter;
         CustomNetworkEvents.DisconnectedEvent -= HandleNetworkStopped;
-        PlayerEvents.PlayerSpawnedEvent -= HandlePlayerConnected;
+        LocalPlayerEvents.PlayerSpawnedEvent -= HandlePlayerConnected;
     }
     
     

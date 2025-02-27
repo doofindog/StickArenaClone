@@ -61,16 +61,11 @@ public class ConnectionManager : NetworkBehaviour
 
             PublicPlayerData publicPlayerData = new PublicPlayerData()
             {
+                clientID = pApprovalRequest.ClientNetworkId,
                 username = connectionPayload.userName,
             };
 
-            ClientData clientData = new ClientData()
-            {
-                clientID = pApprovalRequest.ClientNetworkId,
-                publicPlayerData = publicPlayerData,
-            };
-
-            SessionManager.Instance.AddClientToSession(clientData);
+            SessionManager.Instance.AddClientToSession(publicPlayerData);
         }
     }
 

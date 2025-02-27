@@ -7,8 +7,23 @@ using UnityEngine;
 [System.Serializable]
 public struct PublicPlayerData : INetworkSerializable, System.IEquatable<PublicPlayerData>
 {
+    public bool isNull;
+    public bool isConnected;
+    public ulong clientID;
+    public NetworkObjectReference networkObject;
     public FixedString32Bytes username;
     public TeamType teamType;
+
+    public static PublicPlayerData NullableData
+    {
+        get
+        {
+            return new PublicPlayerData()
+            {
+                isNull = true
+            };
+        }
+    }
 
     public bool Equals(PublicPlayerData other)
     {
@@ -17,15 +32,10 @@ public struct PublicPlayerData : INetworkSerializable, System.IEquatable<PublicP
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
-        if (serializer.IsReader)
-        {
-            FastBufferReader reader = serializer.GetFastBufferReader();
-            reader.ReadValueSafe(out username);
-        }
-        else
-        {
-            FastBufferWriter writer = serializer.GetFastBufferWriter();
-            writer.WriteValueSafe(username);
-        }
+        serializer.SerializeValue(ref isNull);
+        serializer.SerializeValue(ref isConnected);
+        serializer.SerializeValue(ref clientID);
+        serializer.SerializeValue(ref username);
+        serializer.SerializeValue(ref teamType);
     }
 }

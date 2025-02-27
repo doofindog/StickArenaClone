@@ -10,32 +10,32 @@ namespace CrazyGames.WindowComponents
     {
         public static void RenderGUI()
         {
-            if (typeof(PlayerSettings.WebGL).GetProperty("compressionFormat") != null)
+            if (typeof(UnityEditor.PlayerSettings.WebGL).GetProperty("compressionFormat") != null)
             {
-                var compressionOk = PlayerSettings.WebGL.compressionFormat == WebGLCompressionFormat.Brotli;
-                Action fixCompression = () => { PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli; };
+                var compressionOk = UnityEditor.PlayerSettings.WebGL.compressionFormat == WebGLCompressionFormat.Brotli;
+                Action fixCompression = () => { UnityEditor.PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli; };
                 RenderFixableItem("Brotli compression", compressionOk, fixCompression);
             }
 
-            if (typeof(PlayerSettings.WebGL).GetProperty("nameFilesAsHashes") != null)
+            if (typeof(UnityEditor.PlayerSettings.WebGL).GetProperty("nameFilesAsHashes") != null)
             {
-                var nameAsHashesOk = PlayerSettings.WebGL.nameFilesAsHashes;
-                Action fixNameAsHashes = () => { PlayerSettings.WebGL.nameFilesAsHashes = true; };
+                var nameAsHashesOk = UnityEditor.PlayerSettings.WebGL.nameFilesAsHashes;
+                Action fixNameAsHashes = () => { UnityEditor.PlayerSettings.WebGL.nameFilesAsHashes = true; };
                 RenderFixableItem("Name file as hashes", nameAsHashesOk, fixNameAsHashes);
             }
 
-            if (typeof(PlayerSettings.WebGL).GetProperty("exceptionSupport") != null)
+            if (typeof(UnityEditor.PlayerSettings.WebGL).GetProperty("exceptionSupport") != null)
             {
-                var exceptionsOk = PlayerSettings.WebGL.exceptionSupport == WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly;
-                Action fixExceptions = () => { PlayerSettings.WebGL.exceptionSupport = WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly; };
+                var exceptionsOk = UnityEditor.PlayerSettings.WebGL.exceptionSupport == WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly;
+                Action fixExceptions = () => { UnityEditor.PlayerSettings.WebGL.exceptionSupport = WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly; };
                 RenderFixableItem("Exception support", exceptionsOk, fixExceptions,
                     "The \"Fix\" button sets exception support to \"Explicitly thrown exceptions only\". You can choose \"None\" in Player Settings for better performance, but first of all read about it on our developer documentation.");
             }
 
-            if (typeof(PlayerSettings).GetProperty("stripEngineCode") != null)
+            if (typeof(UnityEditor.PlayerSettings).GetProperty("stripEngineCode") != null)
             {
-                var stripEngineCodeOk = PlayerSettings.stripEngineCode;
-                Action fixStripEngineCode = () => { PlayerSettings.stripEngineCode = true; };
+                var stripEngineCodeOk = UnityEditor.PlayerSettings.stripEngineCode;
+                Action fixStripEngineCode = () => { UnityEditor.PlayerSettings.stripEngineCode = true; };
                 RenderFixableItem("Strip engine code", stripEngineCodeOk, fixStripEngineCode,
                     "To decrease the bundle size even more, you can select Medium or High stripping from Player Settings, but first of all read about them on our developer documentation.");
             }

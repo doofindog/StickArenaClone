@@ -64,17 +64,7 @@ public class RangedWeapon : Weapon, IReloadable
         _unequipedWeaponObj.SetActive(false);
     }
 
-    public override void HandleWeapon(Weapon.Params weaponParams)
-    {
-        base.HandleWeapon(weaponParams);
-
-        if (weaponParams.reloadPressed)
-        {
-            Reload();
-        }
-    }
-
-    public override void Trigger(Weapon.Params weaponParams)
+    public override void TriggerPressed(Weapon.Params weaponParams)
     {
         if (totalAmmo == 0 && ammoInClip == 0)
         {
@@ -100,25 +90,22 @@ public class RangedWeapon : Weapon, IReloadable
             }
             case FireType.Burst:
             {
-                HandleBurstFire();
                 break;
             }
             case FireType.Auto:
             {
-                HandleAutoFire();
                 break;
             }
             case FireType.Charge:
             {
-                HandleChargeFire();
                 break;
             }
         }
     }
 
-    public override void ReleaseTrigger()
+    public override void TriggerReleased()
     {
-        base.ReleaseTrigger();
+        base.TriggerReleased();
         
         if (chargeTimer > _weaponData.chargeTime && chargeComplete)
         {
@@ -132,80 +119,15 @@ public class RangedWeapon : Weapon, IReloadable
         }
     }
 
-    private void HandleChargeFire()
-    {
-        if(weaponState != global::WeaponState.Ready) return;
-
-        if (!chargeComplete)
-        {
-            chargeTimer += TickManager.Instance.GetMinTickTime();
-            if (!(chargeTimer > _weaponData.chargeTime)) return;
-            chargeComplete = true;
-            weaponState = global::WeaponState.Fired;
-            FireBullet();
-            
-                    
-            if(TryGetComponent(out AudioSource source))
-            {
-                source.PlayOneShot(fireAudio);
-            } 
-
-            StartCoroutine(ResetFireRate());
-        }
-    }
-
     protected virtual void HandleSingleFire()
     {
-        if(_triggerPressed || weaponState != global::WeaponState.Ready) return;
-        
-        _triggerPressed = true;
-        weaponState = global::WeaponState.Fired;
-        FireBullet();
-        
-                
-        if(TryGetComponent(out AudioSource source))
+        if (weaponState != global::WeaponState.Ready)
         {
-            source.PlayOneShot(fireAudio);
-        }
-        
-        StartCoroutine(ResetFireRate());
-    }
-
-    protected virtual void HandleBurstFire()
-    {
-        if(weaponState != global::WeaponState.Ready) return;
-
-        weaponState = global::WeaponState.Fired;
-        _triggerPressed = true;
-        
-        StartCoroutine(BurstFire());
-    }
-
-    private IEnumerator BurstFire()
-    {
-        for (int i = 0; i < _weaponData.burstBulletCount; i++)
-        {
-                    
-            if(TryGetComponent(out AudioSource source))
-            {
-                source.PlayOneShot(fireAudio);
-            }
-            
-            FireBullet();
-
-            yield return new WaitForSeconds(_weaponData.burstFireRate);
+            return;
         }
 
-        StartCoroutine(ResetFireRate());
-    }
-
-    protected virtual void HandleAutoFire()
-    {
-        if(weaponState != global::WeaponState.Ready) return;
-        
         FireBullet();
-        
-                
+               
         if(TryGetComponent(out AudioSource source))
         {
             source.PlayOneShot(fireAudio);
@@ -216,14 +138,10 @@ public class RangedWeapon : Weapon, IReloadable
 
     protected virtual void FireBullet()
     {
-        Debug.Log("Called");
-        
         if (muzzleFlare != null)
         {
             muzzleFlare.Play();
         }
-        
-        weaponState = global::WeaponState.Fired;
         
         Debugger.Log("[weapon] fire bullet called");
 
@@ -243,6 +161,35 @@ public class RangedWeapon : Weapon, IReloadable
         }
         
         _animator.Play("Fire");
+        weaponState = WeaponState.Fired;
+        FireWeaponClientRPC(playerClientID);
+        StartCoroutine(ResetFireRate());
+    }
+
+    [ClientRpc]
+    public void FireWeaponClientRPC(ulong clientID)
+    {
+        if(clientID == NetworkManager.Singleton.LocalClientId)
+        {
+            return;
+        }
+
+        if (muzzleFlare != null)
+        {
+            muzzleFlare.Play();
+        }
+
+        Debugger.Log("[weapon] fire bullet called");
+
+        //int index = _weaponParams.tick % _weaponData.recoilPattern.Length;
+        //float rotation = _weaponData.recoilPattern[index] * _weaponData.spread;
+        //Quaternion bulletRotation = barrelTransform.rotation * Quaternion.Euler(0, 0, rotation);
+
+        Quaternion bulletRotation = barrelTransform.rotation;
+
+        GameObject bulletNetObj = ObjectPool.Instance.GetPooledObject(_weaponData.bulletPrefab, barrelTransform.position, bulletRotation);
+        Bullet bullet = bulletNetObj.GetComponent<Bullet>();
+        bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
     }
     
 
@@ -268,9 +215,7 @@ public class RangedWeapon : Weapon, IReloadable
     }
     
     protected IEnumerator ResetFireRate()
-    {
-        weaponState = global::WeaponState.ResettingFireRate;
-        
+    {        
         yield return new WaitForSeconds(_weaponData.fireRate);
         
         SetWeaponAsReady();
@@ -299,7 +244,7 @@ public class RangedWeapon : Weapon, IReloadable
     {
         switch (newState)
         {
-            case global::WeaponState.ResettingFireRate:
+            case global::WeaponState.Fired:
                 if (weaponOwner.IsOwner)
                 {
                     

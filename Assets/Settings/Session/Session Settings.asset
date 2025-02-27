@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cassetAudioTime: 1
   TurnOnScreenTime: 3
-  maxConnections: 1
+  maxConnections: 2
   countDownTime: 3
   playerRespawnTime: 3
   defaultWeapon: {fileID: 11347924877574632, guid: 29bf7527f826d419e9eefe3c78630a6c,
