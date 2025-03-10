@@ -3,6 +3,8 @@
 https://github.com/user-attachments/assets/9d2c445e-63d7-42dd-9f29-727443c44c4e
 
 
+## Game Updates 
+I'm currently working on refactoring my game in the Version 2.0 branch : https://github.com/doofindog/Pixel_Arena/tree/Version-2.0
 
 # Introduction
 Welcome to Pixel Arena, a retro-style 2D pixel art top-down shooter where two players battle it out for crowns, the only currency in a dystopian land. In this harsh world, some are born with crowns, enjoying the privileges and power they bring, while others must earn them through fierce combat in the arena. Players must please the higher-ups by proving their prowess in battle, striving to collect as many crowns as possible. With fast-paced action gameplay, and a visually nostalgic aesthetic, Pixel Arena challenges players to outmaneuver and outgun their opponents in a bid for survival and supremacy.
