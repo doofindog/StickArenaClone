@@ -11,9 +11,9 @@ public class PlayerInputHandler : NetworkBehaviour
     private PlayerData _dataHandler;
     [SerializeField] private InputReader _inputReader;
 
-    public void Init(NetController netController)
+    public void Init(Player pPlayer)
     {
-        _dataHandler = GetComponent<PlayerData>();
+        _dataHandler = pPlayer.playerData;
 
         _inputReader.MoveEvent += HandleMovePressed;
         _inputReader.AttackEvent += HandleAttackPressed;

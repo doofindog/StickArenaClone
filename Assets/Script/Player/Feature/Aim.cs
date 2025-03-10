@@ -5,10 +5,10 @@ public class Aim : PlayerFeature
     private Transform m_arm;
     private WeaponComponent m_weaponComponent;
 
-    public override void Init(NetController pController)
+    public override void Init(Player pPlayer)
     {
-        m_arm = pController.playerComponent.arm;
-        m_weaponComponent = pController.weaponComponent;
+        m_arm = pPlayer.arm;
+        m_weaponComponent = pPlayer.weaponComponent;
     }
 
     public override void Process(NetInputPayLoad pInputPayLoad)

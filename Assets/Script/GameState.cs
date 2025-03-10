@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
 using Unity.Netcode;
 
@@ -9,14 +6,15 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
+using PixelArena.UI;
+
 public class GameState : BaseGameState
 {
-    [SerializeField] private GameObject defaultWeapon;
-    [SerializeField] private Volume _postProcessVolume;
+    [SerializeField] private Volume m_postProcessVolume;
     [SerializeField] private AudioClip gameMusic;
 
-    public bool gameStarted;
-
+    private bool m_gameStarted;
+    public bool GameStarted => m_gameStarted;
     public void Awake()
     {
         GameEvents.TeamWonEvent += StopGame;
@@ -31,23 +29,20 @@ public class GameState : BaseGameState
 
         void HandleClient()
         {
-            UIManager.Instance.ReplaceScreen(Screens.Game);
-            //ScoreManager.Instance.Reset();
-
-            if (_postProcessVolume != null)
+            if (m_postProcessVolume != null)
             {
-                if (_postProcessVolume.profile.TryGet(out LensDistortion lensDistortion))
+                if (m_postProcessVolume.profile.TryGet(out LensDistortion lensDistortion))
                 {
                     lensDistortion.active = false;
                 }
 
-                if (_postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection))
+                if (m_postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection))
                 {
-                    paniniProjection.distance.value = 0.01f;
-                    paniniProjection.cropToFit.value = 0.632f;
+                    paniniProjection.distance.value = 0.253f;
+                    paniniProjection.cropToFit.value = 1.0f;
                 }
 
-                if (_postProcessVolume.profile.TryGet(out Bloom bloom))
+                if (m_postProcessVolume.profile.TryGet(out Bloom bloom))
                 {
                     bloom.intensity.value = 2.0f;
                 }
@@ -56,23 +51,7 @@ public class GameState : BaseGameState
             ClientConnectedToStateServerRPC();
         }
 
-#if SERVER
-        HandleServer();
-
-#elif CLIENT
-        HandleClient();
-#elif UNITY_EDITOR
-        GameManager.GameType gameType = GameManager.Instance.GetGameType();
-        if (gameType == GameManager.GameType.SERVER)
-        {
-            HandleServer();
-        }
-        else if (gameType == GameManager.GameType.CLIENT)
-        {
-            HandleClient();
-        }
-
-#endif
+        GameUtilt.ExecuteNetworkCode(HandleServer, HandleClient);
     }
 
     public override void OnExit()
@@ -85,21 +64,9 @@ public class GameState : BaseGameState
             tvController.TurnOff();
         }
     }
-
-    private void TryStartGame()
-    {
-        bool sessionCountCheck = SessionManager.Instance.GetConnectedClientCount() == GameManager.Instance.GetSessionSettings().maxConnections;
-        bool canStartGame =  sessionCountCheck && gameStarted == false;
-        if (canStartGame)
-        {
-            gameStarted = true;
-            StartCoroutine(StartGame());
-        }
-    }
     
     private IEnumerator StartGame()
     {
-
         GameSettings sessionSettings = GameManager.Instance.GetSessionSettings();
 
         yield return new WaitForSeconds(sessionSettings.countDownTime);
@@ -156,8 +123,6 @@ public class GameState : BaseGameState
     [ClientRpc]
     private void StartGameClientRPC()
     {
-        Debug.Log("Client rpc Called");
-
         GameEvents.SendStartGameEvent();
 
         if (gameMusic != null)
@@ -169,6 +134,12 @@ public class GameState : BaseGameState
     [ServerRpc(RequireOwnership = false)]
     private void ClientConnectedToStateServerRPC()
     {
-        TryStartGame();
+        bool sessionCountCheck = SessionManager.Instance.GetConnectedClientCount() == GameManager.Instance.GetSessionSettings().maxConnections;
+        bool canStartGame = sessionCountCheck && m_gameStarted == false;
+        if (canStartGame)
+        {
+            m_gameStarted = true;
+            StartCoroutine(StartGame());
+        }
     }    
 }

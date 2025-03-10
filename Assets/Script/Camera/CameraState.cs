@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class CameraState : MonoBehaviour
 {
+    public virtual void Init(CameraController pCameraController)
+    {
+
+    }
+
     public virtual void Enter()
     {
         

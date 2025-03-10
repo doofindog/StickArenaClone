@@ -3,26 +3,45 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameoverScreen : MonoBehaviour
+namespace PixelArena.UI
 {
-    [SerializeField] private TMP_Text teamText;
-    [SerializeField] private TMP_Text wonText;
-    [SerializeField] private Animator anim;
-
-    public void SetText(TeamType teamType)
+    public class GameoverScreen : Screen
     {
-        if (teamText != null)
+        [SerializeField] private TMP_Text m_teamText;
+        [SerializeField] private TMP_Text m_wonText;
+        [SerializeField] private Animator m_anim;
+
+        public override void Init()
         {
-            if(!teamText.TryGetComponent(out teamText))
-            {
-                return;
-            }
+
         }
 
-        Team team = TeamManager.Instance.GetTeamFromType(teamType);
-        teamText.color = team.color;
-        teamText.text = teamType.ToString();
-        
-        anim.Play("ShowText");
+        public override void OnEnter()
+        {
+
+        }
+
+        public override void OnExit()
+        {
+
+        }
+
+        public void SetText(TeamType teamType)
+        {
+            if (m_teamText != null)
+            {
+                if (!m_teamText.TryGetComponent(out m_teamText))
+                {
+                    return;
+                }
+            }
+
+            Team team = TeamManager.Instance.GetTeamFromType(teamType);
+            m_teamText.color = team.color;
+            m_teamText.text = teamType.ToString();
+
+            m_anim.Play("ShowText");
+        }
     }
 }
+

@@ -5,6 +5,8 @@ using System.Linq;
 using UnityEngine;
 using Unity.Netcode;
 
+using PixelArena.UI;
+
 #if UNITY_EDITOR
 using Unity.Multiplayer.Playmode;
 #endif
@@ -29,9 +31,9 @@ public class GameManager : NetworkBehaviour
     public TeamManager teamManager;
     public ScoreManager scoreManager;
     public SessionManager sessionManager;
+    public UIManager uIManager;
 
     [Header("Settings")]
-    public bool startServerOnBoot;
     public GameSettings sessionSettings;
 
     private BaseGameState m_currentState;
@@ -53,18 +55,6 @@ public class GameManager : NetworkBehaviour
         {
             Instance = this;
         }
-
-#if UNITY_EDITOR
-        string[] multiplayTag = CurrentPlayer.ReadOnlyTags();
-        if(multiplayTag.Contains("CLIENT"))
-        {
-            m_gameType = GameType.CLIENT;
-        }
-        else if(multiplayTag.Contains("SERVER"))
-        {
-            m_gameType = GameType.SERVER;
-        }
-#endif
     }
 
     public void Start()
@@ -75,40 +65,50 @@ public class GameManager : NetworkBehaviour
 
     private void Initialise()
     {
+        SessionManager.AllPlayersConnectedEvent += StartGameSession;
+
         Cursor.visible = false;
 
-        m_gameStates.Add(EGameStates.MENU, GetComponent<MenuState>());
-        m_gameStates.Add(EGameStates.GAME, GetComponent<GameState>());
-        m_gameStates.Add(EGameStates.OVER, GetComponent<GameOverState>());
-
+        m_gameStates.Add(EGameStates.MENU, GetComponentInChildren<MenuState>());
+        m_gameStates.Add(EGameStates.GAME, GetComponentInChildren<GameState>());
+        m_gameStates.Add(EGameStates.OVER, GetComponentInChildren<GameOverState>());
 
         connectionManager ??= ConnectionManager.Instance;
         tickManager ??= TickManager.Instance;
         teamManager ??= TeamManager.Instance;
         sessionManager ??= SessionManager.Instance;
+        uIManager ??= UIManager.Instance;
 
         connectionManager.Init();
         tickManager.Init();
         teamManager.Init();
         sessionManager.Init();
+        uIManager.Init();
 
-        InitialiseServer();
+        void HandleServer()
+        {
+            m_gameType = GameType.SERVER;
+            connectionManager.StartServer();
+        }
+
+        void HandleClient()
+        {
+            m_gameType = GameType.CLIENT;
+        }
+
+        GameUtilt.ExecuteNetworkCode(HandleServer, HandleClient);
 
         SwitchState(EGameStates.MENU);
     }
 
-    public void InitialiseServer()
+    public void StartGameSession()
     {
-        string[] tag = CurrentPlayer.ReadOnlyTags();
-
-        if (tag.Contains("SERVER"))
+        void HandleServer()
         {
-            connectionManager.StartServer();
+            SwitchState(EGameStates.GAME, 3);
         }
 
-#if SERVER
-        connectionManager.StartServer();
-#endif
+        GameUtilt.ExecuteNetworkCode(HandleServer, null);
     }
 
     public void SwitchState(EGameStates state, int delay = 0)
@@ -128,8 +128,10 @@ public class GameManager : NetworkBehaviour
         m_currentState = GetGameState(state);
         m_currentState.OnEnter();
 
-        Debugger.Log("[GAME_MANAGER] Game State has been Changed");
-        GameEvents.SendGameStateChange(state);
+        if(IsServer)
+        {
+            SwitchStateClientRPC(state, delay);
+        }
     }
 
     private IEnumerator SwitchStateDelayed(int delay, EGameStates state)
@@ -154,6 +156,17 @@ public class GameManager : NetworkBehaviour
     {
         return sessionSettings;
     }
+
+    #region RPCS
+
+    [ClientRpc]
+    public void SwitchStateClientRPC(EGameStates pGameState, int delay = 0)
+    {
+        SwitchState(pGameState, delay);
+    }
+
+    #endregion
+
 
 #if UNITY_EDITOR
     public GameType GetGameType()

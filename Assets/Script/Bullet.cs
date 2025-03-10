@@ -13,12 +13,13 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     private int _id;
     private bool _isEnabled;
     private bool _hasHitObstacle;
-    private int _damage;
-    private float _life;
-    private float _speed;
-    private Vector3 _startPosition;
-    private NetworkVariable<ulong> _playerNetID = new NetworkVariable<ulong>();
-    private Animator _animator;
+    private int m_damage;
+    private float m_life;
+    private float m_speed;
+    private float m_rtt;
+    private float m_inputDelay;
+    private Vector3 m_startPosition;
+    private NetworkVariable<ulong> m_playerNetID = new NetworkVariable<ulong>();
 
     public override void OnNetworkDespawn()
     {
@@ -48,7 +49,7 @@ public class Bullet : NetworkBehaviour, ITickableEntity
     public void OnEnable()
     {
         _isEnabled = true;
-        _life = 0;
+        m_life = 0;
     }
 
     public void OnDisable()
@@ -63,57 +64,38 @@ public class Bullet : NetworkBehaviour, ITickableEntity
         TickManager.Instance.RemoveEntity(this);
     }
 
-    public void Initialise(ulong playerID, int damage, float bulletSpeed)
+    public void Initialise(ulong playerID, int damage, float bulletSpeed, float time = 0)
     {
-        _playerNetID.Value = playerID;
-        _speed = bulletSpeed;
-        _damage = damage;
-        _startPosition = transform.position;
-    }
-
-    public void Start()
-    {
-        _animator = GetComponent<Animator>();
+        m_playerNetID.Value = playerID;
+        m_speed = bulletSpeed;
+        m_rtt = NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(playerID);
+        m_inputDelay = time - NetworkManager.Singleton.ServerTime.TimeAsFloat;
+        m_damage = damage;
+        m_startPosition = transform.position;
     }
 
     public void FixedUpdate()
     {
-        transform.position += transform.right * (_speed * Time.fixedDeltaTime);
-        _life += Time.fixedDeltaTime;
-
-        if (_life > BULLET_LIFE)
-        {
-            HandleImpact();
-        }
+        transform.position += transform.right * (m_speed * Time.fixedDeltaTime);
+        m_life += Time.fixedDeltaTime;
     }
 
     public void OnTriggerEnter2D(Collider2D other)
     {
-        //if (other.gameObject.TryGetComponent(out NetworkObject networkObject))
-        //{
-        //    bool canTakeDamage = networkObject.NetworkObjectId != _playerNetID.Value;
-        //    if (canTakeDamage)
-        //    {
-        //        if (other.TryGetComponent(out HitDetector hitDetector))
-        //        {
-        //            HitResponseData responseData = new HitResponseData()
-        //            {
-        //                hitTime = NetworkManager.Singleton.ServerTime.TimeAsFloat,
-        //                damage = _damage,
-        //                sourceID = _playerNetID.Value,
-        //                hitId = NetworkManager.LocalClient.ClientId,
-        //                hitPosition =  other.transform.position,
-        //                traceStart = _startPosition,
-        //                projectileRotation = transform.rotation,
-        //                hitVelocity = _speed * TickManager.Instance.GetMinTickTime(),
-        //                projectileDirection = (transform.position + transform.right) - transform.position
-        //            };
-                    
+        if (NetworkManager.LocalClientId == m_playerNetID.Value && (other.gameObject.TryGetComponent(out IDamageableEntity damageableEntity)))
+        {
+            Debug.Log("bullet collided with player");
+            HitResponseData hitResponseData = new HitResponseData()
+            {
+                hitTime = NetworkManager.Singleton.ServerTime.TimeAsFloat,
+                hitVelocity = m_speed,
+                traceStart = m_startPosition,
+                projectileDirection = (transform.position + transform.right) - transform.position,
+                damage = m_damage,
+            };
 
-        //            hitDetector.Hit(responseData);
-        //        }
-        //    }
-        //}
+            damageableEntity.TakeDamage(hitResponseData);
+        }
 
         HandleImpact();
     }

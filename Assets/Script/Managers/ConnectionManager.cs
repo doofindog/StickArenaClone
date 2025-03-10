@@ -69,14 +69,12 @@ public class ConnectionManager : NetworkBehaviour
         }
     }
 
-    public void TryJoin(string pUsername, string joinCode = "")
+    public void StartClient(string pUsername, string joinCode = "")
     {
         ConnectionPayload payload = new ConnectionPayload() { userName = pUsername };
         string payloadJSON = JsonUtility.ToJson(payload);
         NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.UTF8.GetBytes(payloadJSON);
         NetworkManager.Singleton.StartClient();
-
-        CustomNetworkEvents.SendNetworkStartedEvent();
     }
 
     public void StartServer(string username="")

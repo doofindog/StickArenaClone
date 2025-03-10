@@ -12,6 +12,7 @@ public class SessionManager : NetworkBehaviour
     public Dictionary<ulong, string> clientIdToPlayerID = new Dictionary<ulong, string>();
     public Dictionary<string, PublicPlayerData> publicPlayerDataCollection = new Dictionary<string, PublicPlayerData>();
 
+    public static Action AllPlayersConnectedEvent;
     public static SessionManager Instance { get; private set; }
 
     private void HandleClientDisconnected(ulong pClientId)
@@ -61,8 +62,7 @@ public class SessionManager : NetworkBehaviour
             return;
         }
 
-        CustomNetworkEvents.SendAllPlayersConnectedEvent();
-        StartSessionClientRPC();
+        AllPlayersConnectedEvent?.Invoke();
     }
 
     private void CleanData()
@@ -223,12 +223,6 @@ public class SessionManager : NetworkBehaviour
 
 
     #region ----------> RPC <----------
-
-    [ClientRpc]
-    private void StartSessionClientRPC()
-    {
-        CustomNetworkEvents.SendAllPlayersConnectedEvent();
-    }
 
     [ClientRpc]
     private void UpdateAllPlayerDataClientRpc(PublicPlayerData[] pPlayerData)

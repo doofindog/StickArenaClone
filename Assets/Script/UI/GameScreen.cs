@@ -1,51 +1,70 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-public class GameScreen : MonoBehaviour
+namespace PixelArena.UI
 {
-    [SerializeField] private PreGameUI prePanel;
-    [SerializeField] private DeathPanel deathPanel;
-    [SerializeField] private scoreUI scoreUI;
-    [SerializeField] private GameObject playerHealth;
-    
-    public void Awake()
+    public class GameScreen : Screen
     {
-        LocalPlayerEvents.PlayerDiedEvent += DisplayDeathScreen;
-        GameEvents.PreparingArenaEvent += DisplayPreGameScreen;
-        GameEvents.OnGameStartEvent += DisplayGameUI;
-    }
+        [SerializeField] private PreGameUI prePanel;
+        [SerializeField] private DeathPanel deathPanel;
+        [SerializeField] private scoreUI scoreUI;
+        [SerializeField] private GameObject playerHealth;
 
-    private void DisplayGameUI()
-    {
-        void HandleServer()
+        public override void Init()
         {
-
+            PlayerEvents.PlayerDiedEvent += DisplayDeathScreen;
+            GameEvents.PreparingArenaEvent += DisplayPreGameScreen;
+            GameEvents.OnGameStartEvent += DisplayGameUI;
         }
 
-        void HandlerClient()
+        public override void OnEnter()
         {
-            playerHealth.SetActive(true);
+            void HandleServer()
+            {
+                playerHealth.SetActive(false);
+                prePanel.gameObject.SetActive(true);
+            }
+
+            void HandleClient()
+            {
+                playerHealth.SetActive(true);
+            }
+
+            deathPanel.gameObject.SetActive(false);
             scoreUI.gameObject.SetActive(true);
+
+            GameUtilt.ExecuteNetworkCode(HandleServer, HandleClient);
         }
 
-        GameUtilt.ExecuteNetworkCode(HandleServer, HandlerClient);
-    }
+        public override void OnExit()
+        {
+            
+        }
 
-    private void DisplayDeathScreen()
-    {
-        deathPanel.gameObject.SetActive(true);
-    }
+        private void DisplayGameUI()
+        {
+            void HandlerClient()
+            {
+                playerHealth.SetActive(true);
+                scoreUI.gameObject.SetActive(true);
+            }
 
-    private void DisplayPreGameScreen()
-    {
-        prePanel.gameObject.SetActive(true);
-    }
-    
-    public void OnDestroy()
-    {
-        LocalPlayerEvents.PlayerDiedEvent -= DisplayDeathScreen;
+            GameUtilt.ExecuteNetworkCode(null, HandlerClient);
+        }
+
+        private void DisplayDeathScreen()
+        {
+            deathPanel.gameObject.SetActive(true);
+        }
+
+        private void DisplayPreGameScreen()
+        {
+            prePanel.gameObject.SetActive(true);
+        }
+
+        public void OnDestroy()
+        {
+            PlayerEvents.PlayerDiedEvent -= DisplayDeathScreen;
+        }
     }
 }
+

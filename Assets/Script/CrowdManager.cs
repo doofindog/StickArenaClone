@@ -20,7 +20,7 @@ public class CrowdManager : MonoBehaviour
         void HandleClient()
         {
             audioSource = audioSource.GetComponent<AudioSource>();
-            GameEvents.PlayerDiedEvent += Cheer;
+            GameEvents.UnitDiedEvent += Cheer;
             GameEvents.OnGameStartEvent += OnGameStart;
         }
 

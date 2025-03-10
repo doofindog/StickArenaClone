@@ -6,10 +6,10 @@ public class Movement : PlayerFeature
     private Transform m_transform;
     private Vector3 m_predictedPosition;
 
-    public override void Init(NetController pController)
+    public override void Init(Player pPlayer)
     {
-        m_data = pController.playerData;
-        m_transform = pController.transform;
+        m_data = pPlayer.playerData;
+        m_transform = pPlayer.transform;
     }
 
     public override void Process(NetInputPayLoad pInputPayLoad)

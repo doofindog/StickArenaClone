@@ -12,13 +12,14 @@ public class Weapon : NetworkBehaviour
     public class Params
     {
         public int tick;
+        public float time;
         public bool triggerPressed;
         public bool reloadPressed;
     }
     
     [SerializeField] protected WeaponDataScriptable _weaponData;
     
-    protected ulong playerClientID;
+    protected ulong WeaponOwner;
     [SerializeField] protected bool m_triggerPressed;
     protected Animator _animator;
     
@@ -33,7 +34,7 @@ public class Weapon : NetworkBehaviour
     public virtual void HandleOnEquipped(NetworkObject playerNetObj)
     {
         weaponOwner = playerNetObj;
-        playerClientID = playerNetObj.OwnerClientId;
+        WeaponOwner = playerNetObj.OwnerClientId;
     }
 
     public virtual void Shoot(Params weaponParams)
@@ -70,7 +71,7 @@ public class Weapon : NetworkBehaviour
     public void Reset()
     {
         weaponOwner = null;
-        playerClientID = 0;
+        WeaponOwner = 0;
         
         ParentConstraint parentConstraint = GetComponent<ParentConstraint>();
         for(int i = 0; i< parentConstraint.sourceCount; i++)

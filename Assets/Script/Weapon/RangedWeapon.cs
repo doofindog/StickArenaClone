@@ -13,9 +13,11 @@ public class RangedWeapon : Weapon, IReloadable
     [Header("Weapon Data")]
     public int ammoInClip;
     public int totalAmmo;
+
+    public AnticipatedNetworkVariable<int> ammoInClipAnticipated;
+    public AnticipatedNetworkVariable<int> totalAmmoAnticipated;
     
     [SerializeField] protected MuzzleFlare muzzleFlare;
-    [SerializeField] protected ChargeEffect _chargeEffect;
     [SerializeField] protected Transform barrelTransform;
     [SerializeField] protected FireType fireType;
     [SerializeField] protected WeaponState weaponState;
@@ -142,27 +144,21 @@ public class RangedWeapon : Weapon, IReloadable
         {
             muzzleFlare.Play();
         }
-        
-        Debugger.Log("[weapon] fire bullet called");
 
-        int index = _weaponParams.tick % _weaponData.recoilPattern.Length;
-        float rotation = _weaponData.recoilPattern[index] * _weaponData.spread;
-        Quaternion bulletRotation = barrelTransform.rotation * Quaternion.Euler(0, 0, rotation);
-
-        GameObject bulletNetObj = ObjectPool.Instance.GetPooledObject(_weaponData.bulletPrefab, barrelTransform.position, bulletRotation);
+        GameObject bulletNetObj = ObjectPool.Instance.GetPooledObject(_weaponData.bulletPrefab, barrelTransform.position, barrelTransform.rotation);
         Bullet bullet = bulletNetObj.GetComponent<Bullet>();
-        bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
+        bullet.Initialise(WeaponOwner, _weaponData.damage, _weaponData.bulletSpeed, _weaponParams.time);
 
         ammoInClip -= 1;
         
-        if (playerClientID == NetworkManager.Singleton.LocalClientId)
+        if (WeaponOwner == NetworkManager.Singleton.LocalClientId)
         {
-            GameEvents.SendWeaponFired();
+            PlayerEvents.SendWeaponFired();
         }
         
         _animator.Play("Fire");
         weaponState = WeaponState.Fired;
-        FireWeaponClientRPC(playerClientID);
+        FireWeaponClientRPC(WeaponOwner);
         StartCoroutine(ResetFireRate());
     }
 
@@ -179,17 +175,9 @@ public class RangedWeapon : Weapon, IReloadable
             muzzleFlare.Play();
         }
 
-        Debugger.Log("[weapon] fire bullet called");
-
-        //int index = _weaponParams.tick % _weaponData.recoilPattern.Length;
-        //float rotation = _weaponData.recoilPattern[index] * _weaponData.spread;
-        //Quaternion bulletRotation = barrelTransform.rotation * Quaternion.Euler(0, 0, rotation);
-
-        Quaternion bulletRotation = barrelTransform.rotation;
-
-        GameObject bulletNetObj = ObjectPool.Instance.GetPooledObject(_weaponData.bulletPrefab, barrelTransform.position, bulletRotation);
+        GameObject bulletNetObj = ObjectPool.Instance.GetPooledObject(_weaponData.bulletPrefab, barrelTransform.position, barrelTransform.rotation);
         Bullet bullet = bulletNetObj.GetComponent<Bullet>();
-        bullet.Initialise(playerClientID, _weaponData.damage, _weaponData.bulletSpeed);
+        bullet.Initialise(WeaponOwner, _weaponData.damage, _weaponData.bulletSpeed);
     }
     
 
@@ -224,32 +212,5 @@ public class RangedWeapon : Weapon, IReloadable
     private void SetWeaponAsReady()
     {
         weaponState = global::WeaponState.Ready;
-    }
-
-    protected override void UpdateAnimation()
-    {
-        if(_chargeEffect == null) return;
-
-        if (!chargeComplete)
-        {
-            _chargeEffect.Charge(chargeTimer, _weaponData.chargeTime);
-        }
-        else
-        {
-            _chargeEffect.Charge(0, _weaponData.chargeTime);
-        }
-    }
-
-    private void OnWeaponStateChanged(WeaponState oldState, WeaponState newState)
-    {
-        switch (newState)
-        {
-            case global::WeaponState.Fired:
-                if (weaponOwner.IsOwner)
-                {
-                    
-                }
-                break;
-        }
     }
 }

@@ -5,11 +5,13 @@ using Unity.Netcode;
 public class NetStateProcessor : NetworkBehaviour
 {
     private const int NETWORK_BUFFER_SIZE = 1024;
+    private const float MAX_TIME_STAMP = 0.5f;
 
     private NetStatePayLoad[] m_statePayLoads = new NetStatePayLoad[NETWORK_BUFFER_SIZE];
     private NetStatePayLoad m_lastServerState;
 
     public LinkedList<NetStatePayLoad> frameHistory = new LinkedList<NetStatePayLoad>();
+
     public NetStatePayLoad LastProcessedState { get; set; }
     public List<NetStatePayLoad> stateQueue = new List<NetStatePayLoad>();
 
@@ -20,6 +22,22 @@ public class NetStateProcessor : NetworkBehaviour
         m_statePayLoads[bufferIndex] = pNetStatePayLoad;
 
         LastProcessedState = pNetStatePayLoad;
+
+        if (frameHistory.Count <= 1)
+        {
+            frameHistory.AddFirst(LastProcessedState);
+        }
+        else
+        {
+            double historyLength = frameHistory.First.Value.time - frameHistory.Last.Value.time;
+            while (historyLength > MAX_TIME_STAMP)
+            {
+                frameHistory.RemoveLast();
+                historyLength = frameHistory.First.Value.time - frameHistory.Last.Value.time;
+            }
+
+            frameHistory.AddFirst(LastProcessedState);
+        }
 
         return m_statePayLoads[bufferIndex];
     }
@@ -33,7 +51,6 @@ public class NetStateProcessor : NetworkBehaviour
         }
 
         m_lastServerState = pNetStatePayLoads[pNetStatePayLoads.Length - 1];
-        //stateQueue.AddRange(pNetStatePayLoads);
     }
 
     public NetStatePayLoad GetServerState()

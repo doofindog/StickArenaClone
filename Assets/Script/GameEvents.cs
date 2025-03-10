@@ -15,29 +15,29 @@ public class GameEvents : MonoBehaviour
     {
         PreparingArenaEvent?.Invoke();
     }
-    
+
+    public static Action AllPlayersConnectedEvent;
+    public static void SendAllPlayersConnectedEvent()
+    {
+        AllPlayersConnectedEvent?.Invoke();
+    }
+
     public static Action OnGameStartEvent;
     public static void SendStartGameEvent()
     {
         OnGameStartEvent?.Invoke();
     }
     
-    public static Action<ulong> PlayerDiedEvent;
+    public static Action<ulong> UnitDiedEvent;
     public static void SendPlayerKilledEvent(ulong clientID)
     {
-        PlayerDiedEvent?.Invoke(clientID);
+        UnitDiedEvent?.Invoke(clientID);
     }
     
-    public static Action<ulong, NetworkObject> PlayerSpawnedEvent;
+    public static Action<ulong, NetworkObject> UnitSpawnedEvent;
     public static void SendPlayerSpawned(ulong clientId, NetworkObject networkObject)
     {
-        PlayerSpawnedEvent?.Invoke(clientId, networkObject);
-    }
-    
-    public static Action WeaponFiredEvent;
-    public static void SendWeaponFired()
-    {
-        WeaponFiredEvent?.Invoke();
+        UnitSpawnedEvent?.Invoke(clientId, networkObject);
     }
 
     public static Action<ulong> CrownAcquiredEvent;
@@ -56,12 +56,5 @@ public class GameEvents : MonoBehaviour
     public static void SendGameOver()
     {
         OnGameOverEvent?.Invoke();
-    }
-
-    public static Action<EGameStates> OnGameStateChange;
-
-    public static void SendGameStateChange(EGameStates gameState)
-    {
-        OnGameStateChange?.Invoke(gameState);
     }
 }

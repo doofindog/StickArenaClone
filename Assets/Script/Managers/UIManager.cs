@@ -5,83 +5,88 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public enum Screens
+namespace PixelArena.UI
 {
-    Menu = 0,
-    Game = 1,
-    GameOver = 2,
-    None = 3,
-}
-
-public class UIManager : Singleton<UIManager>
-{
-    [SerializeField] private Canvas _gameCanvas;
-    [SerializeField] private Canvas _tvCanvas;
-    [SerializeField] private Camera uiCamera;
-    [SerializeField] private GameObject[] screens;
-    [SerializeField] private TvController m_tvController;
-
-    public TvController TvController => m_tvController;
-
-    protected override void Awake()
+    public enum Screens
     {
-        base.Awake();
-        
-        GameEvents.OnGameStateChange += OnGameStateChange;
-        GameEvents.TeamWonEvent += TeamWonEvent;
-        _gameCanvas = GetComponent<Canvas>();
-
-        m_tvController = FindAnyObjectByType<TvController>();
+        Menu = 0,
+        Game = 1,
+        GameOver = 2,
+        None = 3,
     }
 
-    private void TeamWonEvent(TeamType obj)
+    public class UIManager : Singleton<UIManager>
     {
-        _gameCanvas.renderMode = RenderMode.ScreenSpaceCamera;
-        if (uiCamera != null)
+        [SerializeField] private Canvas m_gameCanvas;
+        [SerializeField] private Canvas m_tvCanvas;
+        [SerializeField] private Camera m_uiCamera;
+        [SerializeField] private Screen[] m_screens;
+        [SerializeField] private TvController m_tvController;
+
+        private Screen m_currentScreen;
+
+        public TvController TvController => m_tvController;
+
+        public void Init()
         {
-            _gameCanvas.worldCamera = uiCamera;
-        }
-    }
-
-    public GameObject ReplaceScreen(Screens screenEnum)
-    {
-        foreach (GameObject screen in screens)
-        {
-            screen.SetActive(false);
-        }
-
-        if (screens is { Length: > 0 } && (int)screenEnum < screens.Length)
-        {
-            screens[(int)screenEnum].SetActive(true);
-            return screens[(int)screenEnum];
-        }
-
-        return null;
-    }
-
-    public T GetScreen<T>(Screens screenEnum)
-    {
-        return screens[(int)screenEnum].GetComponent<T>();
-    }
-
-    private void OnGameStateChange(EGameStates state)
-    {
-        switch (state)
-        {
-            case EGameStates.GAME:
+            m_tvController ??= FindAnyObjectByType<TvController>();
+            if(m_tvController !=null)
             {
-                _gameCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                break;
+                m_tvController.gameObject.SetActive(true);
             }
-            case EGameStates.MENU:
+            else
             {
-                _gameCanvas.renderMode = RenderMode.ScreenSpaceCamera;
-                if (uiCamera != null)
-                {
-                    _gameCanvas.worldCamera = uiCamera;
-                }
-                break;
+                Debugger.Log("TV Controller not present", Debugger.DebugType.UI);
             }
+
+            GameEvents.TeamWonEvent += TeamWonEvent;
+
+            foreach (var screen in m_screens)
+            {
+                screen.Init();
+            }
+
+            m_gameCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+            if (m_uiCamera != null)
+            {
+                m_gameCanvas.worldCamera = m_uiCamera;
+            }
+
+            ReplaceScreen(Screens.Menu);
+        }
+
+        private void TeamWonEvent(TeamType obj)
+        {
+            m_gameCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+            if (m_uiCamera != null)
+            {
+                m_gameCanvas.worldCamera = m_uiCamera;
+            }
+        }
+
+        public Screen ReplaceScreen(Screens screenEnum)
+        {
+            if(m_currentScreen != null)
+            {
+                m_currentScreen.OnExit();
+                m_currentScreen.gameObject.SetActive(false);
+            }
+
+            if (m_screens is { Length: > 0 } && (int)screenEnum < m_screens.Length)
+            {
+                m_currentScreen = m_screens[(int)screenEnum];
+                m_currentScreen.gameObject.SetActive(true);
+                m_currentScreen.OnEnter();
+
+                return m_screens[(int)screenEnum];
+            }
+
+            return null;
+        }
+
+        public T GetScreen<T>(Screens screenEnum)
+        {
+            return m_screens[(int)screenEnum].GetComponent<T>();
         }
     }
 }

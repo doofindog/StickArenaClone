@@ -1,27 +1,20 @@
-using System.Collections;
 using System.Linq;
-using System.Runtime.Serialization;
-using Unity.Multiplayer.Playmode;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem.XR;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
+using PixelArena.UI;
+
+#if UNITY_EDITOR
+using Unity.Multiplayer.Playmode;
+#endif
+
 public class MenuState : BaseGameState
 {
-    [SerializeField] public AudioClip menuMusic;
-    [SerializeField] public AudioClip cassetteAudio;
-    [SerializeField] public AudioClip turnOffAudio;
-    [SerializeField] private Volume _postProcessVolume;
-
-    private bool _isFirst;
-
-    public void Awake()
-    {
-        _isFirst = true;
-        CustomNetworkEvents.AllPlayersConnectedEvent += LoadToGame;
-    }
+    [SerializeField] private AudioClip m_menuMusic;
+    [SerializeField] private AudioClip m_cassetteAudio;
+    [SerializeField] private AudioClip m_turnOffAudio;
+    [SerializeField] private Volume m_postProcessVolume;
 
     public override void OnEnter()
     {
@@ -36,11 +29,11 @@ public class MenuState : BaseGameState
             AudioManager.Instance.GetSource().pitch = 1;
             CameraController.Instance.ChangeState(ECameraState.MENU);
 
-            if (_postProcessVolume != null)
+            if (m_postProcessVolume != null)
             {
-                _postProcessVolume.profile.TryGet(out LensDistortion lensDistortion);
-                _postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
-                _postProcessVolume.profile.TryGet(out Bloom bloom);
+                m_postProcessVolume.profile.TryGet(out LensDistortion lensDistortion);
+                m_postProcessVolume.profile.TryGet(out PaniniProjection paniniProjection);
+                m_postProcessVolume.profile.TryGet(out Bloom bloom);
 
                 lensDistortion.active = true;
                 paniniProjection.active = true;
@@ -55,29 +48,13 @@ public class MenuState : BaseGameState
             ShowScreen();
         }
 
-#if SERVER
-        HandleServer();
-
-#elif CLIENT
-        HandleClient();
-#else
-        var tags = CurrentPlayer.ReadOnlyTags();
-        if (tags.Contains("CLIENT"))
-        {
-            HandleClient();
-        }
-        else if(tags.Contains("SERVER"))
-        {
-            Debug.Log("CALLED");
-            HandleServer();
-        }
-#endif
+        GameUtilt.ExecuteNetworkCode(HandleServer, HandleClient);
     }
 
     private void ShowScreen()
     {
         int audioDelay = GameManager.Instance.GetSessionSettings().cassetAudioTime;
-        AudioManager.Instance.PlayOneShot(cassetteAudio, audioDelay);
+        AudioManager.Instance.PlayOneShot(m_cassetteAudio, audioDelay);
 
         TvController tvController = UIManager.Instance.TvController;
         if(tvController)
@@ -90,12 +67,7 @@ public class MenuState : BaseGameState
     private void HandleSplashCompleted()
     {
         UIManager.Instance.ReplaceScreen(Screens.Menu);
-        AudioManager.Instance.Play(menuMusic);
-    }
-
-    private void LoadToGame()
-    {
-        GameManager.Instance.SwitchState(EGameStates.GAME);
+        AudioManager.Instance.Play(m_menuMusic);
     }
 
     public override void OnExit()
@@ -115,7 +87,7 @@ public class MenuState : BaseGameState
                 tvController.TurnOff();
             }
             AudioManager.Instance.Stop();
-            AudioManager.Instance.PlayOneShot(turnOffAudio);
+            AudioManager.Instance.PlayOneShot(m_turnOffAudio);
         }
 
 #if SERVER
@@ -134,9 +106,6 @@ public class MenuState : BaseGameState
         {
             HandleClient();
         }
-
 #endif
-
-
     }
 }

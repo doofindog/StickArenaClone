@@ -1,26 +1,34 @@
+using System.Linq;
 using UnityEngine;
 
 public class Debugger : MonoBehaviour
 {
-    public static void Log(string context)
+    private static string[] filters = new string[]
+    {
+            DebugType.Defualt.ToString(),
+            DebugType.UI.ToString(),
+            DebugType.Game.ToString(),
+            DebugType.Session.ToString(),
+            DebugType.Network.ToString(),
+    };
+
+    public static void Log(string context, DebugType pEnum = DebugType.Defualt)
     {
 #if DEBUGGER
-        string[] filters = new string[]
-        {
-            "COMMAND_ARGUMENTS",
-            "AWS"
-        };
 
-        bool print = true;
-        //for (int i = 0; i < filters.Length; i++)
-        //{
-        //    print = context.Contains(filters[i]);
-        //}
-
-        if (print)
+        if (filters.Contains(pEnum.ToString()))
         {
-            Debug.Log(context);
+            Debug.Log($"[{pEnum.ToString()}] :" + context);
         }
 #endif
+    }
+
+    public enum DebugType
+    {
+        UI,
+        Game,
+        Session,
+        Network,
+        Defualt
     }
 }

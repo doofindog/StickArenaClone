@@ -5,7 +5,7 @@ public class PlayerFeatureController : MonoBehaviour
 {
     [SerializeField] private List<PlayerFeature> m_features;
 
-    public void Init(NetController netController)
+    public void Init(Player player)
     {
         m_features = new List<PlayerFeature>();
 
@@ -13,10 +13,11 @@ public class PlayerFeatureController : MonoBehaviour
         m_features.Add(new Flip());
         m_features.Add(new Aim());
         m_features.Add(new Shoot());
+        m_features.Add(new TakeDamage());
 
         foreach(PlayerFeature feature in m_features)
         {
-            feature.Init(netController);
+            feature.Init(player);
         }
     }
 

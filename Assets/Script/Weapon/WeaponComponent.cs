@@ -30,8 +30,6 @@ public class WeaponComponent : NetworkBehaviour
         {
             TryPickUpWeapon();
         }
-
-
     }
     
     private void TryPickUpWeapon()

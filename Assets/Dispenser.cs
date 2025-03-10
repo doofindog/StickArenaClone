@@ -32,7 +32,7 @@ public class Dispenser : NetworkBehaviour
 
     public void Awake()
     {
-        GameEvents.OnGameStateChange += OnGameStateChanged;
+        //GameEvents.OnGameStateChange += OnGameStateChanged;
     }
 
     private void OnGameStateChanged(EGameStates state)

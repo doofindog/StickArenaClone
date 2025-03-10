@@ -14,10 +14,13 @@ public enum ECameraState
 
 public class CameraController : Singleton<CameraController>
 {
-    [SerializeField] private CameraState _currentState;
     [SerializeField] private Camera uiCamera;
-    private Dictionary<ECameraState,CameraState> _states = new Dictionary<ECameraState,CameraState>();
-    
+
+    private CameraState m_currentState;
+    private Dictionary<ECameraState,CameraState> m_states = new Dictionary<ECameraState,CameraState>();
+
+    public Transform target;
+
     protected override void Awake()
     {
         base.Awake();
@@ -28,10 +31,19 @@ public class CameraController : Singleton<CameraController>
 
         void HandleClient()
         {
-            _states.Add(ECameraState.MENU, gameObject.GetComponent<MenuCameraState>());
-            _states.Add(ECameraState.GAME, gameObject.GetComponent<FollowCameraState>());
+            m_states.Add(ECameraState.MENU, gameObject.GetComponent<MenuCameraState>());
+            m_states.Add(ECameraState.GAME, gameObject.GetComponent<FollowCameraState>());
+
+            foreach(CameraState state in m_states.Values)
+            {
+                state.Init(this);
+            }
 
             GameEvents.TeamWonEvent += OnTeamWon;
+            GameEvents.OnGameStartEvent += () =>
+            {
+                ChangeState(ECameraState.GAME);
+            };
         }
 
         GameUtilt.ExecuteNetworkCode(HandleServer, HandleClient);
@@ -51,22 +63,27 @@ public class CameraController : Singleton<CameraController>
     
     public void Update()
     {
-        if (_currentState != null)
+        if (m_currentState != null)
         {
-            _currentState.UpdateState();
+            m_currentState.UpdateState();
         }
     }
 
     public void ChangeState(ECameraState state)
     {
-        if (_currentState != null) {
-            _currentState.Exit();
+        if (m_currentState != null) {
+            m_currentState.Exit();
         }
         
-        _currentState = _states[state];
+        m_currentState = m_states[state];
 
-        if (_currentState != null) {
-            _currentState.Enter();
+        if (m_currentState != null) {
+            m_currentState.Enter();
         }
+    }
+
+    public void SetCameraTarget(Transform pTarget)
+    {
+        target = pTarget;
     }
 }

@@ -13,14 +13,14 @@ public class PlayerUI : MonoBehaviour
 
     public void OnEnable()
     {
-        LocalPlayerEvents.PlayerSpawnedEvent += OnPlayerSpawned;
-        LocalPlayerEvents.DamageTakenEvent += UpdateHealth;
+        PlayerEvents.PlayerSpawnedEvent += OnPlayerSpawned;
+        PlayerEvents.DamageTakenEvent += UpdateHealth;
     }
 
     public void OnDisable()
     {
-        LocalPlayerEvents.PlayerSpawnedEvent -= OnPlayerSpawned;
-        LocalPlayerEvents.DamageTakenEvent -= UpdateHealth;
+        PlayerEvents.PlayerSpawnedEvent -= OnPlayerSpawned;
+        PlayerEvents.DamageTakenEvent -= UpdateHealth;
     }
 
     private void OnPlayerSpawned(GameObject playerObj)

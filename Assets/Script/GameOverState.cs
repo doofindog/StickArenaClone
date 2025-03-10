@@ -1,32 +1,17 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem.XR;
+using PixelArena.UI;
 
 public class GameOverState : BaseGameState
 {
     public override void OnEnter()
     {
-        StartCoroutine(TurnTvOn());
+        UIManager.Instance.TvController.TurnOn(HandleShowResults, 1);
     }
 
     public override void OnExit()
     {
-        TvController tvController = UIManager.Instance.TvController;
-        if (tvController != null)
-        {
-            tvController.TurnOff();
-        }
-    }
-
-    private IEnumerator TurnTvOn()
-    {
-        yield return new WaitForSeconds(1);
-        TvController tvController = UIManager.Instance.TvController;
-        if(tvController != null)
-        {
-            tvController.TurnOn(HandleShowResults);
-        }
+        UIManager.Instance.TvController.TurnOff();
     }
 
     private void HandleShowResults()

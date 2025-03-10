@@ -5,8 +5,8 @@ using UnityEngine.Rendering.Universal;
 public class FollowCameraState : CameraState
 {
     public Camera uiCamera;
-    
-    [SerializeField] private Transform _follow;
+
+    private CameraController m_cameraController;
     [SerializeField] private Vector3 _cameraOffset;
     [SerializeField] private float _interpolationSpeed;
     
@@ -20,16 +20,17 @@ public class FollowCameraState : CameraState
     private Quaternion _originalRotation;
     [SerializeField] private PixelPerfectCamera _pixelPerfectCamera;
 
-    public void Awake()
+
+    public override void Init(CameraController pCameraController)
     {
-        LocalPlayerEvents.LocalPlayerSpawnedEvent += SetTarget;
+        m_cameraController = pCameraController;
     }
 
 
     public override void Enter()
     {
-        LocalPlayerEvents.PlayerDiedEvent += PerformShake;
-        GameEvents.WeaponFiredEvent += PerformShake;
+        PlayerEvents.PlayerDiedEvent += PerformShake;
+        PlayerEvents.WeaponFiredEvent += PerformShake;
         
         _originalPosition = transform.position;
         _originalRotation = transform.rotation;
@@ -38,11 +39,6 @@ public class FollowCameraState : CameraState
         cameraData.renderPostProcessing = true;
         _pixelPerfectCamera = GetComponent<PixelPerfectCamera>();
         _pixelPerfectCamera.gridSnapping = PixelPerfectCamera.GridSnapping.None;
-    }
-
-    public void SetTarget(GameObject pTarget)
-    {
-        _follow = pTarget.transform;
     }
 
     public override void UpdateState()
@@ -60,8 +56,8 @@ public class FollowCameraState : CameraState
 
     public override void Exit()
     {
-        LocalPlayerEvents.PlayerDiedEvent -= PerformShake;
-        GameEvents.WeaponFiredEvent -= PerformShake;
+        PlayerEvents.PlayerDiedEvent -= PerformShake;
+        PlayerEvents.WeaponFiredEvent -= PerformShake;
     }
     
     
@@ -103,9 +99,9 @@ public class FollowCameraState : CameraState
 
     public void Update()
     {
-        if (_follow == null) return;
+        if (m_cameraController.target == null) return;
 
-        Vector3 followPosition = _follow.position + _cameraOffset;
+        Vector3 followPosition = m_cameraController.target.position + _cameraOffset;
         Vector3 smoothedPosition = Vector3.Lerp(transform.position, followPosition,
             _interpolationSpeed * TickManager.Instance.GetMinTickTime());
 

@@ -37,11 +37,13 @@ public class PlayerData : NetworkBehaviour
     
     public void Init()
     {
-        if (IsServer)
+        void HandleServer()
         {
-            health.Value = PlayerSettings.maxHealth; 
+            health.Value = PlayerSettings.maxHealth;
             speed.Value = PlayerSettings.speed;
-        } 
+        }
+
+        GameUtilt.ExecuteNetworkCode(HandleServer, null);
     }
 
     public void Reset()

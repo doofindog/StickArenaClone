@@ -4,121 +4,105 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class MainMenuScreen : MonoBehaviour
+namespace PixelArena.UI
 {
-    [SerializeField] private TMP_InputField joinCode;
-    [SerializeField] private TMP_InputField usernameField;
-    [SerializeField] private Animator animator;
-    [SerializeField] private GameObject menuPanel;
-    [SerializeField] private GameObject connectionPanel;
-    [SerializeField] private GameObject joinPanel;
-    [SerializeField] private GameObject hostDisconnectedPopup;
-    [FormerlySerializedAs("SettingsPopUp")] [SerializeField] private GameObject settingsPopUp;
-
-    public void Awake()
+    public class MainMenuScreen : Screen
     {
-        CustomNetworkEvents.NetworkStartedEvent += ChangeToConnectionPanel;
-        CustomNetworkEvents.DisconnectedEvent += OnDisconnected;
-        NetworkManager.Singleton.OnServerStarted += ChangeToConnectionPanel;
-    }
+        [SerializeField] private TMP_InputField usernameField;
+        [SerializeField] private Animator animator;
+        [SerializeField] private GameObject menuPanel;
+        [SerializeField] private GameObject connectionPanel;
+        [SerializeField] private GameObject hostDisconnectedPopup;
+        [SerializeField] private GameObject settingsPopUp;
 
-    public void Start()
-    {
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-    }
-
-    public void OnEnable()
-    {
-        menuPanel.SetActive(true);
-        connectionPanel.SetActive(false);
-    }
-
-    public void OnHostPressed()
-    {
-        if (string.IsNullOrEmpty(usernameField.text))
+        public override void Init()
         {
-            PlayNoUserNameAnim();
-            return;
+            NetworkManager.Singleton.OnClientStarted += ChangeToConnectionPanel;
+            NetworkManager.Singleton.OnClientStopped += OnDisconnected;
+            NetworkManager.Singleton.OnServerStarted += ChangeToConnectionPanel;
         }
-        if (usernameField.text.Contains(' '))
+
+        public override void OnEnter()
         {
-            usernameField.text = usernameField.text.Replace(' ', '_');
+            menuPanel.SetActive(true);
+            connectionPanel.SetActive(false);
+            hostDisconnectedPopup.SetActive(false);
+            settingsPopUp.SetActive(false);
         }
-        
-        ConnectionManager.Instance.StartServer(usernameField.text);
-    }
 
-    public void OnJoinPressed()
-    {
-        if (string.IsNullOrEmpty(usernameField.text))
+        public override void OnExit()
         {
-            PlayNoUserNameAnim();
-            return;
+            menuPanel.SetActive(false);
+            connectionPanel.SetActive(false);
+            hostDisconnectedPopup.SetActive(false);
+            settingsPopUp.SetActive(false);
         }
-        
-        menuPanel.SetActive(false);
-        joinPanel.SetActive(true);
-    }
 
-    public void OnJoinWithCodePressed()
-    {
-        if (usernameField.text.Contains(' '))
+        public void OnHostPressed()
         {
-            usernameField.text = usernameField.text.Replace(' ', '_');
+            if (string.IsNullOrEmpty(usernameField.text))
+            {
+                PlayNoUserNameAnim();
+                return;
+            }
+            if (usernameField.text.Contains(' '))
+            {
+                usernameField.text = usernameField.text.Replace(' ', '_');
+            }
+
+            ConnectionManager.Instance.StartServer(usernameField.text);
         }
-        
-        ConnectionManager.Instance.TryJoin(usernameField.text, joinCode.text);
-    }
 
-    private void ChangeToConnectionPanel()
-    {
-        Debugger.Log("[UI] Changing to Connection Panel");
-        connectionPanel.SetActive(true);
-        menuPanel.SetActive(false);
-        joinPanel.SetActive(false);
-    }
-
-    private void PlayNoUserNameAnim()
-    {
-        animator.Play("usernameError");
-    }
-
-    private void OnDisconnected()
-    {
-        menuPanel.SetActive(true);
-        connectionPanel.SetActive(false);
-    }
-
-    private void OnClientDisconnected(ulong clientID)
-    {
-        if (clientID == 0 && NetworkManager.Singleton.LocalClientId != 0)
+        public void OnJoinPressed()
         {
-            hostDisconnectedPopup.SetActive(true);
+            if (string.IsNullOrEmpty(usernameField.text))
+            {
+                PlayNoUserNameAnim();
+                return;
+            }
+
+            menuPanel.SetActive(false);
+            ConnectionManager.Instance.StartClient(usernameField.text);
         }
-    }
 
-    public void CloseHostPopup()
-    {
-        hostDisconnectedPopup.SetActive(false);
-    }
 
-    public void BackToMenu()
-    {
-        joinPanel.SetActive(false);
-        connectionPanel.SetActive(false);
-        menuPanel.SetActive(true);
-    }
+        private void ChangeToConnectionPanel()
+        {
+            Debugger.Log("[UI] Changing to Connection Panel");
+            connectionPanel.SetActive(true);
+            menuPanel.SetActive(false);
+        }
 
-    public void ToggleOption()
-    {
-        menuPanel.SetActive(!menuPanel.activeInHierarchy);
-        settingsPopUp.SetActive(!settingsPopUp.activeInHierarchy);
-    }
+        private void PlayNoUserNameAnim()
+        {
+            animator.Play("usernameError");
+        }
 
-    public void OnCodeValueChanged()
-    {
-        joinCode.text = joinCode.text.ToUpper();
+        public void CloseHostPopup()
+        {
+            hostDisconnectedPopup.SetActive(false);
+        }
+
+        public void BackToMenu()
+        {
+            connectionPanel.SetActive(false);
+            menuPanel.SetActive(true);
+        }
+
+        public void ToggleOption()
+        {
+            menuPanel.SetActive(!menuPanel.activeInHierarchy);
+            settingsPopUp.SetActive(!settingsPopUp.activeInHierarchy);
+        }
+
+        private void OnDisconnected(bool obj)
+        {
+            menuPanel.SetActive(true);
+            connectionPanel.SetActive(false);
+        }
+
     }
 }
+
 
 

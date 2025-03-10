@@ -4,9 +4,9 @@ public class Shoot : PlayerFeature
 {
     public WeaponComponent m_weaponComponent;
 
-    public override void Init(NetController pNetController)
+    public override void Init(Player pPlayer)
     {
-        m_weaponComponent = pNetController.GetComponent<WeaponComponent>();
+        m_weaponComponent = pPlayer.GetComponent<WeaponComponent>();
     }
 
     public override void Process(NetInputPayLoad pInputPayLoad)
@@ -27,11 +27,11 @@ public class Shoot : PlayerFeature
         Weapon.Params weaponParams = new Weapon.Params()
         {
             tick = 0,
+            time = pInputPayLoad.time,
             triggerPressed = pInputPayLoad.shootPressed,
         };
 
         equipedWeapon.Shoot(weaponParams);
-
     }
 
     public override void Process(NetStatePayLoad pStatePayLoad)

@@ -6,16 +6,10 @@ public class NonAuthorityClientController : NetController
     private const float POSITION_ERROR_THRESHOLD = 0.05f;
     private List<NetStatePayLoad> fecthedStateCopy = new List<NetStatePayLoad>();
 
-    public override void OnNetworkSpawn()
+    public override void Init()
     {
-        if (IsServer || IsOwner)
-        {
-            Destroy(this);
-            return;
-        }
-
-        playerFeature.Init(this);
-        weaponComponent.Init(playerComponent.arm, playerComponent.weaponHolder);
+        player.playerFeature.Init(player);
+        player.weaponComponent.Init(player.arm, player.weaponHolder);
     }
 
 
@@ -26,7 +20,7 @@ public class NonAuthorityClientController : NetController
 
     public void SimulateInputs()
     {
-        NetStatePayLoad serverPayload = stateProcessor.GetServerState();
-        playerFeature.ProcessFeature(serverPayload);
+        NetStatePayLoad serverPayload = player.stateProcessor.GetServerState();
+        player.playerFeature.ProcessFeature(serverPayload);
     }
 }

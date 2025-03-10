@@ -19,7 +19,7 @@ public class HitResponseData : INetworkSerializable
     {
         if (serializer.IsReader)
         {
-            FastBufferReader reader =serializer.GetFastBufferReader();
+            FastBufferReader reader = serializer.GetFastBufferReader();
             reader.ReadValueSafe(out hitTime);
             reader.ReadValueSafe(out damage);
             reader.ReadValueSafe(out sourceID);

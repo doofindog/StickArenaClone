@@ -12,11 +12,14 @@ public class TvController : MonoBehaviour
     [SerializeField] private float m_height;
     [SerializeField] private float m_width;
     [SerializeField] private Animator m_animator;
+
     private Action onTurnOnComplete;
     private Action onTurnOffComplete;
 
     public void Awake()
     {
+        Debugger.Log("TV Controller called");
+
         if (m_uiObj != null)
         {
             m_uiObj.SetActive(true);

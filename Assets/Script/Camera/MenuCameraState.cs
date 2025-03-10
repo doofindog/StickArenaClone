@@ -20,7 +20,6 @@ public class MenuCameraState : CameraState
         
         CustomNetworkEvents.NetworkStartedEvent += MoveCameraToCenter;
         CustomNetworkEvents.DisconnectedEvent += HandleNetworkStopped;
-        LocalPlayerEvents.LocalPlayerSpawnedEvent += HandlePlayerConnected;
         
         UpdateNextLocation();
         
@@ -64,7 +63,6 @@ public class MenuCameraState : CameraState
     {
         CustomNetworkEvents.NetworkStartedEvent -= MoveCameraToCenter;
         CustomNetworkEvents.DisconnectedEvent -= HandleNetworkStopped;
-        LocalPlayerEvents.PlayerSpawnedEvent -= HandlePlayerConnected;
     }
     
     
@@ -77,11 +75,6 @@ public class MenuCameraState : CameraState
     {
         UpdateNextLocation();
         _networkStarted = false;
-    }
-
-    private void HandlePlayerConnected(GameObject obj)
-    {
-        CameraController.Instance.ChangeState(ECameraState.GAME);
     }
 
     private void UpdateNextLocation()
@@ -100,5 +93,5 @@ public class MenuCameraState : CameraState
         _followTransform.position = followPosition;
         _direction = _followTransform.position - transform.position;
     }
-    
+
 }

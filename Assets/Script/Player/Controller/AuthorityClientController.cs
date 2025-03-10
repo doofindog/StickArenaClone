@@ -5,26 +5,20 @@ using UnityEngine;
 public class AuthorityClientController : NetController, ITickableEntity
 {
 	private const float POSITION_ERROR_THRESHOLD = 0.05f;
-	
-	public override void OnNetworkSpawn()
-	{
-		if(IsServer || !IsOwner)
-		{
-			Destroy(this);
-			return;
-		}
 
-		playerInput.Init(this);
-		playerFeature.Init(this);
-		weaponComponent.Init(playerComponent.arm, playerComponent.weaponHolder);
-		TickManager.Instance.AddEntity(this);
-        LocalPlayerEvents.SendLocalPlayerSpawned(this.gameObject);
+    public override void Init()
+    {
+        player.playerInput.Init(player);
+        player.playerFeature.Init(player);
+        player.weaponComponent.Init(player.arm, player.weaponHolder);
+
+		CameraController.Instance.SetCameraTarget(transform);
+
+        TickManager.Instance.AddEntity(this);
     }
 
-	public override void OnDestroy()
+    public void OnDestroy()
 	{
-		base.OnDestroy();
-
 		TickManager.Instance.RemoveEntity(this);
 	}
 
@@ -35,13 +29,13 @@ public class AuthorityClientController : NetController, ITickableEntity
 
     public void FixedUpdate()
     {
-        NetInputPayLoad inputPayLoad = inputProcessor.AddInput(new NetInputPayLoad()
+        NetInputPayLoad inputPayLoad = player.inputProcessor.AddInput(new NetInputPayLoad()
         {
-            time = NetworkManager.Singleton.ServerTime.TimeAsFloat,
+            time = NetworkManager.Singleton.LocalTime.TimeAsFloat,
             tick = TickManager.Instance.GetTick(),
-            direction = playerData.direction,
-            aimAngle = playerData.aimAngle,
-			shootPressed = playerData.shootPressed,
+            direction = player.playerData.direction,
+            aimAngle = player.playerData.aimAngle,
+			shootPressed = player.playerData.shootPressed,
         });
 
 		PredictClientMovement(inputPayLoad);
@@ -49,10 +43,10 @@ public class AuthorityClientController : NetController, ITickableEntity
 
 	private void PredictClientMovement(NetInputPayLoad pInputPayload)
 	{
-		playerFeature.ProcessFeature(pInputPayload);
+        player.playerFeature.ProcessFeature(pInputPayload);
 
         //Client Side Prediction
-        stateProcessor.AddState(new NetStatePayLoad()
+        player.stateProcessor.AddState(new NetStatePayLoad()
 		{
 			inputSequence = pInputPayload.payloadSequence,
             time = NetworkManager.Singleton.ServerTime.TimeAsFloat,
@@ -64,14 +58,14 @@ public class AuthorityClientController : NetController, ITickableEntity
 
     private void PerformServerReallocation()
 	{
-        if (stateProcessor == null || inputProcessor == null)
+        if (player.stateProcessor == null || player.inputProcessor == null)
         {
             Debug.LogWarning("NetStateProcessor or NetInputProcessor is not assigned.");
             return;
         }
 
-        NetStatePayLoad serverState = stateProcessor.GetServerState();
-		NetStatePayLoad clientState = stateProcessor.GetStateAtSequenceNumber(serverState.inputSequence);
+        NetStatePayLoad serverState = player.stateProcessor.GetServerState();
+		NetStatePayLoad clientState = player.stateProcessor.GetStateAtSequenceNumber(serverState.inputSequence);
 		
 		float positionDifference = Vector3.Distance(serverState.position, clientState.position);
 		if (!(positionDifference > POSITION_ERROR_THRESHOLD))
@@ -80,19 +74,19 @@ public class AuthorityClientController : NetController, ITickableEntity
 		}
 
 		transform.position = serverState.position;
-		stateProcessor.UpdateState(serverState);
+		player.stateProcessor.UpdateState(serverState);
 
 		int sequenceToProcess = serverState.inputSequence + 1;
-		int lastSequenceCount = inputProcessor.GetCurrentSequenceCount() - 1;
+		int lastSequenceCount = player.inputProcessor.GetCurrentSequenceCount() - 1;
 		while (sequenceToProcess < lastSequenceCount)
 		{
-			NetInputPayLoad inputPayLoad = inputProcessor.GetPayloadAtSequence(sequenceToProcess);
+			NetInputPayLoad inputPayLoad = player.inputProcessor.GetPayloadAtSequence(sequenceToProcess);
 			if(inputPayLoad.isNull)
 			{
 				continue;
 			}
 
-			playerFeature.ProcessFeature(inputPayLoad);
+            player.playerFeature.ProcessFeature(inputPayLoad);
 
 			NetStatePayLoad netStatePayLoad = new NetStatePayLoad()
 			{
@@ -102,7 +96,7 @@ public class AuthorityClientController : NetController, ITickableEntity
 				aimAngle = inputPayLoad.aimAngle,
 			};
 
-			stateProcessor.UpdateAtSequence(sequenceToProcess, netStatePayLoad);
+            player.stateProcessor.UpdateAtSequence(sequenceToProcess, netStatePayLoad);
 			sequenceToProcess++;
 		}
 	}

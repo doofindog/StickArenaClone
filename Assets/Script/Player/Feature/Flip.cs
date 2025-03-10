@@ -4,9 +4,9 @@ public class Flip : PlayerFeature
 {
     private SpriteRenderer m_spriteRenderer;
 
-    public override void Init(NetController pController)
+    public override void Init(Player pPlayer)
     {
-        m_spriteRenderer = pController.playerComponent.spriteRenderer;
+        m_spriteRenderer = pPlayer.spriteRenderer;
     }
 
     public override void Process(NetInputPayLoad pInputPayLoad)
